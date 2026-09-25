@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -9,21 +8,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ────────────────────────────────────────────────
+
+enum Rol {
+  usuario
+  encargado
+  administrador
+}
+
+enum EstadoObjeto {
+  en_custodia
+  no_reclamado
+  entregado
+  dado_de_baja
+}
+
+enum EstadoReclamo {
+  en_revision
+  aprobado
+  rechazado
+  entregado
+}
+
+enum ResultadoBitacora {
+  permitido
+  denegado
+  error
+}
+
+// ─── Modelos ──────────────────────────────────────────────
+
 model Usuario {
-  id_usuario           BigInt            @id @default(autoincrement())
+  id_usuario           Int               @id @default(autoincrement())
   correo_institucional String            @unique @db.VarChar
+  /// hash de bcrypt, nunca la clave real
+  clave_hash           String            @db.VarChar
   nombres              String            @db.VarChar
   apellidos            String            @db.VarChar
-  /// usuario, encargado o administrador
-  rol                  String            @default("usuario") @db.VarChar
-  /// solo encargados
-  id_punto             BigInt? 
+  rol                  Rol               @default(usuario)
+  /// solo encargados; null para usuario y administrador
+  id_punto             Int?
   activo               Boolean           @default(true)
   creado_en            DateTime          @default(now()) @db.Timestamp(6)
 
   punto                PuntoAcopio?      @relation(fields: [id_punto], references: [id_punto], onDelete: Restrict, onUpdate: Cascade)
   objetosRegistrados   Objeto[]
-  reportes             ReportePerdida[]
   reclamosAtendidos    Reclamo[]
   actasFirmadas        ActaDestruccion[]
   eventos              Bitacora[]
@@ -33,11 +62,12 @@ model Usuario {
 }
 
 model PuntoAcopio {
-  id_punto   BigInt    @id @default(autoincrement())
-  nombre     String    @db.VarChar
+  id_punto   Int       @id @default(autoincrement())
+  nombre     String    @unique @db.VarChar
   ubicacion  String    @db.Text
-  tipo       String    @db.VarChar
+  /// visible para los usuarios en la app
   publicado  Boolean   @default(false)
+  /// el punto está funcionando (recibe y entrega objetos)
   habilitado Boolean   @default(true)
 
   encargados Usuario[]
@@ -47,32 +77,31 @@ model PuntoAcopio {
 }
 
 model Categoria {
-  id_categoria Int              @id @default(autoincrement()) @db.SmallInt
-  nombre       String           @unique @db.VarChar
+  id_categoria Int      @id @default(autoincrement()) @db.SmallInt
+  nombre       String   @unique @db.VarChar
 
   objetos      Objeto[]
-  reportes     ReportePerdida[]
 
   @@map("CATEGORIA")
 }
 
 model Objeto {
-  id_objeto         BigInt           @id @default(autoincrement())
-  codigo            String           @unique @db.VarChar
+  id_objeto         Int              @id @default(autoincrement())
   id_categoria      Int              @db.SmallInt
-  id_punto          BigInt 
-  registrado_por    BigInt 
-  /// NULL salvo baja
-  id_acta           BigInt? 
+  /// se toma del Encargado que lo registra, nunca del cliente
+  id_punto          Int
+  registrado_por    Int
+  /// null salvo que el estado sea dado_de_baja
+  id_acta           Int?
   descripcion       String           @db.Text
   hallado_en        DateTime         @db.Timestamp(6)
   lugar_hallazgo    String           @db.Text
-  /// inicio del plazo de 1 anio
+  /// inicio del plazo de 1 año
   registrado_en     DateTime         @default(now()) @db.Timestamp(6)
-  /// en_custodia, no_reclamado, entregado, dado_de_baja
-  estado            String           @default("en_custodia") @db.VarChar
+  estado            EstadoObjeto     @default(en_custodia)
+  /// visible para los usuarios en la app
   publicado         Boolean          @default(false)
-  /// NULL hasta avisar
+  /// null hasta avisar
   alerta_enviada_en DateTime?        @db.Timestamp(6)
 
   punto             PuntoAcopio      @relation(fields: [id_punto], references: [id_punto], onDelete: Restrict, onUpdate: Cascade)
@@ -90,89 +119,78 @@ model Objeto {
 }
 
 model Fotografia {
-  id_objeto   BigInt 
-  /// 1 a 3
+  id_objeto   Int
+  /// 1 a 3 (validado con Zod)
   posicion    Int    @db.SmallInt
   archivo_url String @db.Text
 
   objeto      Objeto @relation(fields: [id_objeto], references: [id_objeto], onDelete: Restrict, onUpdate: Cascade)
-  
+
   @@id([id_objeto, posicion])
   @@map("FOTOGRAFIA")
 }
 
-model ReportePerdida {
-  id_reporte    BigInt     @id @default(autoincrement())
-  id_usuario    BigInt 
-  /// NULL si no se sabe
-  id_categoria  Int?       @db.SmallInt
-  descripcion   String     @db.Text
-  perdido_en    DateTime   @db.Timestamp(6)
-  lugar_perdida String     @db.Text
-  /// abierto o cerrado
-  estado        String     @default("abierto") @db.VarChar
-  creado_en     DateTime   @default(now()) @db.Timestamp(6)
-
-  categoria     Categoria? @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Cascade)
-  usuario       Usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
-  
-  @@index([id_categoria])
-  @@index([id_usuario])
-  @@map("REPORTE_PERDIDA")
-}
-
 model Reclamo {
-  id_reclamo          BigInt    @id @default(autoincrement())
-  /// NULL si no hubo coincidencia
-  id_objeto           BigInt? 
-  atendido_por        BigInt 
-  rut_reclamante      String    @db.VarChar
-  nombre_reclamante   String    @db.VarChar
-  evidencia_identidad String    @db.Text
-  evidencia_propiedad String    @db.Text
-  /// en_revision, aprobado, rechazado, entregado
-  estado              String    @default("en_revision") @db.VarChar
-  motivo_decision     String?   @db.Text
-  creado_en           DateTime  @default(now()) @db.Timestamp(6)
-  /// NULL hasta entregar
-  entregado_en        DateTime? @db.Timestamp(6)
-  /// NULL hasta entregar
-  numero_comprobante  String?   @unique @db.VarChar
+  id_reclamo          Int           @id @default(autoincrement())
+  /// null si no hubo coincidencia
+  id_objeto           Int?
+  /// Encargado que registró el reclamo presencial
+  atendido_por        Int
+  rut_reclamante      String        @db.VarChar
+  nombre_reclamante   String        @db.VarChar
+  /// ruta a archivo privado (no público)
+  evidencia_identidad String        @db.Text
+  /// ruta a archivo privado (no público)
+  evidencia_propiedad String        @db.Text
+  estado              EstadoReclamo @default(en_revision)
+  motivo_decision     String?       @db.Text
+  creado_en           DateTime      @default(now()) @db.Timestamp(6)
+  /// null hasta entregar
+  entregado_en        DateTime?     @db.Timestamp(6)
+  /// null hasta entregar; lo genera el service
+  numero_comprobante  String?       @unique @db.VarChar
 
-  objeto              Objeto?   @relation(fields: [id_objeto], references: [id_objeto], onDelete: Restrict, onUpdate: Cascade)
-  encargado           Usuario   @relation(fields: [atendido_por], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
-  
+  objeto              Objeto?       @relation(fields: [id_objeto], references: [id_objeto], onDelete: Restrict, onUpdate: Cascade)
+  encargado           Usuario       @relation(fields: [atendido_por], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+
   @@index([id_objeto])
   @@index([atendido_por])
   @@map("RECLAMO")
 }
 
 model ActaDestruccion {
-  id_acta      BigInt   @id @default(autoincrement())
+  id_acta      Int      @id @default(autoincrement())
+  /// lo genera el service
   numero_acta  String   @unique @db.VarChar
-  responsable  BigInt 
+  responsable  Int
   ejecutada_en DateTime @db.Timestamp(6)
   archivo_url  String   @db.Text
 
   objetos      Objeto[]
   firmante     Usuario  @relation(fields: [responsable], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
-  
+
   @@index([responsable])
   @@map("ACTA_DESTRUCCION")
 }
 
+/// Solo se agregan registros: nunca se editan ni se borran
 model Bitacora {
-  id_evento     BigInt   @id @default(autoincrement())
-  /// NULL si no se identifico
-  id_usuario    BigInt? 
-  accion        String   @db.VarChar
-  recurso       String   @db.VarChar
-  /// permitido, denegado o error
-  resultado     String   @db.VarChar
-  registrado_en DateTime @default(now()) @db.Timestamp(6)
+  id_evento     Int               @id @default(autoincrement())
+  /// null si no se identificó (ej: token inválido)
+  id_usuario    Int?
+  /// correo usado cuando no hay usuario identificado (ej: login fallido)
+  correo        String?           @db.VarChar
+  /// nombre de la acción del mapa de permisos (ej: crear_punto_acopio)
+  accion        String            @db.VarChar
+  /// tabla e id afectados (ej: PUNTO_ACOPIO:5)
+  recurso       String            @db.VarChar
+  resultado     ResultadoBitacora
+  /// por qué se rechazó; null si fue permitido
+  motivo        String?           @db.Text
+  registrado_en DateTime          @default(now()) @db.Timestamp(6)
 
-  usuario       Usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
-  
+  usuario       Usuario?          @relation(fields: [id_usuario], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+
   @@index([id_usuario])
   @@map("BITACORA")
 }
