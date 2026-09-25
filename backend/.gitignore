@@ -1,0 +1,26 @@
+
+Dependencias
+node_modules/
+
+Claves y variables de entorno
+.env
+.env.*
+!.env.example
+
+Generados y builds
+generated/
+dist/
+dist-ssr/
+build/
+coverage/
+*.local
+
+Logs
+.log
+
+Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+!.vscode/extensions.json
