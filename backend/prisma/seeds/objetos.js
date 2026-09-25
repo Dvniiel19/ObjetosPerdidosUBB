@@ -28,7 +28,6 @@ export async function seedObjetos(prisma, { categorias, puntos, usuarios }) {
   for (const [i, obj] of objetos.entries()) {
     await prisma.objeto.create({
       data: {
-        codigo: `OBJ-${String(i + 1).padStart(4, '0')}`,
         descripcion: obj.descripcion,
         hallado_en: new Date(obj.hallado_en),
         lugar_hallazgo: obj.lugar_hallazgo,

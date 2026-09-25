@@ -1,7 +1,14 @@
 // Datos base compartidos: categorias, puntos de acopio y usuarios.
 // Devuelve los registros creados para que los otros seeds los usen.
 
+import bcrypt from 'bcryptjs';
+
+// Clave de prueba para todos los usuarios del seed (solo desarrollo local)
+export const CLAVE_PRUEBA = 'clave123';
+
 export async function seedBase(prisma) {
+  const clave_hash = await bcrypt.hash(CLAVE_PRUEBA, 10);
+
   const nombresCategorias = [
     'Electronica',
     'Ropa y accesorios',
@@ -22,7 +29,6 @@ export async function seedBase(prisma) {
       data: {
         nombre: 'Biblioteca Central',
         ubicacion: 'Primer piso, mesón de atención',
-        tipo: 'biblioteca',
         publicado: true,
       },
     }),
@@ -30,7 +36,6 @@ export async function seedBase(prisma) {
       data: {
         nombre: 'FACE',
         ubicacion: 'Facultad de Ciencias Empresariales, secretaría',
-        tipo: 'facultad',
         publicado: true,
       },
     }),
@@ -38,7 +43,6 @@ export async function seedBase(prisma) {
       data: {
         nombre: 'Salas AC',
         ubicacion: 'Edificio de salas AC, primer piso',
-        tipo: 'salas',
         publicado: true,
       },
     }),
@@ -48,6 +52,7 @@ export async function seedBase(prisma) {
     admin: await prisma.usuario.create({
       data: {
         correo_institucional: 'admin@ubiobio.cl',
+        clave_hash,
         nombres: 'Ana',
         apellidos: 'Administradora',
         rol: 'administrador',
@@ -56,6 +61,7 @@ export async function seedBase(prisma) {
     encargadoBiblioteca: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.biblioteca@ubiobio.cl',
+        clave_hash,
         nombres: 'Bruno',
         apellidos: 'Encargado',
         rol: 'encargado',
@@ -65,6 +71,7 @@ export async function seedBase(prisma) {
     encargadoFace: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.face@ubiobio.cl',
+        clave_hash,
         nombres: 'Carla',
         apellidos: 'Encargada',
         rol: 'encargado',
@@ -74,6 +81,7 @@ export async function seedBase(prisma) {
     estudiante: await prisma.usuario.create({
       data: {
         correo_institucional: 'estudiante@alumnos.ubiobio.cl',
+        clave_hash,
         nombres: 'Diego',
         apellidos: 'Estudiante',
         rol: 'usuario',

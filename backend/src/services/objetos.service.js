@@ -10,7 +10,6 @@ export async function listarCatalogo() {
     },
     select: {
       id_objeto: true,
-      codigo: true,
       descripcion: true,
       hallado_en: true,
       lugar_hallazgo: true,

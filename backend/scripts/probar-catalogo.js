@@ -9,7 +9,7 @@ const objetos = await listarCatalogo();
 console.log(`Objetos en el catalogo: ${objetos.length}\n`);
 console.table(
   objetos.map((o) => ({
-    codigo: o.codigo,
+    id: o.id_objeto,
     descripcion: o.descripcion,
     categoria: o.categoria.nombre,
     punto: o.punto.nombre,
