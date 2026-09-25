@@ -1,13 +1,12 @@
-
-Dependencias
+# Dependencias
 node_modules/
 
-Claves y variables de entorno
+# Claves y variables de entorno
 .env
 .env.*
 !.env.example
 
-Generados y builds
+# Generados y builds
 generated/
 dist/
 dist-ssr/
@@ -15,12 +14,12 @@ build/
 coverage/
 *.local
 
-Logs
-.log
+# Logs
+*.log
 
-Sistema y editores
+# Sistema y editores
 .DS_Store
 Thumbs.db
 .idea/
-.vscode/
+.vscode/*
 !.vscode/extensions.json
