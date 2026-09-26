@@ -118,3 +118,23 @@ export async function procesarObjetosVencidos(fechaReferencia = new Date()) {
     ids: idsVencidos,
   };
 }
+/**
+ * Orquesta la revisión completa del ciclo de retención:
+ * 1. Procesa y marca las alertas preventivas (30 días antes del año).
+ * 2. Transiciona a 'no_reclamado' los objetos que ya cumplieron el año.
+ * 
+ * Retorna un resumen cuantitativo útil para logs del sistema o auditoría.
+ * 
+ * @param {Date} [fechaReferencia=new Date()]
+ * @returns {Promise<{ alertasEnviadas: number, objetosNoReclamados: number, ejecutado_en: Date }>}
+ */
+export async function ejecutarRevisionRetencion(fechaReferencia = new Date()) {
+  const resultadoAlertas = await procesarAlertasRetencion(fechaReferencia);
+  const resultadoVencidos = await procesarObjetosVencidos(fechaReferencia);
+
+  return {
+    alertasEnviadas: resultadoAlertas.objetosAlertados,
+    objetosNoReclamados: resultadoVencidos.objetosVencidos,
+    ejecutado_en: fechaReferencia,
+  };
+}
