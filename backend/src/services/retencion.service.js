@@ -18,3 +18,57 @@ export function calcularFechaUmbral(dias, fechaReferencia = new Date()) {
   fecha.setDate(fecha.getDate() - dias);
   return fecha;
 }
+/**
+ * Identifica los objetos en custodia que han cumplido 335 días (a 30 días del año)
+ * y que aún no han recibido alerta preventiva.
+ * Actualiza el campo 'alerta_enviada_en' en la base de datos para no duplicar avisos.
+ * 
+ * @param {Date} [fechaReferencia=new Date()] - Permite simular fechas para pruebas.
+ * @returns {Promise<{ objetosAlertados: number, ids: number[] }>}
+ */
+export async function procesarAlertasRetencion(fechaReferencia = new Date()) {
+  const fechaUmbralAlerta = calcularFechaUmbral(DIAS_PARA_ALERTA, fechaReferencia);
+
+  // 1. Buscar candidatos a alerta preventiva (30 días antes de cumplir el año)
+  const candidatos = await prisma.objeto.findMany({
+    where: {
+      estado: 'en_custodia',
+      alerta_enviada_en: null,
+      registrado_en: {
+        lte: fechaUmbralAlerta,
+      },
+    },
+    select: {
+      id_objeto: true,
+      descripcion: true,
+      registrado_en: true,
+      punto: {
+        select: {
+          id_punto: true,
+          nombre: true,
+        },
+      },
+    },
+  });
+
+  if (candidatos.length === 0) {
+    return { objetosAlertados: 0, ids: [] };
+  }
+
+  const idsParaAlertar = candidatos.map((obj) => obj.id_objeto);
+
+  // 2. Registrar en la base de datos que la alerta fue emitida
+  await prisma.objeto.updateMany({
+    where: {
+      id_objeto: { in: idsParaAlertar },
+    },
+    data: {
+      alerta_enviada_en: fechaReferencia,
+    },
+  });
+
+  return {
+    objetosAlertados: idsParaAlertar.length,
+    ids: idsParaAlertar,
+  };
+}
