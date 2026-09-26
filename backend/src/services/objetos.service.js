@@ -54,3 +54,31 @@ async function validarCategoriaExistente(idCategoria) {
     throw error;
   }
 }
+
+export async function registrarObjeto(datos, encargado) {
+  validarContextoEncargado(encargado);
+
+  // Protección temporal hasta incorporar fotografías 
+  if (datos.fotografias?.length > 0) {
+    const error = new Error(
+      'El registro con fotografías todavía no está implementado',
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await validarCategoriaExistente(datos.id_categoria);
+
+  return prisma.objeto.create({
+    data: {
+      id_categoria: datos.id_categoria,
+      descripcion: datos.descripcion,
+      hallado_en: new Date(datos.hallado_en),
+      lugar_hallazgo: datos.lugar_hallazgo,
+      id_punto: encargado.id_punto,
+      registrado_por: encargado.id_usuario,
+      estado: 'en_custodia',
+    },
+  });
+}
