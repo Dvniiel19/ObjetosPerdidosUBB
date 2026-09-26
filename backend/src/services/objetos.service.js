@@ -36,3 +36,21 @@ function validarContextoEncargado(encargado) {
     throw error;
   }
 }
+
+async function validarCategoriaExistente(idCategoria) {
+  const categoria = await prisma.categoria.findUnique({
+    where: {
+      id_categoria: idCategoria,
+    },
+    select: {
+      id_categoria: true,
+    },
+  });
+
+  if (!categoria) {
+    const error = new Error('La categoría seleccionada no existe');
+
+    error.statusCode = 400;
+    throw error;
+  }
+}
