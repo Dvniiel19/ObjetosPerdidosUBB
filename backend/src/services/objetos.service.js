@@ -2,11 +2,20 @@ import prisma from '../config/prisma.js';
 
 // Catalogo publico: solo objetos publicados y que siguen en custodia.
 // Los no publicados, entregados, no reclamados o dados de baja no se muestran.
-export async function listarCatalogo() {
+// Si viene "texto", filtra por descripcion o lugar de hallazgo (sin importar mayusculas).
+export async function listarCatalogo({ texto } = {}) {
+  const busqueda = texto?.trim();
+
   return prisma.objeto.findMany({
     where: {
       publicado: true,
       estado: 'en_custodia',
+      ...(busqueda && {
+        OR: [
+          { descripcion: { contains: busqueda, mode: 'insensitive' } },
+          { lugar_hallazgo: { contains: busqueda, mode: 'insensitive' } },
+        ],
+      }),
     },
     select: {
       id_objeto: true,
