@@ -19,3 +19,66 @@ export async function listarCatalogo() {
     orderBy: { hallado_en: 'desc' },
   });
 }
+
+function validarContextoEncargado(encargado) {
+  if (
+    encargado?.rol !== 'encargado' ||
+    !Number.isInteger(encargado.id_usuario) ||
+    encargado.id_usuario <= 0 ||
+    !Number.isInteger(encargado.id_punto) ||
+    encargado.id_punto <= 0
+  ) {
+    const error = new Error(
+      'Se requiere un encargado con un punto de acopio asignado',
+    );
+
+    error.statusCode = 403;
+    throw error;
+  }
+}
+
+async function validarCategoriaExistente(idCategoria) {
+  const categoria = await prisma.categoria.findUnique({
+    where: {
+      id_categoria: idCategoria,
+    },
+    select: {
+      id_categoria: true,
+    },
+  });
+
+  if (!categoria) {
+    const error = new Error('La categoría seleccionada no existe');
+
+    error.statusCode = 400;
+    throw error;
+  }
+}
+
+export async function registrarObjeto(datos, encargado) {
+  validarContextoEncargado(encargado);
+
+  // Protección temporal hasta incorporar fotografías 
+  if (datos.fotografias?.length > 0) {
+    const error = new Error(
+      'El registro con fotografías todavía no está implementado',
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await validarCategoriaExistente(datos.id_categoria);
+
+  return prisma.objeto.create({
+    data: {
+      id_categoria: datos.id_categoria,
+      descripcion: datos.descripcion,
+      hallado_en: new Date(datos.hallado_en),
+      lugar_hallazgo: datos.lugar_hallazgo,
+      id_punto: encargado.id_punto,
+      registrado_por: encargado.id_usuario,
+      estado: 'en_custodia',
+    },
+  });
+}

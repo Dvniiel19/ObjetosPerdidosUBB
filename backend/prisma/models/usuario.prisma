@@ -1,0 +1,22 @@
+model Usuario {
+  id_usuario           Int               @id @default(autoincrement())
+  correo_institucional String            @unique @db.VarChar
+  /// hash de bcrypt, nunca la clave real
+  clave_hash           String            @db.VarChar
+  nombres              String            @db.VarChar
+  apellidos            String            @db.VarChar
+  rol                  Rol               @default(usuario)
+  /// solo encargados; null para usuario y administrador
+  id_punto             Int?
+  activo               Boolean           @default(true)
+  creado_en            DateTime          @default(now()) @db.Timestamp(6)
+
+  punto                PuntoAcopio?      @relation(fields: [id_punto], references: [id_punto], onDelete: Restrict, onUpdate: Cascade)
+  objetosRegistrados   Objeto[]
+  reclamosAtendidos    Reclamo[]
+  actasFirmadas        ActaDestruccion[]
+  eventos              Bitacora[]
+
+  @@index([id_punto])
+  @@map("USUARIO")
+}

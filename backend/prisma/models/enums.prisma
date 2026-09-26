@@ -1,0 +1,25 @@
+enum Rol {
+  usuario
+  encargado
+  administrador
+}
+
+enum EstadoObjeto {
+  en_custodia
+  no_reclamado
+  entregado
+  dado_de_baja
+}
+
+enum EstadoReclamo {
+  en_revision
+  aprobado
+  rechazado
+  entregado
+}
+
+enum ResultadoBitacora {
+  permitido
+  denegado
+  error
+}

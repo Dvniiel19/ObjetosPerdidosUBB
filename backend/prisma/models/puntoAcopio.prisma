@@ -1,0 +1,14 @@
+model PuntoAcopio {
+  id_punto   Int       @id @default(autoincrement())
+  nombre     String    @unique @db.VarChar
+  ubicacion  String    @db.Text
+  /// visible para los usuarios en la app
+  publicado  Boolean   @default(false)
+  /// el punto está funcionando (recibe y entrega objetos)
+  habilitado Boolean   @default(true)
+
+  encargados Usuario[]
+  objetos    Objeto[]
+
+  @@map("PUNTO_ACOPIO")
+}
