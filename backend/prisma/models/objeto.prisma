@@ -1,0 +1,32 @@
+model Objeto {
+  id_objeto         Int              @id @default(autoincrement())
+  id_categoria      Int              @db.SmallInt
+  /// se toma del Encargado que lo registra, nunca del cliente
+  id_punto          Int
+  registrado_por    Int
+  /// null salvo que el estado sea dado_de_baja
+  id_acta           Int?
+  descripcion       String           @db.Text
+  hallado_en        DateTime         @db.Timestamp(6)
+  lugar_hallazgo    String           @db.Text
+  /// inicio del plazo de 1 año
+  registrado_en     DateTime         @default(now()) @db.Timestamp(6)
+  estado            EstadoObjeto     @default(en_custodia)
+  /// visible para los usuarios en la app
+  publicado         Boolean          @default(false)
+  /// null hasta avisar
+  alerta_enviada_en DateTime?        @db.Timestamp(6)
+
+  punto             PuntoAcopio      @relation(fields: [id_punto], references: [id_punto], onDelete: Restrict, onUpdate: Cascade)
+  categoria         Categoria        @relation(fields: [id_categoria], references: [id_categoria], onDelete: Restrict, onUpdate: Cascade)
+  registrador       Usuario          @relation(fields: [registrado_por], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+  fotografias       Fotografia[]
+  reclamos          Reclamo[]
+  acta              ActaDestruccion? @relation(fields: [id_acta], references: [id_acta], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([id_punto])
+  @@index([id_categoria])
+  @@index([registrado_por])
+  @@index([id_acta])
+  @@map("OBJETO")
+}
