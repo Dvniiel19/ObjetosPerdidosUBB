@@ -19,3 +19,20 @@ export async function listarCatalogo() {
     orderBy: { hallado_en: 'desc' },
   });
 }
+
+function validarContextoEncargado(encargado) {
+  if (
+    encargado?.rol !== 'encargado' ||
+    !Number.isInteger(encargado.id_usuario) ||
+    encargado.id_usuario <= 0 ||
+    !Number.isInteger(encargado.id_punto) ||
+    encargado.id_punto <= 0
+  ) {
+    const error = new Error(
+      'Se requiere un encargado con un punto de acopio asignado',
+    );
+
+    error.statusCode = 403;
+    throw error;
+  }
+}
