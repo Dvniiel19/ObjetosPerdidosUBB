@@ -1,0 +1,8 @@
+model Categoria {
+  id_categoria Int      @id @default(autoincrement()) @db.SmallInt
+  nombre       String   @unique @db.VarChar
+
+  objetos      Objeto[]
+
+  @@map("CATEGORIA")
+}

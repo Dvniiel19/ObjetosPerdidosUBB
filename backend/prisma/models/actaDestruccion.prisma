@@ -1,0 +1,14 @@
+model ActaDestruccion {
+  id_acta      Int      @id @default(autoincrement())
+  /// lo genera el service
+  numero_acta  String   @unique @db.VarChar
+  responsable  Int
+  ejecutada_en DateTime @db.Timestamp(6)
+  archivo_url  String   @db.Text
+
+  objetos      Objeto[]
+  firmante     Usuario  @relation(fields: [responsable], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([responsable])
+  @@map("ACTA_DESTRUCCION")
+}
