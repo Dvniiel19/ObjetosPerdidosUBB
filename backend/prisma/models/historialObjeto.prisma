@@ -1,0 +1,18 @@
+
+model HistorialObjeto {
+  id_historial       Int      @id @default(autoincrement())
+  id_objeto          Int
+
+  modificado_por     Int
+  motivo             String   @db.Text
+
+  valores_anteriores Json
+  modificado_en   DateTime @default(now()) @db.Timestamp(6)
+
+  objeto             Objeto   @relation(fields: [id_objeto], references: [id_objeto], onDelete: Restrict, onUpdate: Cascade)
+  encargado          Usuario  @relation(fields: [modificado_por], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([id_objeto])
+  @@index([modificado_por])
+  @@map("HISTORIAL_OBJETO")
+}

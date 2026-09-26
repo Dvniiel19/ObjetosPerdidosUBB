@@ -23,3 +23,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Archivos subidos por usuarios (fotografias, evidencias de reclamos)
+uploads/

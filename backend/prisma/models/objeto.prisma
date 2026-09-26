@@ -22,6 +22,7 @@ model Objeto {
   registrador       Usuario          @relation(fields: [registrado_por], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
   fotografias       Fotografia[]
   reclamos          Reclamo[]
+  historial         HistorialObjeto[]
   acta              ActaDestruccion? @relation(fields: [id_acta], references: [id_acta], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([id_punto])
