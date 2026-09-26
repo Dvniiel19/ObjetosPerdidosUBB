@@ -1,0 +1,7 @@
+ /* 
+ 
+ src/schemas/objetosSchema.js    -> solo las reglas (registroObjetoSchema)
+src/middlewares/validar.js      -> el que las aplica; sirve para cualquier esquema
+src/routes/objetosRoutes.js     -> router.post('/', validar(registroObjetoSchema), registrarObjeto)
+
+*/
