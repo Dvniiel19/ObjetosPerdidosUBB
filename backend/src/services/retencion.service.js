@@ -72,3 +72,49 @@ export async function procesarAlertasRetencion(fechaReferencia = new Date()) {
     ids: idsParaAlertar,
   };
 }
+/**
+ * Identifica los objetos en custodia que han cumplido el año completo (>= 365 días)
+ * y realiza el cierre de ciclo transicionando su estado a 'no_reclamado'.
+ * Además, retira el objeto del catálogo público (publicado = false).
+ * 
+ * @param {Date} [fechaReferencia=new Date()] - Permite simular fechas para pruebas.
+ * @returns {Promise<{ objetosVencidos: number, ids: number[] }>}
+ */
+export async function procesarObjetosVencidos(fechaReferencia = new Date()) {
+  const fechaUmbralUnAno = calcularFechaUmbral(DIAS_TOTAL_CUSTODIA, fechaReferencia);
+
+  // 1. Buscar objetos que cumplieron el año de custodia
+  const objetosVencidos = await prisma.objeto.findMany({
+    where: {
+      estado: 'en_custodia',
+      registrado_en: {
+        lte: fechaUmbralUnAno,
+      },
+    },
+    select: {
+      id_objeto: true,
+    },
+  });
+
+  if (objetosVencidos.length === 0) {
+    return { objetosVencidos: 0, ids: [] };
+  }
+
+  const idsVencidos = objetosVencidos.map((obj) => obj.id_objeto);
+
+  // 2. Transición masiva al estado 'no_reclamado' y ocultamiento del catálogo
+  await prisma.objeto.updateMany({
+    where: {
+      id_objeto: { in: idsVencidos },
+    },
+    data: {
+      estado: 'no_reclamado',
+      publicado: false,
+    },
+  });
+
+  return {
+    objetosVencidos: idsVencidos.length,
+    ids: idsVencidos,
+  };
+}
