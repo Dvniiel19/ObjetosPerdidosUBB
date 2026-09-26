@@ -1,12 +1,16 @@
 // Prueba manual del servicio de catalogo (sin servidor).
-// Uso: node scripts/probar-catalogo.js   (desde la carpeta backend)
+// Uso (desde la carpeta backend):
+//   node scripts/probar-catalogo.js            -> todo el catalogo
+//   node scripts/probar-catalogo.js celular    -> busca "celular"
 
 import prisma from '../src/config/prisma.js';
 import { listarCatalogo } from '../src/services/objetos.service.js';
 
-const objetos = await listarCatalogo();
+const texto = process.argv.slice(2).join(' ');
+const objetos = await listarCatalogo({ texto });
 
-console.log(`Objetos en el catalogo: ${objetos.length}\n`);
+console.log(texto ? `Buscando: "${texto}"` : 'Catalogo completo');
+console.log(`Objetos encontrados: ${objetos.length}\n`);
 console.table(
   objetos.map((o) => ({
     id: o.id_objeto,
