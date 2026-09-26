@@ -16,6 +16,7 @@ model Usuario {
   reclamosAtendidos    Reclamo[]
   actasFirmadas        ActaDestruccion[]
   eventos              Bitacora[]
+  correcciones         HistorialObjeto[]
 
   @@index([id_punto])
   @@map("USUARIO")
