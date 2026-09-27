@@ -47,6 +47,26 @@ function validarContextoEncargado(encargado) {
 }
 
 async function validarCategoriaExistente(idCategoria) {
+  const categoria = await prisma.categoria.findUnique({
+    where: {
+      id_categoria: idCategoria,
+    },
+    select: {
+      id_categoria: true,
+    },
+  });
+
+  if (!categoria) {
+    const error = new Error('La categoría seleccionada no existe');
+
+    error.statusCode = 400;
+    throw error;
+  }
+}
+
+export async function registrarObjeto(datos, encargado) {
+  validarContextoEncargado(encargado);
+
   const fotografias = datos.fotografias;
 
   if (
@@ -61,19 +81,6 @@ async function validarCategoriaExistente(idCategoria) {
     error.statusCode = 400;
     throw error;
   }
-}
-
-export async function registrarObjeto(datos, encargado) {
-  validarContextoEncargado(encargado);
-
- const fotografias = datos.fotografias ?? [];
-
-if (fotografias.length > 3) {
-  const error = new Error('Se permiten hasta 3 fotografías');
-
-  error.statusCode = 400;
-  throw error;
-}
 
   await validarCategoriaExistente(datos.id_categoria);
 
