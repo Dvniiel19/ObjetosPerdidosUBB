@@ -31,8 +31,8 @@ const registroObjetoSchema = z.object({
         ),
     }).strict(),
   )
-    .max(3, 'Se permiten hasta 3 fotografías')
-    .default([]),
+        .min(1, 'Debes adjuntar al menos una fotografía')
+    .max(3, 'Se permiten hasta 3 fotografías'),
 }).strict();
 
 export function validarRegistroObjeto(req, res, next) {
