@@ -47,17 +47,16 @@ function validarContextoEncargado(encargado) {
 }
 
 async function validarCategoriaExistente(idCategoria) {
-  const categoria = await prisma.categoria.findUnique({
-    where: {
-      id_categoria: idCategoria,
-    },
-    select: {
-      id_categoria: true,
-    },
-  });
+  const fotografias = datos.fotografias;
 
-  if (!categoria) {
-    const error = new Error('La categoría seleccionada no existe');
+  if (
+    !Array.isArray(fotografias) ||
+    fotografias.length < 1 ||
+    fotografias.length > 3
+  ) {
+    const error = new Error(
+      'Debes adjuntar entre una y tres fotografías',
+    );
 
     error.statusCode = 400;
     throw error;
