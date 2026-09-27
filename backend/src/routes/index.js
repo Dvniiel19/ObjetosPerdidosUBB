@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import editarObjetoRoutes from './editarObjetoRoutes.js';
 import { listarCatalogo } from '../controllers/objetosController.js';
 
 const router = Router();
@@ -9,5 +10,7 @@ router.get('/objetos', listarCatalogo);
 router.get('/algunaRuta', (req, res) => {
   res.json({ estado: 'ok' });
 });
+
+router.use('/objetos', editarObjetoRoutes);
 
 export default router;
