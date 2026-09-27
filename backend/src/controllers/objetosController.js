@@ -5,9 +5,9 @@ import {
 
 export async function registrarObjeto(req, res, next) {
   try {
-    const objeto = await registrarObjetoService(
+       const objeto = await registrarObjetoService(
       req.datosObjeto,
-      req.user,
+      req.usuario,
     );
 
     return res.status(201).json({
