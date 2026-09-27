@@ -67,15 +67,14 @@ async function validarCategoriaExistente(idCategoria) {
 export async function registrarObjeto(datos, encargado) {
   validarContextoEncargado(encargado);
 
-  // Protección temporal hasta incorporar fotografías 
-  if (datos.fotografias?.length > 0) {
-    const error = new Error(
-      'El registro con fotografías todavía no está implementado',
-    );
+ const fotografias = datos.fotografias ?? [];
 
-    error.statusCode = 400;
-    throw error;
-  }
+if (fotografias.length > 3) {
+  const error = new Error('Se permiten hasta 3 fotografías');
+
+  error.statusCode = 400;
+  throw error;
+}
 
   await validarCategoriaExistente(datos.id_categoria);
 
@@ -88,6 +87,12 @@ export async function registrarObjeto(datos, encargado) {
       id_punto: encargado.id_punto,
       registrado_por: encargado.id_usuario,
       estado: 'en_custodia',
+      fotografias: {
+        create: fotografias.map((fotografia, indice) => ({
+          posicion: indice + 1,
+          archivo_url: fotografia.archivo_url,
+        })),
+      },
     },
   });
 }
