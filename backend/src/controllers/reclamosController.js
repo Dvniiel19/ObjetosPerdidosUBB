@@ -1,4 +1,4 @@
-import { procesarEntregaService } from '../services/reclamos.service.js';
+import { procesarEntregaService } from '../services/reclamosService.js';
 
 /**
  * Controlador para gestionar la recepción y respuesta HTTP del reclamo y entrega de objetos.

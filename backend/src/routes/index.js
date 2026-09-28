@@ -4,6 +4,7 @@ import editarObjetoRoutes from './editarObjetoRoutes.js';
 import { listarCatalogo } from '../controllers/objetosController.js';
 import { ejecutarRevisionRetencion } from '../services/retencionService.js';
 import categoriaRoutes from './categoriaRoutes.js';
+import reclamosRoutes from './reclamosRoutes.js';
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use('/objetos', objetosRoutes);
 router.use('/objetos', editarObjetoRoutes);
 // ENDPOINT PARA DEMO: Fuerza el proceso de retención
 router.use('/categoria', categoriaRoutes);
+router.use(reclamosRoutes);
 // ENDPOINT DEMO: Fuerza el proceso de retencion
 router.post('/testing/forzar-retencion', async (req, res) => {
   try {

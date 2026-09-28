@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { fechaParaMostrar, fechaChilenaAISO } from '../utils/fechaUtils.js';
 
-export default function FormularioObjeto({ objeto, categorias, onGuardar, permitirFotografias = true }) {
+export default function FormularioObjeto({
+  objeto,
+  categorias,
+  onGuardar,
+  permitirFotografias = true,
+  textoBoton,
+  textoProcesando = 'Guardando…',
+}) {
   const edicion = Boolean(objeto);
   const fecha = objeto ? new Date(objeto.hallado_en) : null;
   const [fotos, setFotos] = useState(objeto?.fotografias?.map(f => f.archivo_url) ?? []);
@@ -61,7 +68,11 @@ export default function FormularioObjeto({ objeto, categorias, onGuardar, permit
         <button type="button" disabled={fotos.length >= 3} onClick={() => setFotos([...fotos, ''])}>Agregar fotografía</button>
       </section> : <p>La edición de fotografías aún no está disponible.</p>}
       {edicion && <label>Motivo de la corrección<textarea name="motivo" minLength={10} maxLength={200} required /><small>Entre 10 y 200 caracteres.</small></label>}
-      <button type="submit">{guardando ? 'Guardando…' : edicion ? 'Guardar corrección' : 'Ingresar objeto'}</button>
+      <button type="submit">
+        {guardando
+          ? textoProcesando
+          : textoBoton ?? (edicion ? 'Guardar corrección' : 'Ingresar objeto')}
+      </button>
     </fieldset>
     {error && <p role="alert">{error}</p>}
   </form>;

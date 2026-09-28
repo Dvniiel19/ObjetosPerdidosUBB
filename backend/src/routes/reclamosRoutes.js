@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { procesarEntregaObjeto } from '../controllers/reclamos.controller.js';
+import { procesarEntregaObjeto } from '../controllers/reclamosController.js';
 
 const router = Router();
 

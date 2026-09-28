@@ -1,23 +1,30 @@
 {
-  "name": "huellas-sin-hogar-backend",
+  "name": "ObjetosPerdidosUBB-backend",
   "version": "0.1.0",
-  "description": "Esqueleto del backend para la gestion del refugio Huellas Sin Hogar.",
+  "description": "Esqueleto del backend para la Gestion de Objetos Perdidos.",
   "private": true,
-  "type" : "module",
-  "main": "src/index.js",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "node --test",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
-    "prisma:studio": "npx prisma studio"
+    "prisma:studio": "npx prisma studio",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
+    "db:validate": "prisma validate"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "schema": "prisma"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
+    "@prisma/client": "6.19.3",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^16.4.7",
@@ -28,7 +35,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
-    "prisma": "^6.19.3"
+    "prisma": "6.19.3"
   },
   "allowScripts": {
     "prisma@6.19.3": true,

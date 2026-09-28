@@ -20,3 +20,53 @@ small { font-size: 14px; }
 .objeto { padding: 20px; border: 1px solid var(--border); border-radius: 10px; }
 .objeto h2 { margin-top: 8px; overflow-wrap: anywhere; }
 .objeto button { margin-top: 16px; }
+
+.navegacion-objetos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.navegacion-objetos button[aria-pressed="true"] {
+  background: #235dad;
+  border-color: #235dad;
+  color: white;
+}
+
+.registro-aviso {
+  margin-top: 20px;
+  border-left: 4px solid #235dad;
+  border-radius: 6px;
+}
+
+.registro-aviso p + p {
+  margin-top: 8px;
+}
+
+.registro-resumen {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+.registro-resumen dt {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.registro-resumen dd {
+  margin: 4px 0 16px;
+}
+
+@media (max-width: 480px) {
+  .navegacion-objetos {
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .navegacion-objetos button {
+    flex: 1 1 100%;
+  }
+}

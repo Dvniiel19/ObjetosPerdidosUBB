@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { entregarReclamoService } from '../services/reclamos.service';
+import { entregarReclamoService } from '../services/reclamosService.js';
 
 export const EntregaReclamoPage = () => {
   const [idReclamo, setIdReclamo] = useState('15');
