@@ -6,8 +6,8 @@ export const DIAS_ALERTA_PREVIA = 30;  // 30 días de anticipación
 export const DIAS_PARA_ALERTA = DIAS_TOTAL_CUSTODIA - DIAS_ALERTA_PREVIA; // 335 días
 
 /**
- * Calcula la fecha umbral restando una cantidad de días a una fecha de referencia.
- * Permite determinar con precisión cuándo un objeto entra en zona de alerta o vencimiento.
+ * Revisa los objetos que ya cumplieron el año de custodia
+ * y los cambia a "no_reclamado".
  * 
  * @param {number} dias - Cantidad de días hacia atrás.
  * @param {Date} [fechaReferencia=new Date()] - Fecha base (por defecto hoy).
@@ -19,8 +19,8 @@ export function calcularFechaUmbral(dias, fechaReferencia = new Date()) {
   return fecha;
 }
 /**
- * Identifica los objetos en custodia que han cumplido 335 días (a 30 días del año)
- * y que aún no han recibido alerta preventiva.
+ * Busca los objetos que están a 30 días de cumplir el año de custodia
+ * y registra que ya se les envió la alerta.
  * Actualiza el campo 'alerta_enviada_en' en la base de datos para no duplicar avisos.
  * 
  * @param {Date} [fechaReferencia=new Date()] - Permite simular fechas para pruebas.
@@ -29,7 +29,7 @@ export function calcularFechaUmbral(dias, fechaReferencia = new Date()) {
 export async function procesarAlertasRetencion(fechaReferencia = new Date()) {
   const fechaUmbralAlerta = calcularFechaUmbral(DIAS_PARA_ALERTA, fechaReferencia);
 
-  // 1. Buscar candidatos a alerta preventiva (30 días antes de cumplir el año)
+  // 1. Buscar objetos que ya cumplieron el año de custodia
   const candidatos = await prisma.objeto.findMany({
     where: {
       estado: 'en_custodia',
@@ -119,11 +119,11 @@ export async function procesarObjetosVencidos(fechaReferencia = new Date()) {
   };
 }
 /**
- * Orquesta la revisión completa del ciclo de retención:
+ * Ejecuta la revisión de retención:
  * 1. Procesa y marca las alertas preventivas (30 días antes del año).
  * 2. Transiciona a 'no_reclamado' los objetos que ya cumplieron el año.
  * 
- * Retorna un resumen cuantitativo útil para logs del sistema o auditoría.
+ * Retorna un resumen de los objetos procesados.
  * 
  * @param {Date} [fechaReferencia=new Date()]
  * @returns {Promise<{ alertasEnviadas: number, objetosNoReclamados: number, ejecutado_en: Date }>}
