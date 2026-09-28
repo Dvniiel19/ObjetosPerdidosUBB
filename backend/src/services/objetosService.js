@@ -3,20 +3,38 @@ import prisma from '../config/prisma.js';
 // Catalogo publico: solo objetos publicados y que siguen en custodia.
 // Los no publicados, entregados, no reclamados o dados de baja no se muestran.
 // Si viene "texto", filtra por descripcion o lugar de hallazgo (sin importar mayusculas).
-export async function listarCatalogo({ texto } = {}) {
-  const busqueda = texto?.trim();
+export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta, lugar, punto } = {}) {
+   const busqueda = texto?.trim();
+  const busquedaLugar = lugar?.trim();
+
+  const where = {
+    publicado: true,
+    estado: 'en_custodia',
+    ...(categoria && { id_categoria: categoria }),
+    ...(punto && { id_punto: punto }),
+    ...(fechaDesde && fechaHasta && {
+      hallado_en: { gte: new Date(fechaDesde), lte: new Date(fechaHasta) },
+    }),
+    ...(fechaDesde && !fechaHasta && {
+      hallado_en: { gte: new Date(fechaDesde) },
+    }),
+    ...(!fechaDesde && fechaHasta && {
+      hallado_en: { lte: new Date(fechaHasta) },
+    }),
+    ...(busqueda && {
+      OR: [
+        { descripcion: { contains: busqueda, mode: 'insensitive' } },
+        { lugar_hallazgo: { contains: busqueda, mode: 'insensitive' } },
+      ],
+    
+    }),
+    ...(busquedaLugar && {
+      lugar_hallazgo: { contains: busquedaLugar, mode: 'insensitive' },
+    }),
+  };
 
   return prisma.objeto.findMany({
-    where: {
-      publicado: true,
-      estado: 'en_custodia',
-      ...(busqueda && {
-        OR: [
-          { descripcion: { contains: busqueda, mode: 'insensitive' } },
-          { lugar_hallazgo: { contains: busqueda, mode: 'insensitive' } },
-        ],
-      }),
-    },
+    where,
     select: {
       id_objeto: true,
       descripcion: true,
