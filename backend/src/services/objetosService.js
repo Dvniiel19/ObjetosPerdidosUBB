@@ -1,5 +1,24 @@
 import prisma from '../config/prisma.js';
 
+// Las fechas de los filtros (AAAA-MM-DD) se interpretan en hora de Chile.
+// La diferencia con UTC cambia en el año (-03:00 verano, -04:00 invierno).
+function diferenciaChile(fechaTexto) {
+  const partes = new Intl.DateTimeFormat('es-CL', {
+    timeZone: 'America/Santiago',
+    timeZoneName: 'longOffset',
+  }).formatToParts(new Date(`${fechaTexto}T12:00:00Z`));
+
+  return partes.find((p) => p.type === 'timeZoneName').value.replace('GMT', '') || '+00:00';
+}
+
+function inicioDiaChile(fechaTexto) {
+  return new Date(`${fechaTexto}T00:00:00${diferenciaChile(fechaTexto)}`);
+}
+
+function finDiaChile(fechaTexto) {
+  return new Date(`${fechaTexto}T23:59:59.999${diferenciaChile(fechaTexto)}`);
+}
+
 // Catalogo publico: solo objetos publicados y que siguen en custodia.
 // Los no publicados, entregados, no reclamados o dados de baja no se muestran.
 // Si viene "texto", filtra por descripcion o lugar de hallazgo (sin importar mayusculas).
@@ -13,13 +32,13 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
     ...(categoria && { id_categoria: categoria }),
     ...(punto && { id_punto: punto }),
     ...(fechaDesde && fechaHasta && {
-      hallado_en: { gte: new Date(fechaDesde), lte: new Date(fechaHasta) },
+      hallado_en: { gte: inicioDiaChile(fechaDesde), lte: finDiaChile(fechaHasta) },
     }),
     ...(fechaDesde && !fechaHasta && {
-      hallado_en: { gte: new Date(fechaDesde) },
+      hallado_en: { gte: inicioDiaChile(fechaDesde) },
     }),
     ...(!fechaDesde && fechaHasta && {
-      hallado_en: { lte: new Date(fechaHasta) },
+      hallado_en: { lte: finDiaChile(fechaHasta) },
     }),
     ...(busqueda && {
       OR: [
