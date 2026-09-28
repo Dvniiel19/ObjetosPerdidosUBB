@@ -1,122 +1,90 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import FormularioObjeto from './components/formularioObjeto.jsx';
+import { obtenerObjetoParaEditar, guardarObjetoEditado, listarCategoria } from './services/editarObjetoService.js';
+import { pedir } from './services/api.js';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [idUsuario, setIdUsuario] = useState('');
+  const [objetos, setObjetos] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [sesion, setSesion] = useState(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+  const [mensaje, setMensaje] = useState('');
+  const [version, setVersion] = useState(0);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+  async function buscar(evento) {
+    evento.preventDefault();
+    setCargando(true); setError(''); setMensaje('');
+    try {
+      const resultado = await pedir(`/objetos?texto=${encodeURIComponent(busqueda.trim())}`);
+      setObjetos(resultado.objetos);
+    } catch (err) { setError(err.message); }
+    finally { setCargando(false); }
+  }
 
-      <div className="ticks"></div>
+  async function seleccionar(idObjeto) {
+    setCargando(true); setError(''); setMensaje('');
+    try {
+      const objeto = await obtenerObjetoParaEditar(idObjeto, Number(idUsuario));
+      if (objeto.estado !== 'en_custodia') throw new Error('Este objeto ya no está disponible para corrección.');
+      let categorias;
+      try { categorias = await listarCategoria(); }
+      catch {
+        // El catálogo de categorías actual puede no estar disponible.
+        const catalogo = objetos.find(o => o.id_objeto === idObjeto);
+        categorias = [...new Map(objetos.filter(o => o.categoria).map(o => [o.categoria.id_categoria, o.categoria])).values()];
+        if (!categorias.some(c => c.id_categoria === objeto.id_categoria)) categorias.push({ id_categoria: objeto.id_categoria, nombre: catalogo?.categoria?.nombre ?? `Categoría ${objeto.id_categoria}` });
+        setError('No se pudo cargar la lista completa de categorías. Se muestran las disponibles en el catálogo.');
+      }
+      setSesion({ objeto, categorias });
+      setVersion(v => v + 1);
+    } catch (err) { setError(err.message); }
+    finally { setCargando(false); }
+  }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  async function guardar(datos) {
+    setMensaje('');
+    // La API de corrección actual solo acepta los cuatro campos y el motivo.
+    const objeto = await guardarObjetoEditado(sesion.objeto.id_objeto, datos, Number(idUsuario));
+    const actualizado = { ...sesion.objeto, ...objeto };
+    setSesion({ ...sesion, objeto: actualizado });
+    setObjetos(objetos.map(o => o.id_objeto === objeto.id_objeto ? {
+      ...o, ...objeto, categoria: sesion.categorias.find(c => c.id_categoria === objeto.id_categoria) ?? o.categoria,
+    } : o));
+    setMensaje('Objeto actualizado. La corrección quedó registrada en su historial.');
+    setVersion(v => v + 1);
+  }
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  return <main>
+    <h1>Corregir objeto perdido</h1>
+    {error && <p role="alert">{error}</p>}
+    {mensaje && <p role="status">{mensaje}</p>}
+    {sesion ? <>
+      <button type="button" onClick={() => { setSesion(null); setMensaje(''); setError(''); }}>← Volver a los objetos</button>
+      <FormularioObjeto key={version} objeto={sesion.objeto} categorias={sesion.categorias} onGuardar={guardar} permitirFotografias={false} />
+    </> : <>
+      <p>Busca y selecciona el objeto que necesitas corregir.</p>
+      <form onSubmit={buscar}>
+        <fieldset disabled={cargando}>
+          <label>Usuario de prueba<input value={idUsuario} onChange={e => { setIdUsuario(e.target.value); setObjetos(null); }} type="number" min="1" step="1" required /></label>
+          <small>Usa el identificador de tu Encargado mientras se integra el inicio de sesión.</small>
+          <label>Buscar objeto<input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Descripción o lugar de hallazgo" /></label>
+          <button type="submit">{cargando ? 'Cargando…' : 'Buscar objetos'}</button>
+        </fieldset>
+      </form>
+      <p>Se muestran los objetos publicados disponibles en el catálogo. Solo puedes corregir los de tu oficina.</p>
+      {objetos?.length === 0 && <p role="status">No se encontraron objetos con esa búsqueda.</p>}
+      <div className="objetos">
+        {objetos?.map(objeto => <article className="objeto" key={objeto.id_objeto}>
+          <small>Objeto #{objeto.id_objeto} · {objeto.categoria?.nombre}</small>
+          <h2>{objeto.descripcion}</h2>
+          <p>Lugar: {objeto.lugar_hallazgo}</p>
+          <p>Oficina: {objeto.punto?.nombre ?? 'Sin información'}</p>
+          <button type="button" disabled={cargando} onClick={() => seleccionar(objeto.id_objeto)}>Corregir este objeto</button>
+        </article>)}
+      </div>
+    </>}
+  </main>;
 }
-
-export default App
