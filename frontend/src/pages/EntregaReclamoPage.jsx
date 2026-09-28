@@ -31,4 +31,5 @@ export const EntregaReclamoPage = () => {
     }
   };
 
-  return (
+  return 
+}

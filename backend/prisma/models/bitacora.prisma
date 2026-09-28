@@ -1,0 +1,21 @@
+/// Solo se agregan registros: nunca se editan ni se borran
+model Bitacora {
+  id_evento     Int               @id @default(autoincrement())
+  /// null si no se identificó (ej: token inválido)
+  id_usuario    Int?
+  /// correo usado cuando no hay usuario identificado (ej: login fallido)
+  correo        String?           @db.VarChar
+  /// nombre de la acción del mapa de permisos (ej: crear_punto_acopio)
+  accion        String            @db.VarChar
+  /// tabla e id afectados (ej: PUNTO_ACOPIO:5)
+  recurso       String            @db.VarChar
+  resultado     ResultadoBitacora
+  /// por qué se rechazó; null si fue permitido
+  motivo        String?           @db.Text
+  registrado_en DateTime          @default(now()) @db.Timestamp(6)
+
+  usuario       Usuario?          @relation(fields: [id_usuario], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([id_usuario])
+  @@map("BITACORA")
+}
