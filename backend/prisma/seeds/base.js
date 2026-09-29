@@ -19,9 +19,24 @@ export async function seedBase(prisma) {
     'Otros',
   ];
 
+  const metodosPorCategoria = {
+    'Electronica': ['Numero de serie', 'Boleta de compra', 'Fotografia con el objeto'],
+    'Ropa y accesorios': ['Boleta de compra', 'Fotografia con el objeto', 'Marca y talla'],
+    'Documentos y tarjetas': ['Nombre del titular', 'Fotografia del documento', 'Numero de documento'],
+    'Llaves': ['Descripcion detallada', 'Fotografia con el objeto', 'Numero de llave'],
+    'Mochilas y bolsos': ['Boleta de compra', 'Fotografia con el objeto', 'Contenido de la mochila'],
+    'Utiles y libros': ['Boleta de compra', 'Fotografia con el objeto', 'Nombre o numero de serie'],
+    'Otros': ['Descripcion detallada', 'Fotografia con el objeto', 'Boleta de compra'],
+  };
+
   const categorias = {};
   for (const nombre of nombresCategorias) {
-    categorias[nombre] = await prisma.categoria.create({ data: { nombre } });
+    categorias[nombre] = await prisma.categoria.create({
+      data: {
+        nombre,
+        metodos_verificacion: metodosPorCategoria[nombre] || [],
+      },
+    });
   }
 
   const puntos = {

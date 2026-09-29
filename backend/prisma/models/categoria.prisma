@@ -1,8 +1,10 @@
 model Categoria {
-  id_categoria Int      @id @default(autoincrement()) @db.SmallInt
-  nombre       String   @unique @db.VarChar
+  id_categoria       Int      @id @default(autoincrement()) @db.SmallInt
+  nombre             String   @unique @db.VarChar
+  /// métodos de acreditación de propiedad aceptados para esta categoría
+  metodos_verificacion String[] @default([])
 
-  objetos      Objeto[]
+  objetos            Objeto[]
 
   @@map("CATEGORIA")
 }

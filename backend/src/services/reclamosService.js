@@ -35,7 +35,11 @@ export const procesarEntregaService = async (id, datosReclamo, usuario) => {
   const reclamo = await prisma.reclamo.findUnique({
     where: { id_reclamo: Number(id) },
     include: {
-      objeto: true,
+      objeto: {
+        include: {
+          categoria: true,
+        },
+      },
       encargado: true,
     },
   });
@@ -57,6 +61,22 @@ export const procesarEntregaService = async (id, datosReclamo, usuario) => {
   // Verificar que el reclamo esté aprobado antes de entregar
   if (reclamo.estado !== "aprobado") {
     throw new Error("El reclamo debe estar en estado 'aprobado' para poder entregar el objeto.");
+  }
+
+  // Validar que se aplique al menos un método de verificación según la categoría
+  const metodosCategoria = reclamo.objeto.categoria.metodos_verificacion;
+  const metodosAplicados = metodosAplicados || [];
+
+  if (!Array.isArray(metodosAplicados) || metodosAplicados.length === 0) {
+    throw new Error("Verificación rechazada: Se requiere al menos un método de acreditación de propiedad según la categoría del objeto.");
+  }
+
+  const metodosValidos = metodosAplicados.filter(metodo =>
+    metodosCategoria.includes(metodo)
+  );
+
+  if (metodosValidos.length === 0) {
+    throw new Error(`Verificación rechazada: Ningún método aplicado es válido para la categoría '${reclamo.objeto.categoria.nombre}'. Métodos aceptados: ${metodosCategoria.join(', ')}.`);
   }
 
   // Generar número de comprobante único
