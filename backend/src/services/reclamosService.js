@@ -65,13 +65,13 @@ export const procesarEntregaService = async (id, datosReclamo, usuario) => {
 
   // Validar que se aplique al menos un método de verificación según la categoría
   const metodosCategoria = reclamo.objeto.categoria.metodos_verificacion;
-  const metodosAplicados = metodosAplicados || [];
+  const metodos = Array.isArray(metodosAplicados) ? metodosAplicados : [];
 
-  if (!Array.isArray(metodosAplicados) || metodosAplicados.length === 0) {
+  if (metodos.length === 0) {
     throw new Error("Verificación rechazada: Se requiere al menos un método de acreditación de propiedad según la categoría del objeto.");
   }
 
-  const metodosValidos = metodosAplicados.filter(metodo =>
+  const metodosValidos = metodos.filter(metodo =>
     metodosCategoria.includes(metodo)
   );
 
