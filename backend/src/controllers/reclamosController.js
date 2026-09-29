@@ -7,8 +7,8 @@ export const procesarEntregaObjeto = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Llamamos a la capa de servicios para procesar la lógica de negocio (mock data)
-    const resultado = await procesarEntregaService(id, req.body);
+    // Llamamos a la capa de servicios para procesar la lógica de negocio
+    const resultado = await procesarEntregaService(id, req.body, req.usuario);
     
     return res.status(200).json(resultado);
   } catch (error) {

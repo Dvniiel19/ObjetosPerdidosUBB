@@ -4,7 +4,7 @@ import prisma from '../config/prisma.js';
  * Servicio para gestionar la lógica de negocio de devoluciones y entregas.
  * Conectado a la base de datos mediante Prisma.
  */
-export const procesarEntregaService = async (id, datosReclamo) => {
+export const procesarEntregaService = async (id, datosReclamo, usuario) => {
   const {
     rutCedulaValidada,
     propiedadAcreditada,
@@ -12,6 +12,11 @@ export const procesarEntregaService = async (id, datosReclamo) => {
     metodosAplicados,
     usuarioReclamante
   } = datosReclamo;
+
+  // Validar que el usuario sea un encargado
+  if (usuario?.rol !== 'encargado') {
+    throw new Error("Entrega denegada: Solo un Encargado del punto de custodia puede aprobar la entrega.");
+  }
 
   // Validaciones de negocio (las que ya existían)
   if (!rutCedulaValidada) {
@@ -37,6 +42,11 @@ export const procesarEntregaService = async (id, datosReclamo) => {
 
   if (!reclamo) {
     throw new Error("El reclamo solicitado no existe.");
+  }
+
+  // Verificar que el encargado pertenezca al punto donde está el objeto
+  if (usuario.id_punto !== reclamo.objeto.id_punto) {
+    throw new Error("Entrega denegada: El Encargado no pertenece al punto de custodia donde se encuentra el objeto.");
   }
 
   // Verificar que el objeto esté en custodia
