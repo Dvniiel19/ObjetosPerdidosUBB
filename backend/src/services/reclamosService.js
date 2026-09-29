@@ -1,47 +1,97 @@
+import prisma from '../config/prisma.js';
+
 /**
- * Servicio para gestionar la lógica de negocio de devoluciones y entregas (Mock data).
+ * Servicio para gestionar la lógica de negocio de devoluciones y entregas.
+ * Conectado a la base de datos mediante Prisma.
  */
 export const procesarEntregaService = async (id, datosReclamo) => {
-  const { 
-    rutCedulaValidada, 
-    propiedadAcreditada, 
-    aprobadoPorEncargado, 
-    metodosAplicados, 
-    usuarioReclamante 
+  const {
+    rutCedulaValidada,
+    propiedadAcreditada,
+    aprobadoPorEncargado,
+    metodosAplicados,
+    usuarioReclamante
   } = datosReclamo;
 
-  // 1. Simulación del objeto en custodia
-  const objetoEnCustodia = { id, estado: "disponible" };
-
-  if (objetoEnCustodia.estado === "entregado") {
-    throw new Error("El objeto ya se encuentra en estado 'entregado' y no se puede modificar.");
-  }
-
-  // 2. Verificación de identidad mediante RUT de la cédula
+  // Validaciones de negocio (las que ya existían)
   if (!rutCedulaValidada) {
     throw new Error("Verificación rechazada: Se requiere la validación obligatoria del RUT de la cédula.");
   }
 
-  // 3. Acreditación de propiedad según la categoría
   if (!propiedadAcreditada) {
     throw new Error("Verificación rechazada: No se ha acreditado la propiedad del objeto según su categoría.");
   }
 
-  // 4. Aprobación del Encargado
   if (!aprobadoPorEncargado) {
     throw new Error("Entrega denegada: El Encargado del punto de custodia no ha aprobado las verificaciones.");
   }
 
-  // 5. Generar comprobante y registrar entrega irreversible
-  const comprobanteEntrega = {
-    reclamante: usuarioReclamante,
-    fechaEntrega: new Date().toISOString(),
-    metodosVerificacionUtilizados: metodosAplicados || []
-  };
+  // Buscar el reclamo real en la BD
+  const reclamo = await prisma.reclamo.findUnique({
+    where: { id_reclamo: Number(id) },
+    include: {
+      objeto: true,
+      encargado: true,
+    },
+  });
+
+  if (!reclamo) {
+    throw new Error("El reclamo solicitado no existe.");
+  }
+
+  // Verificar que el objeto esté en custodia
+  if (reclamo.objeto.estado !== "en_custodia") {
+    throw new Error("El objeto ya se encuentra en estado 'entregado' y no se puede modificar.");
+  }
+
+  // Verificar que el reclamo esté aprobado antes de entregar
+  if (reclamo.estado !== "aprobado") {
+    throw new Error("El reclamo debe estar en estado 'aprobado' para poder entregar el objeto.");
+  }
+
+  // Generar número de comprobante único
+  const fecha = new Date();
+  const numeroComprobante = `ENT-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${reclamo.id_reclamo}`;
+
+  // Ejecutar la entrega en una transacción atómica
+  const resultado = await prisma.$transaction(async (tx) => {
+    // 1. Actualizar el objeto a estado "entregado" (irreversible)
+    await tx.objeto.update({
+      where: { id_objeto: reclamo.id_objeto },
+      data: { estado: "entregado" },
+    });
+
+    // 2. Actualizar el reclamo con la fecha de entrega y comprobante
+    const reclamoActualizado = await tx.reclamo.update({
+      where: { id_reclamo: reclamo.id_reclamo },
+      data: {
+        estado: "entregado",
+        entregado_en: fecha,
+        numero_comprobante: numeroComprobante,
+      },
+    });
+
+    // 3. Registrar en bitácora
+    await tx.bitacora.create({
+      data: {
+        id_usuario: reclamo.atendido_por,
+        accion: "entregar_objeto",
+        recurso: `RECLAMO:${reclamo.id_reclamo}`,
+        resultado: "permitido",
+      },
+    });
+
+    return reclamoActualizado;
+  });
 
   return {
     message: "Objeto entregado exitosamente de forma irreversible",
     estado: "entregado",
-    comprobanteEntrega
+    comprobanteEntrega: {
+      reclamante: usuarioReclamante,
+      fechaEntrega: resultado.entregado_en.toISOString(),
+      metodosVerificacionUtilizados: metodosAplicados || [],
+      numeroComprobante: resultado.numero_comprobante,
+    }
   };
 };
