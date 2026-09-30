@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
+import DestruccionPage from './pages/DestruccionPage.jsx'; 
 import './App.css';
 
 export default function App() {
@@ -24,11 +25,19 @@ export default function App() {
         >
           Corregir objeto
         </button>
+
+        <button
+          type="button"
+          aria-pressed={vista === 'destruir'}
+          onClick={() => setVista('destruir')}
+        >
+          Destrucción Segura
+        </button>
       </nav>
 
-      {vista === 'registrar'
-        ? <RegistrarObjetoPage />
-        : <CorregirObjetoPage />}
+      {vista === 'registrar' && <RegistrarObjetoPage />}
+      {vista === 'corregir' && <CorregirObjetoPage />}
+      {vista === 'destruir' && <DestruccionPage />}
     </>
   );
 }
