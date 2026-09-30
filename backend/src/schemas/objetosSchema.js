@@ -24,3 +24,13 @@ export const correccionObjetoSchema = registroObjetoSchema
 export const idObjetoSchema = z.object({
     id: z.coerce.number().int().positive()
 });
+
+// Filtros del catalogo. Llegan como texto en la URL, por eso se usa coerce en los numeros.
+export const catalogoQuerySchema = z.object({
+    texto: z.string().trim().optional(),
+    categoria: z.coerce.number({ error: 'La categoria debe ser un numero' }).int().positive('La categoria debe ser un numero positivo').optional(),
+    punto: z.coerce.number({ error: 'El punto de acopio debe ser un numero' }).int().positive('El punto de acopio debe ser un numero positivo').optional(),
+    lugar: z.string().trim().optional(),
+    fecha_desde: z.iso.date('La fecha debe tener formato AAAA-MM-DD').optional(),
+    fecha_hasta: z.iso.date('La fecha debe tener formato AAAA-MM-DD').optional(),
+}).strict();

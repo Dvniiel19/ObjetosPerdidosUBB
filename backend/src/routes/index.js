@@ -2,6 +2,8 @@ import objetosRoutes from './objetosRoutes.js';
 import { Router } from 'express';
 import editarObjetoRoutes from './editarObjetoRoutes.js';
 import { listarCatalogo } from '../controllers/objetosController.js';
+import { validar } from '../middlewares/validar.js';
+import { catalogoQuerySchema } from '../schemas/objetosSchema.js';
 import { ejecutarRevisionRetencion } from '../services/retencionService.js';
 import categoriaRoutes from './categoriaRoutes.js';
 import puntoRoutes from './puntoRoutes.js';
@@ -11,7 +13,7 @@ import destruccionRoutes from './destruccionRoutes.js';
 const router = Router();
 
 // // Rutas de objetos
-router.get('/objetos', listarCatalogo);
+router.get('/objetos', validar(catalogoQuerySchema, 'query'), listarCatalogo);
 router.use('/objetos', objetosRoutes);
 router.use('/objetos', editarObjetoRoutes);
 // // Ruta de categorias
