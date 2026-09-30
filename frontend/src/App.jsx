@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CatalogoPage from './pages/CatalogoPage.jsx';
 import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
 import DestruccionPage from './pages/DestruccionPage.jsx'; 
@@ -10,6 +11,14 @@ export default function App() {
   return (
     <>
       <nav className="navegacion-objetos" aria-label="Gestión de objetos">
+        <button
+          type="button"
+          aria-pressed={vista === 'catalogo'}
+          onClick={() => setVista('catalogo')}
+        >
+          Buscar objetos
+        </button>
+
         <button
           type="button"
           aria-pressed={vista === 'registrar'}
@@ -38,6 +47,9 @@ export default function App() {
       {vista === 'registrar' && <RegistrarObjetoPage />}
       {vista === 'corregir' && <CorregirObjetoPage />}
       {vista === 'destruir' && <DestruccionPage />}
+      {vista === 'catalogo' && <CatalogoPage />}
+      {vista === 'registrar' && <RegistrarObjetoPage />}
+      {vista === 'corregir' && <CorregirObjetoPage />}
     </>
   );
 }
