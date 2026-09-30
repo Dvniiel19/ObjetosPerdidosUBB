@@ -5,19 +5,19 @@ import { listarCatalogo } from '../controllers/objetosController.js';
 import { ejecutarRevisionRetencion } from '../services/retencionService.js';
 import categoriaRoutes from './categoriaRoutes.js';
 import reclamosRoutes from './reclamosRoutes.js';
+import destruccionRoutes from './destruccionRoutes.js';
 
 const router = Router();
 
-// Catálogo público de objetos (acepta ?texto= para buscar)
+// // Rutas de objetos
 router.get('/objetos', listarCatalogo);
-
-
 router.use('/objetos', objetosRoutes);
 router.use('/objetos', editarObjetoRoutes);
-// ENDPOINT PARA DEMO: Fuerza el proceso de retención
+// // Ruta de categorias
 router.use('/categoria', categoriaRoutes);
+// Ruta de reclamos
 router.use(reclamosRoutes);
-// ENDPOINT DEMO: Fuerza el proceso de retencion
+//Ruta para probar el proceso de retencion
 router.post('/testing/forzar-retencion', async (req, res) => {
   try {
     const resultado = await ejecutarRevisionRetencion();
@@ -30,10 +30,10 @@ router.post('/testing/forzar-retencion', async (req, res) => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false // Usar formato de 24 horas
+      hour12: false 
     });
 
-    // Sobrescribimos el formato antes de mandarlo en el JSON
+    // Enviar el resultado
     res.json({
       exito: true,
       resumen: {
@@ -46,4 +46,6 @@ router.post('/testing/forzar-retencion', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// Ruta de destruccion
+router.use('/destrucciones', destruccionRoutes);
 export default router;
