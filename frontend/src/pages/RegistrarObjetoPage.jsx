@@ -1,19 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FormularioObjeto from '../components/formularioObjeto.jsx';
-
-// Categorías de demostración basadas en el seed del equipo.
-const categoriasDemo = [
-  { id_categoria: 1, nombre: 'Electrónica' },
-  { id_categoria: 2, nombre: 'Ropa y accesorios' },
-  { id_categoria: 3, nombre: 'Documentos y tarjetas' },
-  { id_categoria: 4, nombre: 'Llaves' },
-  { id_categoria: 5, nombre: 'Mochilas y bolsos' },
-  { id_categoria: 6, nombre: 'Útiles y libros' },
-  { id_categoria: 7, nombre: 'Otros' },
-];
+import { listarCategoria } from '../services/editarObjetoService.js';
 
 export default function RegistrarObjetoPage() {
+  const [categorias, setCategorias] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
   const [resumen, setResumen] = useState(null);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarCategorias() {
+      try {
+        const datos = await listarCategoria();
+
+        if (!Array.isArray(datos)) {
+          throw new Error('La respuesta de categorías no es válida.');
+        }
+
+        if (activo) {
+          setCategorias(datos);
+        }
+      } catch (err) {
+        if (activo) {
+          setError(`No se pudieron cargar las categorías: ${err.message}`);
+        }
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
+      }
+    }
+
+    cargarCategorias();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
 
   return (
     <main>
@@ -24,17 +49,29 @@ export default function RegistrarObjetoPage() {
         <strong>Prototipo de registro</strong>
         <p>Esta pantalla permite revisar los datos, pero todavía no los guarda.</p>
         <p>
-          Las categorías son de demostración y las fotografías se indican
-          mediante URLs de prueba.
+          Las categorías se obtienen del sistema. Las fotografías todavía
+          se indican mediante URLs de prueba.
         </p>
       </aside>
 
-      <FormularioObjeto
-        categorias={categoriasDemo}
-        onGuardar={setResumen}
-        textoBoton="Revisar datos"
-        textoProcesando="Revisando…"
-      />
+      {cargando && <p role="status">Cargando categorías…</p>}
+
+      {error && <p role="alert">{error}</p>}
+
+      {!cargando && !error && categorias.length === 0 && (
+        <p role="status">
+          No hay categorías disponibles para registrar un objeto.
+        </p>
+      )}
+
+      {!cargando && !error && categorias.length > 0 && (
+        <FormularioObjeto
+          categorias={categorias}
+          onGuardar={setResumen}
+          textoBoton="Revisar datos"
+          textoProcesando="Revisando…"
+        />
+      )}
 
       {resumen && (
         <section
@@ -49,7 +86,7 @@ export default function RegistrarObjetoPage() {
           <dl>
             <dt>Categoría</dt>
             <dd>
-              {categoriasDemo.find(
+              {categorias.find(
                 categoria => categoria.id_categoria === resumen.id_categoria,
               )?.nombre}
             </dd>
