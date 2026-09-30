@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { buscarObjetos } from '../services/catalogoService.js';
+import { buscarObjetos, listarPuntos } from '../services/catalogoService.js';
 import { listarCategoria } from '../services/editarObjetoService.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
 
-const FILTROS_VACIOS = { texto: '', categoria: '', lugar: '', fecha_desde: '' };
+const FILTROS_VACIOS = { texto: '', categoria: '', punto: '', lugar: '', fecha_desde: '' };
 
 // Fecha de hoy en formato AAAA-MM-DD, para no permitir fechas futuras.
 const HOY = new Date().toLocaleDateString('sv-SE');
@@ -11,6 +11,7 @@ const HOY = new Date().toLocaleDateString('sv-SE');
 export default function CatalogoPage() {
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const [categorias, setCategorias] = useState([]);
+  const [puntos, setPuntos] = useState([]);
   const [objetos, setObjetos] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
@@ -19,6 +20,9 @@ export default function CatalogoPage() {
     listarCategoria()
       .then(setCategorias)
       .catch(() => setError('No se pudieron cargar las categorías.'));
+    listarPuntos()
+      .then(setPuntos)
+      .catch(() => setError('No se pudieron cargar los puntos de acopio.'));
   }, []);
 
   function cambiarFiltro(nombre, valor) {
@@ -53,6 +57,14 @@ export default function CatalogoPage() {
             <option value="">Todas las categorías</option>
             {categorias.map(categoria => (
               <option key={categoria.id_categoria} value={categoria.id_categoria}>{categoria.nombre}</option>
+            ))}
+          </select>
+        </label>
+        <label>Punto de acopio
+          <select value={filtros.punto} onChange={e => cambiarFiltro('punto', e.target.value)}>
+            <option value="">Todos los puntos</option>
+            {puntos.map(punto => (
+              <option key={punto.id_punto} value={punto.id_punto}>{punto.nombre}</option>
             ))}
           </select>
         </label>
