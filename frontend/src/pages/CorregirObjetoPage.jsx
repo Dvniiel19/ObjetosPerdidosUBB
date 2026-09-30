@@ -3,6 +3,12 @@ import FormularioObjeto from '../components/formularioObjeto.jsx';
 import { obtenerObjetoParaEditar, guardarObjetoEditado, listarCategoria } from '../services/editarObjetoService.js';
 import { pedir } from '../services/api.js';
 
+// TEMPORAL: encargados del seed, hasta que exista el login
+const ENCARGADOS = [
+  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
+  { id: 3, nombre: 'Carla Encargada (FACE)' },
+];
+
 export default function CorregirObjetoPage() {
   const [idUsuario, setIdUsuario] = useState('');
   const [objetos, setObjetos] = useState(null);
@@ -67,7 +73,14 @@ export default function CorregirObjetoPage() {
       <p>Busca y selecciona el objeto que necesitas corregir.</p>
       <form onSubmit={buscar}>
         <fieldset disabled={cargando}>
-          <label>Encargado<input value={idUsuario} onChange={e => { setIdUsuario(e.target.value); setObjetos(null); }} type="number" min="1" step="1" required /></label>
+                   <label>Encargado
+            <select value={idUsuario} onChange={e => { setIdUsuario(e.target.value); setObjetos(null); }} required>
+              <option value="">Selecciona un encargado</option>
+              {ENCARGADOS.map(enc => (
+                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
+              ))}
+            </select>
+          </label>
           <label>Buscar objeto<input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Descripción o lugar de hallazgo" /></label>
           <button type="submit">{cargando ? 'Cargando…' : 'Buscar objetos'}</button>
         </fieldset>
