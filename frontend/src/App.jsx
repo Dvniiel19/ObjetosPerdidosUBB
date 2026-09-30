@@ -44,12 +44,10 @@ export default function App() {
         </button>
       </nav>
 
-      {vista === 'registrar' && <RegistrarObjetoPage />}
-      {vista === 'corregir' && <CorregirObjetoPage />}
-      {vista === 'destruir' && <DestruccionPage />}
       {vista === 'catalogo' && <CatalogoPage />}
       {vista === 'registrar' && <RegistrarObjetoPage />}
       {vista === 'corregir' && <CorregirObjetoPage />}
+      {vista === 'destruir' && <DestruccionPage />}
     </>
   );
 }
