@@ -4,6 +4,7 @@ import editarObjetoRoutes from './editarObjetoRoutes.js';
 import { listarCatalogo } from '../controllers/objetosController.js';
 import { ejecutarRevisionRetencion } from '../services/retencionService.js';
 import categoriaRoutes from './categoriaRoutes.js';
+import puntoRoutes from './puntoRoutes.js';
 import reclamosRoutes from './reclamosRoutes.js';
 import destruccionRoutes from './destruccionRoutes.js';
 
@@ -15,6 +16,8 @@ router.use('/objetos', objetosRoutes);
 router.use('/objetos', editarObjetoRoutes);
 // // Ruta de categorias
 router.use('/categoria', categoriaRoutes);
+// Ruta de puntos de acopio
+router.use('/puntos', puntoRoutes);
 // Ruta de reclamos
 router.use(reclamosRoutes);
 //Ruta para probar el proceso de retencion
