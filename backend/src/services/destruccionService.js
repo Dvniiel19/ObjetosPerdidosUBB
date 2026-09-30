@@ -2,7 +2,6 @@ import prisma from '../config/prisma.js';
 
 /**
  * Verifica si el objeto cumple las condiciones para ser destruido de forma segura
- * 
  * @param {number} idObjeto ID del objeto a evaluar
  * @returns {Promise<{ elegible: boolean, motivo?: string, objeto?: any }>}
  */
@@ -41,6 +40,51 @@ const objeto = await prisma.objeto.findUnique({
     };
     }
 
-  // Si pasa todos los filtros, es legalmente elegible para destrucción
+  // Si pasa todos los filtros, es legalmente elegible para destruccion
     return { elegible: true, objeto };
+}
+/**
+ * Registra la destrucción de un objeto:
+ * crea el acta, da de baja el objeto y guarda la informacion
+ */
+export async function registrarDestruccionObjeto(idObjeto, idAdministrador, archivoUrl) {
+  // Verificar nuevamente si el objeto puede ser destruido
+  const validacion = await validarElegibilidadDestruccion(idObjeto);
+  if (!validacion.elegible) {
+    throw new Error(`Operación denegada: ${validacion.motivo}`);
+  }
+
+  // realizar todo dentro de una transaccion
+  return prisma.$transaction(async (tx) => {
+    const numeroUnico = `ACTA-${Date.now()}-${idObjeto}`;
+    
+    const acta = await tx.actaDestruccion.create({
+      data: {
+        numero_acta: numeroUnico,
+        responsable: idAdministrador,
+        ejecutada_en: new Date(),
+        archivo_url: archivoUrl
+      }
+    });
+
+    const objetoDadoDeBaja = await tx.objeto.update({
+      where: { id_objeto: idObjeto },
+      data: {
+        estado: 'dado_de_baja',
+        id_acta: acta.id_acta
+      }
+    });
+
+    await tx.bitacora.create({
+      data: {
+        id_usuario: idAdministrador,
+        accion: 'registrar_destruccion',
+        recurso: `OBJETO:${idObjeto}`,
+        resultado: 'permitido',
+        motivo: `Objeto destruido. Respaldo: ${numeroUnico}`
+      }
+    });
+
+    return { acta, objetoId: objetoDadoDeBaja.id_objeto };
+  });
 }
