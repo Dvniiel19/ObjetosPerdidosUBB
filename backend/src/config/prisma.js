@@ -1,6 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+import prismaPkg from '../generated/prisma/index.js';
+
+const { PrismaClient } = prismaPkg;
 
 // Instancia única compartida por toda la app (evita agotar conexiones)
 const prisma = new PrismaClient();
 
-module.exports = prisma;
+export default prisma;

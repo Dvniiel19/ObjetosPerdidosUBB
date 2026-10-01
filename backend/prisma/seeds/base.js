@@ -1,7 +1,14 @@
 // Datos base compartidos: categorias, puntos de acopio y usuarios.
 // Devuelve los registros creados para que los otros seeds los usen.
 
+import bcrypt from 'bcryptjs';
+
+// Clave de prueba para todos los usuarios del seed (solo desarrollo local)
+export const CLAVE_PRUEBA = 'clave123';
+
 export async function seedBase(prisma) {
+  const clave_hash = await bcrypt.hash(CLAVE_PRUEBA, 10);
+
   const nombresCategorias = [
     'Electronica',
     'Ropa y accesorios',
@@ -12,9 +19,24 @@ export async function seedBase(prisma) {
     'Otros',
   ];
 
+  const metodosPorCategoria = {
+    'Electronica': ['Numero de serie', 'Boleta de compra', 'Fotografia con el objeto'],
+    'Ropa y accesorios': ['Boleta de compra', 'Fotografia con el objeto', 'Marca y talla'],
+    'Documentos y tarjetas': ['Nombre del titular', 'Fotografia del documento', 'Numero de documento'],
+    'Llaves': ['Descripcion detallada', 'Fotografia con el objeto', 'Numero de llave'],
+    'Mochilas y bolsos': ['Boleta de compra', 'Fotografia con el objeto', 'Contenido de la mochila'],
+    'Utiles y libros': ['Boleta de compra', 'Fotografia con el objeto', 'Nombre o numero de serie'],
+    'Otros': ['Descripcion detallada', 'Fotografia con el objeto', 'Boleta de compra'],
+  };
+
   const categorias = {};
   for (const nombre of nombresCategorias) {
-    categorias[nombre] = await prisma.categoria.create({ data: { nombre } });
+    categorias[nombre] = await prisma.categoria.create({
+      data: {
+        nombre,
+        metodos_verificacion: metodosPorCategoria[nombre] || [],
+      },
+    });
   }
 
   const puntos = {
@@ -22,7 +44,6 @@ export async function seedBase(prisma) {
       data: {
         nombre: 'Biblioteca Central',
         ubicacion: 'Primer piso, mesón de atención',
-        tipo: 'biblioteca',
         publicado: true,
       },
     }),
@@ -30,7 +51,6 @@ export async function seedBase(prisma) {
       data: {
         nombre: 'FACE',
         ubicacion: 'Facultad de Ciencias Empresariales, secretaría',
-        tipo: 'facultad',
         publicado: true,
       },
     }),
@@ -38,7 +58,6 @@ export async function seedBase(prisma) {
       data: {
         nombre: 'Salas AC',
         ubicacion: 'Edificio de salas AC, primer piso',
-        tipo: 'salas',
         publicado: true,
       },
     }),
@@ -48,6 +67,7 @@ export async function seedBase(prisma) {
     admin: await prisma.usuario.create({
       data: {
         correo_institucional: 'admin@ubiobio.cl',
+        clave_hash,
         nombres: 'Ana',
         apellidos: 'Administradora',
         rol: 'administrador',
@@ -56,6 +76,7 @@ export async function seedBase(prisma) {
     encargadoBiblioteca: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.biblioteca@ubiobio.cl',
+        clave_hash,
         nombres: 'Bruno',
         apellidos: 'Encargado',
         rol: 'encargado',
@@ -65,6 +86,7 @@ export async function seedBase(prisma) {
     encargadoFace: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.face@ubiobio.cl',
+        clave_hash,
         nombres: 'Carla',
         apellidos: 'Encargada',
         rol: 'encargado',
@@ -74,6 +96,7 @@ export async function seedBase(prisma) {
     estudiante: await prisma.usuario.create({
       data: {
         correo_institucional: 'estudiante@alumnos.ubiobio.cl',
+        clave_hash,
         nombres: 'Diego',
         apellidos: 'Estudiante',
         rol: 'usuario',

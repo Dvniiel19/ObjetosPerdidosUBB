@@ -1,0 +1,27 @@
+model Reclamo {
+  id_reclamo          Int           @id @default(autoincrement())
+  /// null si no hubo coincidencia
+  id_objeto           Int?
+  /// Encargado que registró el reclamo presencial
+  atendido_por        Int
+  rut_reclamante      String        @db.VarChar
+  nombre_reclamante   String        @db.VarChar
+  /// ruta a archivo privado (no público)
+  evidencia_identidad String        @db.Text
+  /// ruta a archivo privado (no público)
+  evidencia_propiedad String        @db.Text
+  estado              EstadoReclamo @default(en_revision)
+  motivo_decision     String?       @db.Text
+  creado_en           DateTime      @default(now()) @db.Timestamp(6)
+  /// null hasta entregar
+  entregado_en        DateTime?     @db.Timestamp(6)
+  /// null hasta entregar; lo genera el service
+  numero_comprobante  String?       @unique @db.VarChar
+
+  objeto              Objeto?       @relation(fields: [id_objeto], references: [id_objeto], onDelete: Restrict, onUpdate: Cascade)
+  encargado           Usuario       @relation(fields: [atendido_por], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([id_objeto])
+  @@index([atendido_por])
+  @@map("RECLAMO")
+}

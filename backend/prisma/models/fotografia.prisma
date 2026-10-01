@@ -1,0 +1,11 @@
+model Fotografia {
+  id_objeto   Int
+  /// 1 a 3 (validado con Zod)
+  posicion    Int    @db.SmallInt
+  archivo_url String @db.Text
+
+  objeto      Objeto @relation(fields: [id_objeto], references: [id_objeto], onDelete: Restrict, onUpdate: Cascade)
+
+  @@id([id_objeto, posicion])
+  @@map("FOTOGRAFIA")
+}

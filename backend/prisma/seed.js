@@ -16,9 +16,9 @@ const prisma = new PrismaClient();
 // RESTART IDENTITY reinicia los ids en 1 para que los datos sean siempre iguales.
 const TABLAS = [
   'BITACORA',
+  'HISTORIAL_OBJETO',
   'FOTOGRAFIA',
   'RECLAMO',
-  'REPORTE_PERDIDA',
   'OBJETO',
   'ACTA_DESTRUCCION',
   'USUARIO',

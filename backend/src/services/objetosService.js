@@ -1,0 +1,141 @@
+import prisma from '../config/prisma.js';
+
+// Las fechas de los filtros (AAAA-MM-DD) se interpretan en hora de Chile.
+// La diferencia con UTC cambia en el año (-03:00 verano, -04:00 invierno).
+function diferenciaChile(fechaTexto) {
+  const partes = new Intl.DateTimeFormat('es-CL', {
+    timeZone: 'America/Santiago',
+    timeZoneName: 'longOffset',
+  }).formatToParts(new Date(`${fechaTexto}T12:00:00Z`));
+
+  return partes.find((p) => p.type === 'timeZoneName').value.replace('GMT', '') || '+00:00';
+}
+
+function inicioDiaChile(fechaTexto) {
+  return new Date(`${fechaTexto}T00:00:00${diferenciaChile(fechaTexto)}`);
+}
+
+function finDiaChile(fechaTexto) {
+  return new Date(`${fechaTexto}T23:59:59.999${diferenciaChile(fechaTexto)}`);
+}
+
+// Catalogo publico: solo objetos publicados y que siguen en custodia.
+// Los no publicados, entregados, no reclamados o dados de baja no se muestran.
+// Si viene "texto", filtra por descripcion o lugar de hallazgo (sin importar mayusculas).
+export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta, lugar, punto } = {}) {
+   const busqueda = texto?.trim();
+  const busquedaLugar = lugar?.trim();
+
+  const where = {
+    publicado: true,
+    estado: 'en_custodia',
+    ...(categoria && { id_categoria: categoria }),
+    ...(punto && { id_punto: punto }),
+    ...(fechaDesde && fechaHasta && {
+      hallado_en: { gte: inicioDiaChile(fechaDesde), lte: finDiaChile(fechaHasta) },
+    }),
+    ...(fechaDesde && !fechaHasta && {
+      hallado_en: { gte: inicioDiaChile(fechaDesde) },
+    }),
+    ...(!fechaDesde && fechaHasta && {
+      hallado_en: { lte: finDiaChile(fechaHasta) },
+    }),
+    ...(busqueda && {
+      OR: [
+        { descripcion: { contains: busqueda, mode: 'insensitive' } },
+        { lugar_hallazgo: { contains: busqueda, mode: 'insensitive' } },
+      ],
+    
+    }),
+    ...(busquedaLugar && {
+      lugar_hallazgo: { contains: busquedaLugar, mode: 'insensitive' },
+    }),
+  };
+
+  return prisma.objeto.findMany({
+    where,
+    select: {
+      id_objeto: true,
+      descripcion: true,
+      hallado_en: true,
+      lugar_hallazgo: true,
+      categoria: { select: { id_categoria: true, nombre: true } },
+      punto: { select: { id_punto: true, nombre: true, ubicacion: true } },
+    },
+    orderBy: { hallado_en: 'desc' },
+  });
+}
+
+function validarContextoEncargado(encargado) {
+  if (
+    encargado?.rol !== 'encargado' ||
+    !Number.isInteger(encargado.id_usuario) ||
+    encargado.id_usuario <= 0 ||
+    !Number.isInteger(encargado.id_punto) ||
+    encargado.id_punto <= 0
+  ) {
+    const error = new Error(
+      'Se requiere un encargado con un punto de acopio asignado',
+    );
+
+    error.statusCode = 403;
+    throw error;
+  }
+}
+
+async function validarCategoriaExistente(idCategoria) {
+  const categoria = await prisma.categoria.findUnique({
+    where: {
+      id_categoria: idCategoria,
+    },
+    select: {
+      id_categoria: true,
+    },
+  });
+
+  if (!categoria) {
+    const error = new Error('La categoría seleccionada no existe');
+
+    error.statusCode = 400;
+    throw error;
+  }
+}
+
+export async function registrarObjeto(datos, encargado) {
+  validarContextoEncargado(encargado);
+
+  const fotografias = datos.fotografias;
+
+  if (
+    !Array.isArray(fotografias) ||
+    fotografias.length < 1 ||
+    fotografias.length > 3
+  ) {
+    const error = new Error(
+      'Debes adjuntar entre una y tres fotografías',
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await validarCategoriaExistente(datos.id_categoria);
+
+  return prisma.objeto.create({
+    data: {
+      id_categoria: datos.id_categoria,
+      descripcion: datos.descripcion,
+      hallado_en: new Date(datos.hallado_en),
+      lugar_hallazgo: datos.lugar_hallazgo,
+      id_punto: encargado.id_punto,
+      registrado_por: encargado.id_usuario,
+      estado: 'en_custodia',
+      fotografias: {
+        create: fotografias.map((fotografia, indice) => ({
+          posicion: indice + 1,
+          archivo_url: fotografia.archivo_url,
+        })),
+      },
+    },
+  });
+}
