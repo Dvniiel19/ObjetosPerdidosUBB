@@ -1,11 +1,38 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { entregarReclamoService } from '../services/reclamosService.js';
 
+// TEMPORAL: encargados del seed, hasta que exista el login
+const ENCARGADOS = [
+  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
+  { id: 3, nombre: 'Carla Encargada (FACE)' },
+];
+
+const METODOS_DISPONIBLES = [
+  'Cédula de identidad',
+  'Boleta de compra',
+  'Factura de compra',
+  'Foto con el objeto',
+  'Testigo',
+  'Denuncia policial',
+];
+
 export const EntregaReclamoPage = () => {
+  const [idUsuario, setIdUsuario] = useState('');
   const [idReclamo, setIdReclamo] = useState('');
+  const [usuarioReclamante, setUsuarioReclamante] = useState('');
+  const [rutCedulaValidada, setRutCedulaValidada] = useState(false);
+  const [propiedadAcreditada, setPropiedadAcreditada] = useState(false);
+  const [aprobadoPorEncargado, setAprobadoPorEncargado] = useState(false);
+  const [metodosSeleccionados, setMetodosSeleccionados] = useState([]);
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  function toggleMetodo(metodo) {
+    setMetodosSeleccionados(prev =>
+      prev.includes(metodo) ? prev.filter(m => m !== metodo) : [...prev, metodo],
+    );
+  }
 
   const handleEntregar = async (e) => {
     e.preventDefault();
@@ -15,14 +42,14 @@ export const EntregaReclamoPage = () => {
 
     try {
       const datosValidacion = {
-        usuarioReclamante: "Juan Pérez",
-        rutCedulaValidada: true,
-        propiedadAcreditada: true,
-        aprobadoPorEncargado: true,
-        metodosAplicados: ["Cédula de identidad", "Boleta de compra"]
+        usuarioReclamante: usuarioReclamante.trim(),
+        rutCedulaValidada,
+        propiedadAcreditada,
+        aprobadoPorEncargado,
+        metodosAplicados: metodosSeleccionados,
       };
 
-      const respuesta = await entregarReclamoService(idReclamo, datosValidacion);
+      const respuesta = await entregarReclamoService(Number(idReclamo), Number(idUsuario), datosValidacion);
       setResultado(respuesta);
     } catch (err) {
       setError(err);
@@ -35,24 +62,75 @@ export const EntregaReclamoPage = () => {
     <main>
       <h1>Entregar objeto reclamado</h1>
       <p>
-        Ingresa el ID del reclamo para procesar la entrega del objeto.
-        El Encargado debe verificar la identidad y propiedad antes de aprobar.
+        Completa las verificaciones exigidas antes de entregar el objeto.
+        El Encargado debe aprobar la validación del RUT y la acreditación de propiedad.
       </p>
 
       <form onSubmit={handleEntregar}>
-        <label htmlFor="id-reclamo">ID del reclamo</label>
-        <input
-          id="id-reclamo"
-          type="number"
-          value={idReclamo}
-          onChange={(e) => setIdReclamo(e.target.value)}
-          placeholder="Ej: 15"
-          required
-        />
+        <fieldset disabled={loading}>
+          <label>Encargado que entrega
+            <select value={idUsuario} onChange={(e) => setIdUsuario(e.target.value)} required>
+              <option value="">Selecciona un encargado</option>
+              {ENCARGADOS.map(enc => (
+                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
+              ))}
+            </select>
+          </label>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Procesando…' : 'Entregar objeto'}
-        </button>
+          <label htmlFor="id-reclamo">ID del reclamo</label>
+          <input
+            id="id-reclamo"
+            type="number"
+            min="1"
+            value={idReclamo}
+            onChange={(e) => setIdReclamo(e.target.value)}
+            placeholder="Ej: 15"
+            required
+          />
+
+          <label>Nombre del reclamante
+            <input
+              value={usuarioReclamante}
+              onChange={(e) => setUsuarioReclamante(e.target.value)}
+              placeholder="Ej: Juan Pérez"
+              required
+            />
+          </label>
+
+          <fieldset>
+            <legend>Verificaciones obligatorias</legend>
+            <label>
+              <input type="checkbox" checked={rutCedulaValidada} onChange={(e) => setRutCedulaValidada(e.target.checked)} />
+              RUT de la cédula validado
+            </label>
+            <label>
+              <input type="checkbox" checked={propiedadAcreditada} onChange={(e) => setPropiedadAcreditada(e.target.checked)} />
+              Propiedad acreditada según la categoría
+            </label>
+            <label>
+              <input type="checkbox" checked={aprobadoPorEncargado} onChange={(e) => setAprobadoPorEncargado(e.target.checked)} />
+              Aprobado por el Encargado del punto de custodia
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Métodos de acreditación aplicados (al menos uno)</legend>
+            {METODOS_DISPONIBLES.map(metodo => (
+              <label key={metodo}>
+                <input
+                  type="checkbox"
+                  checked={metodosSeleccionados.includes(metodo)}
+                  onChange={() => toggleMetodo(metodo)}
+                />
+                {metodo}
+              </label>
+            ))}
+          </fieldset>
+
+          <button type="submit" disabled={loading}>
+            {loading ? 'Procesando…' : 'Entregar objeto'}
+          </button>
+        </fieldset>
       </form>
 
       {error && (

@@ -3,6 +3,9 @@ import CatalogoPage from './pages/CatalogoPage.jsx';
 import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
 import DestruccionPage from './pages/DestruccionPage.jsx'; 
+import { EntregaReclamoPage } from './pages/EntregaReclamoPage.jsx';
+import CrearReclamoPage from './pages/CrearReclamoPage.jsx';
+import RevisarReclamoPage from './pages/RevisarReclamoPage.jsx';
 import './App.css';
 
 export default function App() {
@@ -42,12 +45,39 @@ export default function App() {
         >
           Destrucción Segura
         </button>
+
+        <button
+          type="button"
+          aria-pressed={vista === 'entrega'}
+          onClick={() => setVista('entrega')}
+        >
+          Entrega de reclamo
+        </button>
+
+        <button
+          type="button"
+          aria-pressed={vista === 'crearReclamo'}
+          onClick={() => setVista('crearReclamo')}
+        >
+          Solicitar reclamo
+        </button>
+
+        <button
+          type="button"
+          aria-pressed={vista === 'revisarReclamo'}
+          onClick={() => setVista('revisarReclamo')}
+        >
+          Revisar reclamo
+        </button>
       </nav>
 
       {vista === 'catalogo' && <CatalogoPage />}
       {vista === 'registrar' && <RegistrarObjetoPage />}
       {vista === 'corregir' && <CorregirObjetoPage />}
       {vista === 'destruir' && <DestruccionPage />}
+      {vista === 'entrega' && <EntregaReclamoPage />}
+      {vista === 'crearReclamo' && <CrearReclamoPage />}
+      {vista === 'revisarReclamo' && <RevisarReclamoPage />}
     </>
   );
 }
