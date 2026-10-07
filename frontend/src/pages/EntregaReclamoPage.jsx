@@ -8,12 +8,17 @@ const ENCARGADOS = [
 ];
 
 const METODOS_DISPONIBLES = [
-  'Cédula de identidad',
   'Boleta de compra',
-  'Factura de compra',
-  'Foto con el objeto',
-  'Testigo',
-  'Denuncia policial',
+  'Contenido de la mochila',
+  'Descripcion detallada',
+  'Fotografia con el objeto',
+  'Fotografia del documento',
+  'Marca y talla',
+  'Nombre del titular',
+  'Nombre o numero de serie',
+  'Numero de documento',
+  'Numero de llave',
+  'Numero de serie',
 ];
 
 export const EntregaReclamoPage = () => {
