@@ -65,7 +65,7 @@ export const EntregaReclamoPage = () => {
 
   return (
     <main>
-      <h1>Entregar objeto reclamado</h1>
+      <h1>Entregar objeto</h1>
       <p>
         Completa las verificaciones exigidas antes de entregar el objeto.
         El Encargado debe aprobar la validación del RUT y la acreditación de propiedad.

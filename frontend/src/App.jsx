@@ -51,7 +51,7 @@ export default function App() {
           aria-pressed={vista === 'entrega'}
           onClick={() => setVista('entrega')}
         >
-          Entrega de reclamo
+          Entregar objeto
         </button>
 
         <button
@@ -59,7 +59,7 @@ export default function App() {
           aria-pressed={vista === 'crearReclamo'}
           onClick={() => setVista('crearReclamo')}
         >
-          Solicitar reclamo
+          Nueva solicitud
         </button>
 
         <button
@@ -67,7 +67,7 @@ export default function App() {
           aria-pressed={vista === 'revisarReclamo'}
           onClick={() => setVista('revisarReclamo')}
         >
-          Revisar reclamo
+          Gestionar solicitudes
         </button>
       </nav>
 

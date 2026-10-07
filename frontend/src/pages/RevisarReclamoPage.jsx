@@ -34,7 +34,7 @@ export default function RevisarReclamoPage() {
 
   return (
     <main>
-      <h1>Revisar reclamo (Encargado)</h1>
+      <h1>Gestionar solicitudes (Encargado)</h1>
       <p>Aprueba o rechaza una solicitud de devolución. Solo un Encargado del punto de custodia puede hacerlo.</p>
 
       {mensaje && (
