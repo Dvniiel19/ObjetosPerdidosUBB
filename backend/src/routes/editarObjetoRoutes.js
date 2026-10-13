@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import {usuarioPrueba} from '../middlewares/usuarioPrueba.js';
+import {autenticar, permitirRoles} from '../middlewares/authMiddleware.js';
 import {validar} from '../middlewares/validar.js';
 import { idObjetoSchema, correccionObjetoSchema } from '../schemas/objetosSchema.js';
 import {mostrarObjetoParaEditar, guardarObjetoEditado} from '../controllers/editarObjetoController.js';
@@ -10,20 +10,21 @@ const router = Router();
 
 router.get(
     '/:id/editar',
-    usuarioPrueba,
+    autenticar,
+    permitirRoles('encargado'),
     validar(idObjetoSchema, 'params'),
     mostrarObjetoParaEditar,
 );
 
-// PUT /api/objetos/:id/editar
+// PUT /api/objetos/:id
 
 router.put(
     '/:id',
-    usuarioPrueba,
+    autenticar,
+    permitirRoles('encargado'),
     validar(idObjetoSchema, 'params'),
     validar(correccionObjetoSchema),
     guardarObjetoEditado,
 );
 
 export default router;
-
