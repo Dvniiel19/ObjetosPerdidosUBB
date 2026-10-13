@@ -9,3 +9,8 @@ export async function login(req, res, next) {
     return next(error);
   }
 }
+
+// GET /api/auth/yo, devuelve el usuario de la sesion (lo deja el middleware autenticar)
+export function usuarioActual(req, res) {
+  return res.json(req.usuario);
+}
