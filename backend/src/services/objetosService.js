@@ -101,7 +101,7 @@ async function validarCategoriaExistente(idCategoria) {
   }
 }
 
-export async function registrarObjeto(datos, encargado) {
+export async function registrarObjeto(datos, encargado) {  
   validarContextoEncargado(encargado);
 
   const fotografias = datos.fotografias;
