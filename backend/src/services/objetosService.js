@@ -31,6 +31,8 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
   const where = {
     publicado: true,
     estado: 'en_custodia',
+    // Solo objetos de puntos visibles y funcionando (igual que el filtro de puntos)
+    punto: { publicado: true, habilitado: true },
     ...(categoria && { id_categoria: categoria }),
     ...(punto && { id_punto: punto }),
     ...(fechaDesde && fechaHasta && {
@@ -68,11 +70,11 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
   });
 }
 
-// Detalle publico: mismas reglas que el catalogo (publicado y en custodia).
+// Detalle publico: mismas reglas que el catalogo (publicado, en custodia y de un punto disponible).
 // Si no cumple, se responde 404 para no revelar objetos ocultos.
 export async function obtenerDetalleObjeto(idObjeto) {
   const objeto = await prisma.objeto.findFirst({
-    where: { id_objeto: idObjeto, publicado: true, estado: 'en_custodia' },
+    where: { id_objeto: idObjeto, publicado: true, estado: 'en_custodia', punto: { publicado: true, habilitado: true } },
     select: {
       id_objeto: true,
       descripcion: true,
