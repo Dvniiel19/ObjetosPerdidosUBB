@@ -13,6 +13,6 @@ export const loginSchema = z.object({
     .email('El correo no tiene formato valido')
     .refine(validarCorreo, 'Solo correos de la UBB son permitidos'),
     contrasena: z.string()
-    .min(1, 'La contraseña es obligatoria')
-    .max(20, 'La contraseña no puede superar los 20 caracteres'),
+    .min(1, 'La contrasena es obligatoria')
+    .max(20, 'La contrasena no puede superar los 20 caracteres'),
 }).strict();

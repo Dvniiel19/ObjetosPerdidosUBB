@@ -6,9 +6,11 @@ import categoriaRoutes from './categoriaRoutes.js';
 import puntoRoutes from './puntoRoutes.js';
 import reclamosRoutes from './reclamosRoutes.js';
 import destruccionRoutes from './destruccionRoutes.js';
+import authRoutes from './authRoutes.js';
 
 const router = Router();
 
+router.use('/auth', authRoutes);
 // // Rutas de objetos
 router.use('/objetos', objetosRoutes);
 router.use('/objetos', editarObjetoRoutes);

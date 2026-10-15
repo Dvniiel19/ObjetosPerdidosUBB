@@ -1,5 +1,5 @@
 
-const MAX_INTENTOS = 5;
+const MAX_INTENTOS = 10;
 const BLOQUEO_MINUTOS = 15;
 
 const intentos = new Map();
