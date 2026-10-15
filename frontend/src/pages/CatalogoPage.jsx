@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { buscarObjetos, listarPuntos } from '../services/catalogoService.js';
+import { buscarObjetos, listarPuntos, verDetalleObjeto } from '../services/catalogoService.js';
 import { listarCategoria } from '../services/editarObjetoService.js';
+import DetalleObjeto from '../components/detalleObjeto.jsx';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
 
 const FILTROS_VACIOS = { texto: '', categoria: '', punto: '', lugar: '', fecha_desde: '' };
@@ -15,6 +16,7 @@ export default function CatalogoPage() {
   const [objetos, setObjetos] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const [detalle, setDetalle] = useState(null);
 
   useEffect(() => {
     listarCategoria()
@@ -43,6 +45,19 @@ export default function CatalogoPage() {
     setFiltros(FILTROS_VACIOS);
     setObjetos(null);
     setError('');
+  }
+
+  async function verDetalle(id) {
+    setError('');
+    try {
+      const resultado = await verDetalleObjeto(id);
+      setDetalle(resultado.objeto);
+    } catch (err) { setError(err.message); }
+  }
+
+  // Si hay un detalle abierto se muestra en vez del listado (los resultados se mantienen al volver)
+  if (detalle) {
+    return <main><DetalleObjeto objeto={detalle} onVolver={() => setDetalle(null)} /></main>;
   }
 
   return <main>
@@ -83,6 +98,7 @@ export default function CatalogoPage() {
         <p>Lugar: {objeto.lugar_hallazgo}</p>
         <p>Encontrado el: {fechaParaMostrar(objeto.hallado_en)}</p>
         <p>Retirar en: {objeto.punto?.nombre ?? 'Sin información'}{objeto.punto?.ubicacion && ` (${objeto.punto.ubicacion})`}</p>
+        <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>Ver detalle</button>
       </article>)}
     </div>
   </main>;

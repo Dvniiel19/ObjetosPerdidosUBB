@@ -75,3 +75,5 @@ small { font-size: 14px; }
     flex: 1 1 100%;
   }
 }
+
+.detalle-objeto ul { margin: 8px 0 0; padding-left: 20px; }
