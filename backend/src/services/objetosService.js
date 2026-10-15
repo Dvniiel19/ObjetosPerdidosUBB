@@ -101,7 +101,7 @@ async function validarCategoriaExistente(idCategoria) {
   }
 }
 
-export async function registrarObjeto(datos, encargado) {  
+export async function registrarObjeto(datos, encargado) {
   validarContextoEncargado(encargado);
 
   const fotografias = datos.fotografias;
@@ -130,11 +130,23 @@ export async function registrarObjeto(datos, encargado) {
       id_punto: encargado.id_punto,
       registrado_por: encargado.id_usuario,
       estado: 'en_custodia',
+      publicado: true,
       fotografias: {
         create: fotografias.map((fotografia, indice) => ({
           posicion: indice + 1,
           archivo_url: fotografia.archivo_url,
         })),
+      },
+    },
+    include: {
+      fotografias: {
+        select: {
+          posicion: true,
+          archivo_url: true,
+        },
+        orderBy: {
+          posicion: 'asc',
+        },
       },
     },
   });
