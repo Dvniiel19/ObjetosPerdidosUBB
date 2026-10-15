@@ -40,10 +40,10 @@ export function validarRegistroObjeto(req, res, next) {
 
   if (!resultado.success) {
     return res.status(400).json({
-      mensaje: 'Los datos del objeto no son válidos',
-      errores: resultado.error.issues.map((error) => ({
-        campo: error.path.join('.') || 'body',
-        mensaje: error.message,
+      error: 'Los datos del objeto no son válidos',
+      detalles: resultado.error.issues.map((issue) => ({
+        campo: issue.path.join('.') || 'body',
+        mensaje: issue.message,
       })),
     });
   }

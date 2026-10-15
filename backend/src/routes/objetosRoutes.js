@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { usuarioPrueba } from '../middlewares/usuarioPrueba.js';
+import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
 import { validar } from '../middlewares/validar.js';
 import { validarRegistroObjeto } from '../middlewares/validarRegistroObjeto.js';
 import { catalogoQuerySchema, idObjetoSchema } from '../schemas/objetosSchema.js';
@@ -24,7 +24,8 @@ router.get(
 
 router.post(
   '/',
-  usuarioPrueba,
+  autenticar,
+  permitirRoles('encargado'),
   validarRegistroObjeto,
   registrarObjeto,
 );
