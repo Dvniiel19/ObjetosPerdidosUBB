@@ -1,4 +1,6 @@
 import prisma from '../config/prisma.js';
+import { errorConCodigo } from '../utils/errorConCodigo.js';
+import { DIAS_TOTAL_CUSTODIA } from './retencionService.js';
 
 // Las fechas de los filtros (AAAA-MM-DD) se interpretan en hora de Chile.
 // La diferencia con UTC cambia en el año (-03:00 verano, -04:00 invierno).
@@ -64,6 +66,33 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
     },
     orderBy: { hallado_en: 'desc' },
   });
+}
+
+// Detalle publico: mismas reglas que el catalogo (publicado y en custodia).
+// Si no cumple, se responde 404 para no revelar objetos ocultos.
+export async function obtenerDetalleObjeto(idObjeto) {
+  const objeto = await prisma.objeto.findFirst({
+    where: { id_objeto: idObjeto, publicado: true, estado: 'en_custodia' },
+    select: {
+      id_objeto: true,
+      descripcion: true,
+      hallado_en: true,
+      lugar_hallazgo: true,
+      registrado_en: true,
+      categoria: { select: { id_categoria: true, nombre: true, metodos_verificacion: true } },
+      punto: { select: { id_punto: true, nombre: true, ubicacion: true } },
+    },
+  });
+
+  if (!objeto) {
+    throw errorConCodigo('El objeto no existe', 404);
+  }
+
+  // Plazo de retiro: 1 año desde que se registro
+  const disponibleHasta = new Date(objeto.registrado_en);
+  disponibleHasta.setDate(disponibleHasta.getDate() + DIAS_TOTAL_CUSTODIA);
+
+  return { ...objeto, disponible_hasta: disponibleHasta };
 }
 
 function validarContextoEncargado(encargado) {

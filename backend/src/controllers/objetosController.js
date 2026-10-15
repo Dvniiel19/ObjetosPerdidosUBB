@@ -1,5 +1,6 @@
 import {
   listarCatalogo as listarCatalogoService,
+  obtenerDetalleObjeto as obtenerDetalleObjetoService,
   registrarObjeto as registrarObjetoService,
 } from '../services/objetosService.js';
 
@@ -37,6 +38,17 @@ export async function listarCatalogo(req, res, next) {
       total: objetos.length,
       objetos,
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function verDetalleObjeto(req, res, next) {
+  try {
+    // req.params.id ya viene validado por idObjetoSchema
+    const objeto = await obtenerDetalleObjetoService(req.params.id);
+
+    return res.json({ objeto });
   } catch (error) {
     return next(error);
   }
