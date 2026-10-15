@@ -1,4 +1,6 @@
 import prisma from '../config/prisma.js';
+import { errorConCodigo } from '../utils/errorConCodigo.js';
+import { DIAS_TOTAL_CUSTODIA } from './retencionService.js';
 
 // Las fechas de los filtros (AAAA-MM-DD) se interpretan en hora de Chile.
 // La diferencia con UTC cambia en el año (-03:00 verano, -04:00 invierno).
@@ -29,6 +31,8 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
   const where = {
     publicado: true,
     estado: 'en_custodia',
+    // Solo objetos de puntos visibles y funcionando (igual que el filtro de puntos)
+    punto: { publicado: true, habilitado: true },
     ...(categoria && { id_categoria: categoria }),
     ...(punto && { id_punto: punto }),
     ...(fechaDesde && fechaHasta && {
@@ -64,6 +68,33 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
     },
     orderBy: { hallado_en: 'desc' },
   });
+}
+
+// Detalle publico: mismas reglas que el catalogo (publicado, en custodia y de un punto disponible).
+// Si no cumple, se responde 404 para no revelar objetos ocultos.
+export async function obtenerDetalleObjeto(idObjeto) {
+  const objeto = await prisma.objeto.findFirst({
+    where: { id_objeto: idObjeto, publicado: true, estado: 'en_custodia', punto: { publicado: true, habilitado: true } },
+    select: {
+      id_objeto: true,
+      descripcion: true,
+      hallado_en: true,
+      lugar_hallazgo: true,
+      registrado_en: true,
+      categoria: { select: { id_categoria: true, nombre: true, metodos_verificacion: true } },
+      punto: { select: { id_punto: true, nombre: true, ubicacion: true } },
+    },
+  });
+
+  if (!objeto) {
+    throw errorConCodigo('El objeto no existe', 404);
+  }
+
+  // Plazo de retiro: 1 año desde que se registro
+  const disponibleHasta = new Date(objeto.registrado_en);
+  disponibleHasta.setDate(disponibleHasta.getDate() + DIAS_TOTAL_CUSTODIA);
+
+  return { ...objeto, disponible_hasta: disponibleHasta };
 }
 
 function validarContextoEncargado(encargado) {
@@ -130,11 +161,23 @@ export async function registrarObjeto(datos, encargado) {
       id_punto: encargado.id_punto,
       registrado_por: encargado.id_usuario,
       estado: 'en_custodia',
+      publicado: true,
       fotografias: {
         create: fotografias.map((fotografia, indice) => ({
           posicion: indice + 1,
           archivo_url: fotografia.archivo_url,
         })),
+      },
+    },
+    include: {
+      fotografias: {
+        select: {
+          posicion: true,
+          archivo_url: true,
+        },
+        orderBy: {
+          posicion: 'asc',
+        },
       },
     },
   });

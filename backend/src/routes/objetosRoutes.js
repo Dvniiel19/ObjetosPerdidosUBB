@@ -16,9 +16,17 @@ router.get(
   listarCatalogo,
 );
 
+// Detalle público de un objeto del catálogo
+router.get(
+  '/:id',
+  validar(idObjetoSchema, 'params'),
+  verDetalleObjeto,
+);
+
 router.post(
   '/',
-  usuarioPrueba,
+  autenticar,
+  permitirRoles('encargado'),
   validarRegistroObjeto,
   registrarObjeto,
 );

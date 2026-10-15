@@ -1,5 +1,6 @@
 import {
   listarCatalogo as listarCatalogoService,
+  obtenerDetalleObjeto as obtenerDetalleObjetoService,
   registrarObjeto as registrarObjetoService,
 } from '../services/objetosService.js';
 import {obtenerObjetoParaEditar, editarObjeto} from '../services/editarObjetoService.js';
