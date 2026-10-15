@@ -33,4 +33,9 @@ export const catalogoQuerySchema = z.object({
     lugar: z.string().trim().optional(),
     fecha_desde: z.iso.date('La fecha debe tener formato AAAA-MM-DD').optional(),
     fecha_hasta: z.iso.date('La fecha debe tener formato AAAA-MM-DD').optional(),
-}).strict();
+}).strict()
+    // Las fechas vienen como AAAA-MM-DD, asi que se pueden comparar como texto
+    .refine(
+        (filtros) => !filtros.fecha_desde || !filtros.fecha_hasta || filtros.fecha_desde <= filtros.fecha_hasta,
+        { message: 'La fecha desde no puede ser posterior a la fecha hasta', path: ['fecha_hasta'] },
+    );
