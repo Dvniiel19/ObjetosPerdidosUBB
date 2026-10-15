@@ -1,6 +1,5 @@
 import objetosRoutes from './objetosRoutes.js';
 import { Router } from 'express';
-import editarObjetoRoutes from './editarObjetoRoutes.js';
 import { ejecutarRevisionRetencion } from '../services/retencionService.js';
 import categoriaRoutes from './categoriaRoutes.js';
 import puntoRoutes from './puntoRoutes.js';
@@ -13,7 +12,6 @@ const router = Router();
 router.use('/auth', authRoutes);
 // // Rutas de objetos
 router.use('/objetos', objetosRoutes);
-router.use('/objetos', editarObjetoRoutes);
 // // Ruta de categorias
 router.use('/categoria', categoriaRoutes);
 // Ruta de puntos de acopio
