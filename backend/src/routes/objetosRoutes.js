@@ -5,7 +5,7 @@ import { usuarioPrueba } from '../middlewares/usuarioPrueba.js';
 import { validar } from '../middlewares/validar.js';
 import { validarRegistroObjeto } from '../middlewares/validarRegistroObjeto.js';
 import { catalogoQuerySchema, idObjetoSchema, correccionObjetoSchema } from '../schemas/objetosSchema.js';
-import { listarCatalogo, registrarObjeto, mostrarObjetoParaEditar, guardarObjetoEditado } from '../controllers/objetosController.js';
+import { listarCatalogo, registrarObjeto, verDetalleObjeto, mostrarObjetoParaEditar, guardarObjetoEditado } from '../controllers/objetosController.js';
 
 const router = Router();
 

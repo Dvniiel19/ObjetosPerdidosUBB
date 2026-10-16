@@ -44,6 +44,17 @@ export async function listarCatalogo(req, res, next) {
   }
 }
 
+export async function verDetalleObjeto(req, res, next) {
+  try {
+    // req.params.id ya viene validado por idObjetoSchema
+    const objeto = await obtenerDetalleObjetoService(req.params.id);
+
+    return res.json({ objeto });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 //GET /api/objetos/:id/editar
 export async function mostrarObjetoParaEditar(req, res, next){
     try{
