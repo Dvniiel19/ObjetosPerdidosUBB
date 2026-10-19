@@ -10,20 +10,13 @@ import authRoutes from './authRoutes.js';
 const router = Router();
 
 router.use('/auth', authRoutes);
-// // Rutas de objetos
 router.use('/objetos', objetosRoutes);
-// // Ruta de categorias
 router.use('/categoria', categoriaRoutes);
-// Ruta de puntos de acopio
 router.use('/puntos', puntoRoutes);
-// Ruta de reclamos
 router.use(reclamosRoutes);
-//Ruta para probar el proceso de retencion
 router.post('/testing/forzar-retencion', async (req, res) => {
   try {
     const resultado = await ejecutarRevisionRetencion();
-
-    // fecha estilo local(DD-MM-YYYY HH:mm:ss)
     const fechaFormateada = resultado.ejecutado_en.toLocaleString('es-CL', {
       day: '2-digit',
       month: '2-digit',
@@ -33,8 +26,6 @@ router.post('/testing/forzar-retencion', async (req, res) => {
       second: '2-digit',
       hour12: false 
     });
-
-    // Enviar el resultado
     res.json({
       exito: true,
       resumen: {
@@ -47,6 +38,5 @@ router.post('/testing/forzar-retencion', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Ruta de destruccion
 router.use('/destrucciones', destruccionRoutes);
 export default router;
