@@ -14,8 +14,9 @@ export function calcularFechaUmbral(dias, fechaReferencia = new Date()) {
   fecha.setDate(fecha.getDate() - dias);
   return fecha;
 }
+
 /**
- * @param {Date} [fechaReferencia=new Date()] - Permite simular fechas para pruebas.
+ * @param {Date} [fechaReferencia=new Date()]
  * @returns {Promise<{ objetosAlertados: number, ids: number[] }>}
  */
 export async function procesarAlertasRetencion(fechaReferencia = new Date()) {
@@ -62,6 +63,7 @@ export async function procesarAlertasRetencion(fechaReferencia = new Date()) {
     ids: idsParaAlertar,
   };
 }
+
 /**
  * @param {Date} [fechaReferencia=new Date()]
  * @returns {Promise<{ objetosVencidos: number, ids: number[] }>}
@@ -102,17 +104,18 @@ export async function procesarObjetosVencidos(fechaReferencia = new Date()) {
     ids: idsVencidos,
   };
 }
+
 /**
- * @param {Date} [fechaReferencia=new Date()]
  * @returns {Promise<{ alertasEnviadas: number, objetosNoReclamados: number, ejecutado_en: Date }>}
  */
-export async function ejecutarRevisionRetencion(fechaReferencia = new Date()) {
-  const resultadoAlertas = await procesarAlertasRetencion(fechaReferencia);
-  const resultadoVencidos = await procesarObjetosVencidos(fechaReferencia);
+export async function ejecutarRevisionRetencion() {
+  const ahora = new Date();
+  const resultadoVencidos = await procesarObjetosVencidos(ahora);
+  const resultadoAlertas = await procesarAlertasRetencion(ahora);
 
   return {
     alertasEnviadas: resultadoAlertas.objetosAlertados,
     objetosNoReclamados: resultadoVencidos.objetosVencidos,
-    ejecutado_en: fechaReferencia,
+    ejecutado_en: ahora,
   };
 }
