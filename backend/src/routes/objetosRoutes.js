@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
-import { usuarioPrueba } from '../middlewares/usuarioPrueba.js';
 import { validar } from '../middlewares/validar.js';
 import { validarRegistroObjeto } from '../middlewares/validarRegistroObjeto.js';
 import { catalogoQuerySchema, idObjetoSchema, correccionObjetoSchema } from '../schemas/objetosSchema.js';

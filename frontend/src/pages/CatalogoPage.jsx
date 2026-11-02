@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { buscarObjetos, listarPuntos, verDetalleObjeto } from '../services/catalogoService.js';
-import { listarCategoria } from '../services/editarObjetoService.js';
+import { listarCategoria } from '../services/objetoService.js';
 import DetalleObjeto from '../components/detalleObjeto.jsx';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
 
