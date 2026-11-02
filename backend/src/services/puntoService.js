@@ -105,3 +105,40 @@ export async function asignarEncargado(id_punto, id_usuario){
         },
     });
 }
+
+export async function desactivarPunto(idPunto){
+    const punto = await prisma.puntoAcopio.findUnique({
+        where: {id_punto: idPunto},
+        select: {id_punto: true, habilitado: true},
+    });
+
+    if(!punto){
+        throw errorConCodigo('El punto no existe', 404);
+    }
+
+    if(!punto.habilitado){
+        throw errorConCodigo('El punto ya esta desactivado', 409);
+    }
+    // Si tiene objetos en custodia no se puede:
+
+    const objetosEnCustodia = await prisma.objeto.count({
+        where: {id_punto: idPunto, estado: 'en_custodia'},
+    });
+
+    if(objetosEnCustodia > 0){
+        throw errorConCodigo('No se puede desactivar el punto porque tiene objetos en custodia', 409);
+    }
+
+    return prisma.$transaction(async (tx) => {
+        await tx.usuario.updateMany({
+            where: {id_punto: idPunto},
+            data: {id_punto: null},
+        });
+
+        return tx.puntoAcopio.update({
+            where: {id_punto: idPunto},
+            data: {habilitado: false, publicado: false},
+            select: {id_punto: true, nombre: true, ubicacion: true, habilitado: true, publicado: true},
+        });
+    });
+}

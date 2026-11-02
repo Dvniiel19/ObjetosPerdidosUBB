@@ -1,4 +1,5 @@
-import {listarPuntos, crearPunto, asignarEncargado } from '../services/puntoService.js';
+import {listarPuntos, crearPunto, asignarEncargado, desactivarPunto } from '../services/puntoService.js';
+
 //GET /api/puntos
 export async function mostrarPuntos(req, res, next){
     try{
@@ -22,6 +23,15 @@ export async function asignarEncargadoPunto(req,res,next){
     try{
         const encargado = await asignarEncargado(req.params.id, req.body.id_usuario);
         return res.json(encargado);
+    } catch (error){
+        return next(error);
+    }
+}
+
+export async function desactivarPuntoAcopio(req,res,next){
+    try{
+        const punto = await desactivarPunto(req.params.id);
+        return res.json(punto);
     } catch (error){
         return next(error);
     }

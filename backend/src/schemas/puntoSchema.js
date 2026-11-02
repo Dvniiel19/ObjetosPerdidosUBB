@@ -26,5 +26,5 @@ export const asignarEncargadoSchema = z.object({
 }).strict();
 
 export const idPuntoSchema = z.object({
-    id: z.coerce.number().int().positive('El id debe ser un numero entero positivo'),
+    id: z.coerce.number('El id debe ser un numero').int().positive('El id debe ser un numero entero positivo'),
 }).strict();
