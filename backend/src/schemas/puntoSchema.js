@@ -9,6 +9,14 @@ export const crearPuntoSchema = z.object({
     .trim()
     .min(5, 'La ubicacion debe tener al menos 5 caracteres')
     .max(50, 'La ubicacion no puede superar los 50 caracteres'),
+    encargados: z.array(
+        z.number('Cada encargado debe ser un id con formato numerico')
+        .int('Cada encargado debe ser un id con formato numerico entero')
+        .positive('Cada encargado debe ser un id con formato numerico positivo'),
+        'Los encargados son obligatorios',
+    )
+        .min(1, 'Debes asignar al menos un encargado')
+        .refine((ids) => new Set(ids).size === ids.length, 'No puedes asignar el mismo encargado mas de una vez'),
 }).strict();
 
 export const asignarEncargadoSchema = z.object({
@@ -18,5 +26,5 @@ export const asignarEncargadoSchema = z.object({
 }).strict();
 
 export const idPuntoSchema = z.object({
-    id: z.coerce.number().int().positive('El id debe ser un numero entero positivo'),
+    id: z.coerce.number('El id debe ser un numero').int().positive('El id debe ser un numero entero positivo'),
 }).strict();

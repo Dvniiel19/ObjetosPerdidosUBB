@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { mostrarPuntos, registrarPunto, asignarEncargadoPunto } from '../controllers/puntoController.js';
+import { mostrarPuntos, registrarPunto, asignarEncargadoPunto, desactivarPuntoAcopio, mostrarEncargados, mostrarTodosLosPuntos } from '../controllers/puntoController.js';
 import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
 import { validar } from '../middlewares/validar.js';
 import { crearPuntoSchema, asignarEncargadoSchema, idPuntoSchema } from '../schemas/puntoSchema.js';
@@ -28,4 +28,13 @@ router.patch(
   asignarEncargadoPunto,
 );
 
+// PATCH /api/puntos/:id/desactivar, solo admin
+router.patch('/:id/desactivar', autenticar, permitirRoles('administrador'), validar(idPuntoSchema, 'params'), desactivarPuntoAcopio,
+);
+
+// GET /api/puntos/todos (solo administrador)
+router.get('/todos', autenticar, permitirRoles('administrador'), mostrarTodosLosPuntos);
+
+// GET /api/puntos/encargados (solo administrador)
+router.get('/encargados', autenticar, permitirRoles('administrador'), mostrarEncargados);
 export default router;
