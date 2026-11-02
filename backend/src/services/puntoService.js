@@ -142,3 +142,37 @@ export async function desactivarPunto(idPunto){
         });
     });
 }
+
+export async function obtenerTodosLosPuntos(){
+    return prisma.puntoAcopio.findMany({
+        select: {
+            id_punto: true,
+            nombre: true,
+            ubicacion: true,
+            habilitado: true,
+            publicado: true,
+            encargados: { 
+                select: {id_usuario: true, nombres: true, apellidos: true},
+            },
+        // Cuantos objetos en custodia tiene cada punto, si tiene mas de 0 no se puede desactivar
+            _count: {
+                select: {objetos: {where: {estado: 'en_custodia'}}},
+            },
+    },
+    orderBy: {nombre: 'asc'},
+    });
+}
+
+export async function listarEncargados(){
+    return prisma.usuario.findMany({
+        where: {rol: 'encargado', activo: true},
+        select: {
+            id_usuario: true,
+            nombres: true,
+            apellidos: true,
+            correo_institucional: true,
+            punto: {select: {id_punto: true, nombre: true}},
+        },
+        orderBy: {apellidos: 'asc'},
+    });
+}
