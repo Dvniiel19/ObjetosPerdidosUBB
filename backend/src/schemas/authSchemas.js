@@ -1,6 +1,6 @@
 import { z} from 'zod';
 
-export const dominiosPermitidos= ['@alumnos.ubiobio.cl', '@ubiobio.cl'];
+export const dominiosPermitidos= ['@alumnos.ubiobio.cl', '@ubiobio.cl', '@ubb.cl'];
 
 export function validarCorreo(correo){
     return dominiosPermitidos.some(dominio => correo.endsWith(dominio));
