@@ -9,6 +9,7 @@ import RevisarReclamoPage from './pages/RevisarReclamoPage.jsx';
 import LoginPage from './pages/LoginPage.jsx'; // LOGIN
 import AccesoExternoPage from './pages/AccesoExternoPage.jsx'; // LOGIN
 import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOGIN
+import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
 import './App.css';
 
 export default function App() {
@@ -56,6 +57,8 @@ export default function App() {
 
   // RF8: solo el encargado corrige objetos
   const esEncargado = usuario.rol === 'encargado';
+  // RF5 y RF9: solo el administrador gestiona puntos
+  const esAdmin = usuario.rol === 'administrador';
 
   return (
     <>
@@ -124,6 +127,17 @@ export default function App() {
         >
           Revisar reclamo
         </button>
+
+        {/* RF5 y RF9: solo administrador */}
+        {esAdmin && (
+          <button
+            type="button"
+            aria-pressed={vista === 'puntos'}
+            onClick={() => setVista('puntos')}
+          >
+            Puntos
+          </button>
+        )}
       </nav>
 
       {vista === 'catalogo' && <CatalogoPage />}
@@ -133,6 +147,7 @@ export default function App() {
       {vista === 'entrega' && <EntregaReclamoPage />}
       {vista === 'crearReclamo' && <CrearReclamoPage />}
       {vista === 'revisarReclamo' && <RevisarReclamoPage />}
+      {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
     </>
   );
 }
