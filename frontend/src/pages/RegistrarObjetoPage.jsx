@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import FormularioObjeto from '../components/formularioObjeto.jsx';
-import { listarCategoria } from '../services/editarObjetoService.js';
+import { listarCategoria } from '../services/objetoService.js';
 
 export default function RegistrarObjetoPage() {
   const [categorias, setCategorias] = useState([]);
