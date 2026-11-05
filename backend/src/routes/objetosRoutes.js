@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
+import { subirFotografias } from '../middlewares/subirFotografias.js';
 import { validar } from '../middlewares/validar.js';
 import { validarRegistroObjeto } from '../middlewares/validarRegistroObjeto.js';
 import { catalogoQuerySchema, idObjetoSchema } from '../schemas/objetosSchema.js';
@@ -22,10 +23,13 @@ router.get(
   verDetalleObjeto,
 );
 
+// Registro de objeto (Req 02). Recibe multipart/form-data con las fotografías.
+// subirFotografias va después de autenticar: sin sesión no se guarda ningún archivo.
 router.post(
   '/',
   autenticar,
   permitirRoles('encargado'),
+  subirFotografias,
   validarRegistroObjeto,
   registrarObjeto,
 );
