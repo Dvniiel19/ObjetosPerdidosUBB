@@ -5,46 +5,50 @@ import {
     listarActasDestruccion,
 } from '../services/destruccionService.js';
 
-export async function crearDestruccion(req, res) {
+// POST /api/destrucciones
+export async function crearDestruccion(req, res, next) {
     try {
-    const idAdministrador = req.usuario?.id_usuario || parseInt(req.header('x-usuario-id')) || 1;
-    const { id_objeto, archivo_url } = req.body;
+        // El responsable siempre es el administrador de la sesion (viene del token)
+        const idAdministrador = req.usuario.id_usuario;
+        const { id_objeto, archivo_url } = req.body;
 
-    const resultado = await registrarDestruccionObjeto(Number(id_objeto), idAdministrador, archivo_url);
-    res.status(201).json({
-    exito: true,
-    mensaje: 'Objeto dado de baja exitosamente',
-    datos: resultado,
-    });
+        const resultado = await registrarDestruccionObjeto(id_objeto, idAdministrador, archivo_url);
+        return res.status(201).json({
+            exito: true,
+            mensaje: 'Objeto dado de baja exitosamente',
+            datos: resultado,
+        });
     } catch (error) {
-    res.status(400).json({ error: error.message });
+        return next(error);
     }
 }
 
-export async function listarCandidatos(req, res) {
+// GET /api/destrucciones/candidatos
+export async function listarCandidatos(req, res, next) {
     try {
-    const candidatos = await obtenerObjetosCandidatosDestruccion();
-    res.json({ exito: true, datos: candidatos });
+        const candidatos = await obtenerObjetosCandidatosDestruccion();
+        return res.json({ exito: true, datos: candidatos });
     } catch (error) {
-    res.status(500).json({ error: error.message });
+        return next(error);
     }
 }
 
-export async function consultarElegibilidad(req, res) {
+// GET /api/destrucciones/elegibilidad/:id
+export async function consultarElegibilidad(req, res, next) {
     try {
-    const idObjeto = Number(req.params.id);
-    const resultado = await validarElegibilidadDestruccion(idObjeto);
-    res.json({ exito: true, datos: resultado });
+        const resultado = await validarElegibilidadDestruccion(req.params.id);
+        return res.json({ exito: true, datos: resultado });
     } catch (error) {
-    res.status(500).json({ error: error.message });
+        return next(error);
     }
 }
 
-export async function listarActas(req, res) {
+// GET /api/destrucciones
+export async function listarActas(req, res, next) {
     try {
-    const actas = await listarActasDestruccion();
-    res.json({ exito: true, datos: actas });
+        const actas = await listarActasDestruccion();
+        return res.json({ exito: true, datos: actas });
     } catch (error) {
-    res.status(500).json({ error: error.message });
+        return next(error);
     }
 }
