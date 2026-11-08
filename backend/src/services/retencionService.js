@@ -152,6 +152,50 @@ export async function procesarObjetosVencidos(fechaReferencia = new Date()) {
 }
 
 /**
+ * GET /api/retencion/alertas: objetos avisados que siguen en custodia, del que vence primero al ultimo.
+ * @param {number|null} idPunto - punto del encargado; null para ver todos los puntos (administrador)
+ * @param {Date} [fechaReferencia=new Date()]
+ */
+export async function listarAlertasRetencion(idPunto, fechaReferencia = new Date()) {
+  const objetos = await prisma.objeto.findMany({
+    where: {
+      estado: 'en_custodia',
+      alerta_enviada_en: { not: null },
+      ...(idPunto ? { id_punto: idPunto } : {}),
+    },
+    select: {
+      id_objeto: true,
+      descripcion: true,
+      registrado_en: true,
+      alerta_enviada_en: true,
+      categoria: { select: { nombre: true } },
+      punto: { select: { id_punto: true, nombre: true } },
+    },
+  });
+
+  const UN_DIA_MS = 24 * 60 * 60 * 1000;
+
+  const alertas = objetos.map((obj) => {
+    const venceEl = calcularFechaVencimiento(obj.registrado_en, obj.alerta_enviada_en);
+    const diasRestantes = Math.max(0, Math.ceil((venceEl - fechaReferencia) / UN_DIA_MS));
+
+    return {
+      id_objeto: obj.id_objeto,
+      descripcion: obj.descripcion,
+      categoria: obj.categoria.nombre,
+      id_punto: obj.punto.id_punto,
+      punto_acopio: obj.punto.nombre,
+      registrado_en: obj.registrado_en,
+      alerta_enviada_en: obj.alerta_enviada_en,
+      vence_el: venceEl,
+      dias_restantes: diasRestantes,
+    };
+  });
+
+  return alertas.sort((a, b) => a.vence_el - b.vence_el);
+}
+
+/**
  * Revision diaria que ejecuta el cron: primero avisa y despues marca los vencidos.
  * @param {Date} [fechaReferencia=new Date()]
  * @returns {Promise<{ alertasEnviadas: number, objetosNoReclamados: number, ejecutado_en: Date }>}
