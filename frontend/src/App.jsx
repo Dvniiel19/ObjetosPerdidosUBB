@@ -68,12 +68,14 @@ export default function App() {
   const vistaActual = vistasPermitidas.includes(vista) ? vista : 'catalogo';
 
   const puede = (v) => vistasPermitidas.includes(v);
-  const boton = (id, etiqueta) =>
+  const boton = (id, etiqueta, descripcion) =>
     puede(id) ? (
       <button
         key={id}
         type="button"
         aria-pressed={vistaActual === id}
+        title={descripcion}
+        aria-label={descripcion ? `${etiqueta}. ${descripcion}` : etiqueta}
         onClick={() => setVista(id)}
       >
         {etiqueta}
@@ -89,16 +91,16 @@ export default function App() {
       </header>
 
       <nav className="navegacion-objetos" aria-label="Gestión de objetos">
-        {boton('catalogo', 'Buscar objetos')}
-        {boton('crearReclamo', 'Nueva solicitud')}
+        {boton('catalogo', 'Buscar objetos', 'Consulta objetos en custodia por filtros.')}
+        {boton('crearReclamo', esEncargado ? 'Registrar solicitud' : 'Nueva solicitud', esEncargado ? 'Registra en el sistema una solicitud de devolución presentada presencialmente.' : 'Envía una solicitud para reclamar un objeto.')}
         {esEncargado && <span className="nav-sep" aria-hidden="true">|</span>}
-        {boton('registrar', 'Registrar objeto')}
-        {boton('corregir', 'Corregir objeto')}
-        {boton('revisarReclamo', 'Gestionar solicitudes')}
-        {boton('entrega', 'Entregar objeto')}
+        {boton('registrar', esEncargado ? 'Registrar hallazgo' : 'Registrar objeto', 'Ingresa al sistema un objeto encontrado en el punto de acopio.')}
+        {boton('corregir', 'Corregir objeto', 'Corrige datos de un objeto en custodia de tu punto.')}
+        {boton('revisarReclamo', 'Gestionar solicitudes', 'Aprueba o rechaza solicitudes de reclamo de tu punto.')}
+        {boton('entrega', 'Entregar objeto', 'Confirma la entrega tras registrar las verificaciones aprobadas.')}
         {esAdmin && <span className="nav-sep" aria-hidden="true">|</span>}
-        {boton('destruir', 'Destrucción Segura')}
-        {boton('puntos', 'Puntos')}
+        {boton('destruir', 'Destrucción Segura', 'Gestiona la baja/destrucción de objetos no reclamados.')}
+        {boton('puntos', 'Puntos', 'Administra puntos de acopio y encargados.')}
       </nav>
 
       {vistaActual === 'catalogo' && <CatalogoPage />}
