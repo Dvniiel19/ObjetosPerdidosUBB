@@ -1,7 +1,9 @@
 import {
   listarCatalogo as listarCatalogoService,
+  obtenerDetalleObjeto as obtenerDetalleObjetoService,
   registrarObjeto as registrarObjetoService,
 } from '../services/objetosService.js';
+import {obtenerObjetoParaEditar, editarObjeto} from '../services/editarObjetoService.js';
 
 export async function registrarObjeto(req, res, next) {
   try {
@@ -40,4 +42,35 @@ export async function listarCatalogo(req, res, next) {
   } catch (error) {
     return next(error);
   }
+}
+
+export async function verDetalleObjeto(req, res, next) {
+  try {
+    // req.params.id ya viene validado por idObjetoSchema
+    const objeto = await obtenerDetalleObjetoService(req.params.id);
+
+    return res.json({ objeto });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//GET /api/objetos/:id/editar
+export async function mostrarObjetoParaEditar(req, res, next){
+    try{
+        const objeto = await obtenerObjetoParaEditar(req.params.id, req.usuario);
+        return res.json(objeto);
+    } catch (error){
+        return next(error);
+    }
+}
+
+//PUT /api/objetos/:id/editar
+export async function guardarObjetoEditado(req, res, next){
+    try{
+        const objeto = await editarObjeto(req.params.id, req.body, req.usuario);
+        return res.json(objeto);
+    } catch (error){
+        return next(error);
+    }
 }

@@ -1,16 +1,9 @@
 import { useState } from 'react';
 import FormularioObjeto from '../components/formularioObjeto.jsx';
-import { obtenerObjetoParaEditar, guardarObjetoEditado, listarCategoria } from '../services/editarObjetoService.js';
+import { obtenerObjetoParaEditar, guardarObjetoEditado, listarCategoria } from '../services/objetoService.js';
 import { pedir } from '../services/api.js';
 
-// TEMPORAL: encargados del seed, hasta que exista el login
-const ENCARGADOS = [
-  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
-  { id: 3, nombre: 'Carla Encargada (FACE)' },
-];
-
 export default function CorregirObjetoPage() {
-  const [idUsuario, setIdUsuario] = useState('');
   const [objetos, setObjetos] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [sesion, setSesion] = useState(null);
@@ -32,7 +25,7 @@ export default function CorregirObjetoPage() {
   async function seleccionar(idObjeto) {
     setCargando(true); setError(''); setMensaje('');
     try {
-      const objeto = await obtenerObjetoParaEditar(idObjeto, Number(idUsuario));
+      const objeto = await obtenerObjetoParaEditar(idObjeto);
       if (objeto.estado !== 'en_custodia') throw new Error('Este objeto ya no está disponible para corrección.');
       let categorias;
       try { categorias = await listarCategoria(); }
@@ -52,7 +45,7 @@ export default function CorregirObjetoPage() {
   async function guardar(datos) {
     setMensaje('');
     // La API de corrección actual solo acepta los cuatro campos y el motivo.
-    const objeto = await guardarObjetoEditado(sesion.objeto.id_objeto, datos, Number(idUsuario));
+    const objeto = await guardarObjetoEditado(sesion.objeto.id_objeto, datos);
     const actualizado = { ...sesion.objeto, ...objeto };
     setSesion({ ...sesion, objeto: actualizado });
     setObjetos(objetos.map(o => o.id_objeto === objeto.id_objeto ? {
@@ -73,14 +66,6 @@ export default function CorregirObjetoPage() {
       <p>Busca y selecciona el objeto que necesitas corregir.</p>
       <form onSubmit={buscar}>
         <fieldset disabled={cargando}>
-                   <label>Encargado
-            <select value={idUsuario} onChange={e => { setIdUsuario(e.target.value); setObjetos(null); }} required>
-              <option value="">Selecciona un encargado</option>
-              {ENCARGADOS.map(enc => (
-                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
-              ))}
-            </select>
-          </label>
           <label>Buscar objeto<input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Descripción o lugar de hallazgo" /></label>
           <button type="submit">{cargando ? 'Cargando…' : 'Buscar objetos'}</button>
         </fieldset>

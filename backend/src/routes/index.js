@@ -1,52 +1,25 @@
-import objetosRoutes from './objetosRoutes.js';
 import { Router } from 'express';
-import editarObjetoRoutes from './editarObjetoRoutes.js';
-import { ejecutarRevisionRetencion } from '../services/retencionService.js';
+import objetosRoutes from './objetosRoutes.js';
 import categoriaRoutes from './categoriaRoutes.js';
 import puntoRoutes from './puntoRoutes.js';
 import reclamosRoutes from './reclamosRoutes.js';
 import destruccionRoutes from './destruccionRoutes.js';
+import authRoutes from './authRoutes.js';
+import retencionRoutes from './retencionRoutes.js';
+import historialRoutes from './historialRoutes.js';
+import reportesRoutes from './reportesRoutes.js';
 
 const router = Router();
 
-// // Rutas de objetos
+// Rutas institucionales del sistema
+router.use('/auth', authRoutes);
 router.use('/objetos', objetosRoutes);
-router.use('/objetos', editarObjetoRoutes);
-// // Ruta de categorias
 router.use('/categoria', categoriaRoutes);
-// Ruta de puntos de acopio
 router.use('/puntos', puntoRoutes);
-// Ruta de reclamos
 router.use(reclamosRoutes);
-//Ruta para probar el proceso de retencion
-router.post('/testing/forzar-retencion', async (req, res) => {
-  try {
-    const resultado = await ejecutarRevisionRetencion();
-
-    // fecha estilo local(DD-MM-YYYY HH:mm:ss)
-    const fechaFormateada = resultado.ejecutado_en.toLocaleString('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false 
-    });
-
-    // Enviar el resultado
-    res.json({
-      exito: true,
-      resumen: {
-        alertasEnviadas: resultado.alertasEnviadas,
-        objetosNoReclamados: resultado.objetosNoReclamados,
-        ejecutado_en: fechaFormateada
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-// Ruta de destruccion
 router.use('/destrucciones', destruccionRoutes);
+router.use('/retencion', retencionRoutes);
+router.use('/historial', historialRoutes);
+router.use('/reportes', reportesRoutes);
+
 export default router;
