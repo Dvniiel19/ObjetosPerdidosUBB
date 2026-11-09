@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { entregarReclamoService } from '../services/reclamosService.js';
 
-// TEMPORAL: encargados del seed, hasta que exista el login
-const ENCARGADOS = [
-  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
-  { id: 3, nombre: 'Carla Encargada (FACE)' },
-];
-
 const METODOS_DISPONIBLES = [
   'Boleta de compra',
   'Contenido de la mochila',
@@ -22,7 +16,6 @@ const METODOS_DISPONIBLES = [
 ];
 
 export const EntregaReclamoPage = () => {
-  const [idUsuario, setIdUsuario] = useState('');
   const [idReclamo, setIdReclamo] = useState('');
   const [usuarioReclamante, setUsuarioReclamante] = useState('');
   const [rutCedulaValidada, setRutCedulaValidada] = useState(false);
@@ -54,7 +47,7 @@ export const EntregaReclamoPage = () => {
         metodosAplicados: metodosSeleccionados,
       };
 
-      const respuesta = await entregarReclamoService(Number(idReclamo), Number(idUsuario), datosValidacion);
+      const respuesta = await entregarReclamoService(Number(idReclamo), datosValidacion);
       setResultado(respuesta);
     } catch (err) {
       setError(err);
@@ -73,15 +66,6 @@ export const EntregaReclamoPage = () => {
 
       <form onSubmit={handleEntregar}>
         <fieldset disabled={loading}>
-          <label>Encargado que entrega
-            <select value={idUsuario} onChange={(e) => setIdUsuario(e.target.value)} required>
-              <option value="">Selecciona un encargado</option>
-              {ENCARGADOS.map(enc => (
-                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
-              ))}
-            </select>
-          </label>
-
           <label htmlFor="id-reclamo">ID del reclamo</label>
           <input
             id="id-reclamo"

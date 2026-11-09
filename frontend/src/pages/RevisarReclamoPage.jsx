@@ -1,14 +1,7 @@
 import { useState } from 'react';
 import { cambiarEstadoReclamoService } from '../services/reclamosService.js';
 
-// TEMPORAL: encargados del seed, hasta que exista el login
-const ENCARGADOS = [
-  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
-  { id: 3, nombre: 'Carla Encargada (FACE)' },
-];
-
 export default function RevisarReclamoPage() {
-  const [idUsuario, setIdUsuario] = useState('');
   const [idReclamo, setIdReclamo] = useState('');
   const [estado, setEstado] = useState('aprobado');
   const [motivo, setMotivo] = useState('');
@@ -20,7 +13,7 @@ export default function RevisarReclamoPage() {
     setMensaje(null);
     setEnviando(true);
     try {
-      const resultado = await cambiarEstadoReclamoService(Number(idReclamo), Number(idUsuario), {
+      const resultado = await cambiarEstadoReclamoService(Number(idReclamo), {
         estado,
         motivo: motivo.trim() || undefined,
       });
@@ -45,14 +38,6 @@ export default function RevisarReclamoPage() {
 
       <form onSubmit={enviar}>
         <fieldset disabled={enviando}>
-          <label>Encargado
-            <select value={idUsuario} onChange={e => setIdUsuario(e.target.value)} required>
-              <option value="">Selecciona un encargado</option>
-              {ENCARGADOS.map(enc => (
-                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
-              ))}
-            </select>
-          </label>
           <label>ID del reclamo
             <input type="number" min="1" required value={idReclamo} onChange={e => setIdReclamo(e.target.value)} />
           </label>
