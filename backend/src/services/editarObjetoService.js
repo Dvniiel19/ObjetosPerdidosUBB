@@ -75,22 +75,27 @@ export async function editarObjeto(idObjeto, datos, encargado){
         }
     }
 
-    // Actualizar el objeto y registrar el historial
-    
-    const [objetoEditable] = await prisma.$transaction([
-        prisma.objeto.update({
-            where: { id_objeto: idObjeto},
+    // Actualizar el objeto y registrar el historial (condicional: solo si sigue en custodia)
+    const objetoEditable = await prisma.$transaction(async (tx) => {
+        const actualizado = await tx.objeto.updateMany({
+            where: { id_objeto: idObjeto, estado: 'en_custodia', id_punto: encargado.id_punto },
             data: cambios,
-        }),
-        prisma.historialObjeto.create({
+        });
+        if (actualizado.count !== 1) {
+            throw errorConCodigo('El objeto ya no está en custodia o no pertenece a tu oficina; no se puede editar', 409);
+        }
+
+        await tx.historialObjeto.create({
             data: {
                 id_objeto: idObjeto,
                 modificado_por: encargado.id_usuario,
                 motivo: datos.motivo,
                 valores_anteriores: valoresAnteriores,
             },
-        }),
-    ]);
+        });
+
+        return tx.objeto.findUnique({ where: { id_objeto: idObjeto } });
+    });
 
     return objetoEditable;
 }

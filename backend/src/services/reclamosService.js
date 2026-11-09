@@ -71,23 +71,29 @@ export const procesarEntregaService = async (id, datosEntrega, usuario) => {
   const fecha = new Date();
   const numeroComprobante = `ENT-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${reclamo.id_reclamo}`;
 
-  // Ejecutar la entrega en una transacción atómica
+  // Ejecutar la entrega en una transacción atómica (actualizaciones condicionales para reforzar irreversibilidad)
   const resultado = await prisma.$transaction(async (tx) => {
-    // 1. Actualizar el objeto a estado "entregado" (irreversible)
-    await tx.objeto.update({
-      where: { id_objeto: reclamo.id_objeto },
+    // 1. Actualizar el objeto a estado "entregado" solo si sigue en custodia
+    const objetoActualizado = await tx.objeto.updateMany({
+      where: { id_objeto: reclamo.id_objeto, estado: "en_custodia" },
       data: { estado: "entregado" },
     });
+    if (objetoActualizado.count !== 1) {
+      throw new Error("El objeto ya no está en custodia o ya fue entregado. No se puede modificar.");
+    }
 
-    // 2. Actualizar el reclamo con la fecha de entrega y comprobante
-    const reclamoActualizado = await tx.reclamo.update({
-      where: { id_reclamo: reclamo.id_reclamo },
+    // 2. Actualizar el reclamo solo si sigue aprobado (irreversible una vez entregado)
+    const reclamoActualizado = await tx.reclamo.updateMany({
+      where: { id_reclamo: reclamo.id_reclamo, estado: "aprobado" },
       data: {
         estado: "entregado",
         entregado_en: fecha,
         numero_comprobante: numeroComprobante,
       },
     });
+    if (reclamoActualizado.count !== 1) {
+      throw new Error("El reclamo ya no está aprobado o ya fue entregado de forma irreversible.");
+    }
 
     // 3. Registrar en bitácora (actor autenticado que confirma la entrega)
     await tx.bitacora.create({
@@ -99,7 +105,7 @@ export const procesarEntregaService = async (id, datosEntrega, usuario) => {
       },
     });
 
-    return reclamoActualizado;
+    return { entregado_en: fecha, numero_comprobante: numeroComprobante };
   });
 
   return {
