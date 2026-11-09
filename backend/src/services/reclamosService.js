@@ -89,12 +89,12 @@ export const procesarEntregaService = async (id, datosEntrega, usuario) => {
       },
     });
 
-    // 3. Registrar en bitácora
+    // 3. Registrar en bitácora (actor autenticado que confirma la entrega)
     await tx.bitacora.create({
       data: {
-        id_usuario: reclamo.atendido_por,
-        accion: "entregar_objeto",
-        recurso: `RECLAMO:${reclamo.id_reclamo}`,
+        id_usuario: usuario.id_usuario,
+        accion: "confirmar_entrega",
+        recurso: `RECLAMO:${reclamo.id_reclamo};OBJETO:${reclamo.id_objeto};COMPROBANTE:${numeroComprobante}`,
         resultado: "permitido",
       },
     });
