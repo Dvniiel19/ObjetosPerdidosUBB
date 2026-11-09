@@ -78,8 +78,9 @@ export async function editarObjeto(idObjeto, datos, encargado){
     // Actualizar el objeto y registrar el historial
     
     const [objetoEditable] = await prisma.$transaction([
+        // estado y id_punto se exigen de nuevo, si el objeto se entrego o cambio de  oficina despues de la revision de arriba, no se actualiza 
         prisma.objeto.update({
-            where: { id_objeto: idObjeto},
+            where: { id_objeto: idObjeto, estado: 'en_custodia', id_punto: encargado.id_punto },
             data: cambios,
         }),
         prisma.historialObjeto.create({

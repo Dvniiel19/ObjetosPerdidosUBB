@@ -5,8 +5,15 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '8h';
 
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET no esta definido en el .env');
+// Un secreto corto se puede adivinar por fuerza bruta a partir de cualquier token,
+// y con el se podrian firmar tokens falsos (por ejemplo, de administrador)
+const LARGO_MINIMO_SECRETO = 32;
+
+if (!JWT_SECRET || JWT_SECRET.length < LARGO_MINIMO_SECRETO) {
+  throw new Error(
+    `JWT_SECRET debe estar definido en el .env y tener al menos ${LARGO_MINIMO_SECRETO} caracteres. `
+    + 'Genera uno con: openssl rand -hex 32',
+  );
 }
 
 /**
