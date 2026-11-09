@@ -4,31 +4,21 @@ import prisma from '../config/prisma.js';
  * Servicio para gestionar la lógica de negocio de devoluciones y entregas.
  * Conectado a la base de datos mediante Prisma.
  */
-export const procesarEntregaService = async (id, datosReclamo, usuario) => {
-  const {
-    rutCedulaValidada,
-    propiedadAcreditada,
-    aprobadoPorEncargado,
-    metodosAplicados,
-    usuarioReclamante
-  } = datosReclamo;
+export const procesarEntregaService = async (id, datosEntrega, usuario) => {
+  const { rutCedulaValidada, propiedadAcreditada, metodosAplicados } = datosEntrega;
 
-  // Validar que el usuario sea un encargado
+  // Autorización por perfil (defensa en profundidad; la ruta ya exige encargado autenticado)
   if (usuario?.rol !== 'encargado') {
-    throw new Error("Entrega denegada: Solo un Encargado del punto de custodia puede aprobar la entrega.");
+    throw new Error("Entrega denegada: Solo un Encargado del punto de custodia puede confirmar la entrega.");
   }
 
-  // Validaciones de negocio (las que ya existían)
+  // Resultados registrados en el sistema de verificaciones realizadas presencialmente
   if (!rutCedulaValidada) {
-    throw new Error("Verificación rechazada: Se requiere la validación obligatoria del RUT de la cédula.");
+    throw new Error("Verificación rechazada: Se requiere registrar la validación del RUT de la cédula como aprobada.");
   }
 
   if (!propiedadAcreditada) {
-    throw new Error("Verificación rechazada: No se ha acreditado la propiedad del objeto según su categoría.");
-  }
-
-  if (!aprobadoPorEncargado) {
-    throw new Error("Entrega denegada: El Encargado del punto de custodia no ha aprobado las verificaciones.");
+    throw new Error("Verificación rechazada: Se requiere registrar la acreditación de propiedad como aprobada.");
   }
 
   // Buscar el reclamo real en la BD
@@ -53,30 +43,28 @@ export const procesarEntregaService = async (id, datosReclamo, usuario) => {
     throw new Error("Entrega denegada: El Encargado no pertenece al punto de custodia donde se encuentra el objeto.");
   }
 
-  // Verificar que el objeto esté en custodia
+  // Irreversibilidad / precondiciones de estado
   if (reclamo.objeto.estado !== "en_custodia") {
-    throw new Error("El objeto ya se encuentra en estado 'entregado' y no se puede modificar.");
+    throw new Error("El objeto ya no está en custodia y no puede entregarse.");
   }
 
-  // Verificar que el reclamo esté aprobado antes de entregar
+  if (reclamo.estado === "entregado") {
+    throw new Error("El reclamo ya fue entregado de forma irreversible.");
+  }
+
   if (reclamo.estado !== "aprobado") {
-    throw new Error("El reclamo debe estar en estado 'aprobado' para poder entregar el objeto.");
+    throw new Error("El reclamo debe estar en estado 'aprobado' para poder confirmar la entrega.");
   }
 
-  // Validar que se aplique al menos un método de verificación según la categoría
-  const metodosCategoria = reclamo.objeto.categoria.metodos_verificacion;
+  // Validar que se aplique al menos un método válido según la categoría
+  const metodosCategoria = reclamo.objeto.categoria.metodos_verificacion ?? [];
   const metodos = Array.isArray(metodosAplicados) ? metodosAplicados : [];
-
-  if (metodos.length === 0) {
-    throw new Error("Verificación rechazada: Se requiere al menos un método de acreditación de propiedad según la categoría del objeto.");
-  }
-
-  const metodosValidos = metodos.filter(metodo =>
-    metodosCategoria.includes(metodo)
-  );
+  const metodosValidos = metodos.filter((metodo) => metodosCategoria.includes(metodo));
 
   if (metodosValidos.length === 0) {
-    throw new Error(`Verificación rechazada: Ningún método aplicado es válido para la categoría '${reclamo.objeto.categoria.nombre}'. Métodos aceptados: ${metodosCategoria.join(', ')}.`);
+    throw new Error(
+      `Verificación rechazada: Ningún método aplicado es válido para la categoría '${reclamo.objeto.categoria.nombre}'. Métodos aceptados: ${metodosCategoria.join(', ')}.`,
+    );
   }
 
   // Generar número de comprobante único
@@ -118,10 +106,16 @@ export const procesarEntregaService = async (id, datosReclamo, usuario) => {
     message: "Objeto entregado exitosamente de forma irreversible",
     estado: "entregado",
     comprobanteEntrega: {
-      reclamante: usuarioReclamante,
+      // Datos del reclamante desde el registro del sistema (no desde el cliente)
+      reclamante: reclamo.nombre_reclamante,
+      rutReclamante: reclamo.rut_reclamante,
       fechaEntrega: resultado.entregado_en.toISOString(),
-      metodosVerificacionUtilizados: metodosAplicados || [],
+      metodosVerificacionUtilizados: metodosValidos,
+      verificaciones: {
+        identidadRutCedulaAprobada: true,
+        propiedadAcreditada: true,
+      },
       numeroComprobante: resultado.numero_comprobante,
-    }
+    },
   };
 };
