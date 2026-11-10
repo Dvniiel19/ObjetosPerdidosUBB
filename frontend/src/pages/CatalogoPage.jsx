@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { buscarObjetos, listarPuntos, verDetalleObjeto } from '../services/catalogoService.js';
 import { listarCategoria } from '../services/objetoService.js';
 import DetalleObjeto from '../components/detalleObjeto.jsx';
+import { urlArchivo } from '../services/api.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
+import '../styles/catalogo.css';
 
 const FILTROS_VACIOS = { texto: '', categoria: '', punto: '', lugar: '', fecha_desde: '' };
 
@@ -104,14 +106,24 @@ export default function CatalogoPage() {
     </form>
     {objetos && <p role="status">{objetos.length === 0 ? 'No se encontraron objetos con esa búsqueda.' : `Se encontraron ${objetos.length} objetos.`}</p>}
     <div className="objetos">
-      {objetos?.map(objeto => <article className="objeto" key={objeto.id_objeto}>
-        <small>Objeto #{objeto.id_objeto} · {objeto.categoria?.nombre}</small>
-        <h2>{objeto.descripcion}</h2>
-        <p>Lugar: {objeto.lugar_hallazgo}</p>
-        <p>Encontrado el: {fechaParaMostrar(objeto.hallado_en)}</p>
-        <p>Retirar en: {objeto.punto?.nombre ?? 'Sin información'}{objeto.punto?.ubicacion && ` (${objeto.punto.ubicacion})`}</p>
-        <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>Ver detalle</button>
-      </article>)}
+      {objetos?.map((objeto) => {
+        const portada = objeto.fotografias?.[0];
+        return (
+          <article className="objeto" key={objeto.id_objeto}>
+            <div className="objeto-foto">
+              {portada
+                ? <img src={urlArchivo(portada.archivo_url)} alt={`Fotografía de ${objeto.descripcion}`} loading="lazy" />
+                : <span>Sin fotografía</span>}
+            </div>
+            <small>Objeto #{objeto.id_objeto} · {objeto.categoria?.nombre}</small>
+            <h2>{objeto.descripcion}</h2>
+            <p>Lugar: {objeto.lugar_hallazgo}</p>
+            <p>Encontrado el: {fechaParaMostrar(objeto.hallado_en)}</p>
+            <p>Retirar en: {objeto.punto?.nombre ?? 'Sin información'}{objeto.punto?.ubicacion && ` (${objeto.punto.ubicacion})`}</p>
+            <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>Ver detalle</button>
+          </article>
+        );
+      })}
     </div>
   </main>;
 }
