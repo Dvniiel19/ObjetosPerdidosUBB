@@ -14,10 +14,11 @@ export default function CatalogoPage() {
   const [categorias, setCategorias] = useState([]);
   const [puntos, setPuntos] = useState([]);
   const [objetos, setObjetos] = useState(null);
-  const [cargando, setCargando] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [detalle, setDetalle] = useState(null);
 
+  // Al abrir: listas de los filtros y todos los objetos disponibles
   useEffect(() => {
     listarCategoria()
       .then(setCategorias)
@@ -25,26 +26,37 @@ export default function CatalogoPage() {
     listarPuntos()
       .then(setPuntos)
       .catch(() => setError('No se pudieron cargar los puntos de acopio.'));
+    buscarObjetos(FILTROS_VACIOS)
+      .then((resultado) => setObjetos(resultado.objetos))
+      .catch((err) => setError(err.message))
+      .finally(() => setCargando(false));
   }, []);
 
   function cambiarFiltro(nombre, valor) {
     setFiltros(anteriores => ({ ...anteriores, [nombre]: valor }));
   }
 
-  async function buscar(evento) {
-    evento.preventDefault();
-    setCargando(true); setError('');
+  async function buscar(nuevosFiltros) {
+    setCargando(true);
+    setError('');
     try {
-      const resultado = await buscarObjetos(filtros);
+      const resultado = await buscarObjetos(nuevosFiltros);
       setObjetos(resultado.objetos);
-    } catch (err) { setError(err.message); }
-    finally { setCargando(false); }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  function enviar(evento) {
+    evento.preventDefault();
+    buscar(filtros);
   }
 
   function limpiar() {
     setFiltros(FILTROS_VACIOS);
-    setObjetos(null);
-    setError('');
+    buscar(FILTROS_VACIOS);
   }
 
   async function verDetalle(id) {
@@ -64,7 +76,7 @@ export default function CatalogoPage() {
     <h1>Buscar objetos perdidos</h1>
     <p>Revisa los objetos que están en custodia en los puntos de acopio.</p>
     {error && <p role="alert">{error}</p>}
-    <form onSubmit={buscar}>
+    <form onSubmit={enviar}>
       <fieldset disabled={cargando}>
         <label>Buscar objeto<input value={filtros.texto} onChange={e => cambiarFiltro('texto', e.target.value)} placeholder="Descripción o lugar de hallazgo" /></label>
         <label>Categoría
