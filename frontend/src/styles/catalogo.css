@@ -1,0 +1,22 @@
+/* Estilos del catálogo de objetos (RF3) */
+
+/* Recuadro de la foto: mismo tamaño en todas las tarjetas, la imagen se recorta para llenarlo */
+.objeto-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.objeto-foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
