@@ -2,8 +2,9 @@ import {
   listarCatalogo as listarCatalogoService,
   obtenerDetalleObjeto as obtenerDetalleObjetoService,
   registrarObjeto as registrarObjetoService,
+  obtenerObjetoParaEditar,
+  editarObjeto,
 } from '../services/objetosService.js';
-import {obtenerObjetoParaEditar, editarObjeto} from '../services/editarObjetoService.js';
 
 export async function registrarObjeto(req, res, next) {
   try {
