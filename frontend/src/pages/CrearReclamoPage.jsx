@@ -39,7 +39,7 @@ export default function CrearReclamoPage() {
 
   return (
     <main>
-      <h1>Solicitar objeto reclamado</h1>
+      <h1>Nueva solicitud de objeto</h1>
       <p>Completa los datos para registrar la solicitud de devolución. El Encargado revisará el reclamo.</p>
 
       {mensaje && (

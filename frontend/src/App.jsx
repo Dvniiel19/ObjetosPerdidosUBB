@@ -12,6 +12,12 @@ import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOG
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
 import './App.css';
 
+const VISTAS_POR_ROL = {
+  usuario: ['catalogo', 'crearReclamo'],
+  encargado: ['catalogo', 'crearReclamo', 'registrar', 'corregir', 'entrega', 'revisarReclamo'],
+  administrador: ['catalogo', 'crearReclamo', 'destruir', 'puntos'],
+};
+
 export default function App() {
   const [vista, setVista] = useState('catalogo');
 
@@ -55,99 +61,56 @@ export default function App() {
       : <LoginPage onIngresar={setUsuario} onExterno={() => setExterno(true)} />;
   }
 
-  // RF8: solo el encargado corrige objetos
-  const esEncargado = usuario.rol === 'encargado';
-  // RF5 y RF9: solo el administrador gestiona puntos
-  const esAdmin = usuario.rol === 'administrador';
+  const rol = usuario.rol;
+  const esEncargado = rol === 'encargado';
+  const esAdmin = rol === 'administrador';
+  const vistasPermitidas = VISTAS_POR_ROL[rol] ?? ['catalogo'];
+  const vistaActual = vistasPermitidas.includes(vista) ? vista : 'catalogo';
+
+  const puede = (v) => vistasPermitidas.includes(v);
+  const boton = (id, etiqueta, descripcion) =>
+    puede(id) ? (
+      <button
+        key={id}
+        type="button"
+        aria-pressed={vistaActual === id}
+        title={descripcion}
+        aria-label={descripcion ? `${etiqueta}. ${descripcion}` : etiqueta}
+        onClick={() => setVista(id)}
+      >
+        {etiqueta}
+      </button>
+    ) : null;
 
   return (
     <>
       {/* LOGIN: barra con el usuario y cerrar sesion */}
       <header className="barra-sesion">
-        <span>{usuario.nombres} {usuario.apellidos} · {usuario.rol}</span>
+        <span>{usuario.nombres} {usuario.apellidos} · {rol}{esEncargado && usuario.id_punto ? ` (punto ${usuario.id_punto})` : ''}</span>
         <button type="button" onClick={salir}>Cerrar sesión</button>
       </header>
 
       <nav className="navegacion-objetos" aria-label="Gestión de objetos">
-        <button
-          type="button"
-          aria-pressed={vista === 'catalogo'}
-          onClick={() => setVista('catalogo')}
-        >
-          Buscar objetos
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'registrar'}
-          onClick={() => setVista('registrar')}
-        >
-          Registrar objeto
-        </button>
-
-        {/* RF8: solo encargado */}
-        {esEncargado && (
-          <button
-            type="button"
-            aria-pressed={vista === 'corregir'}
-            onClick={() => setVista('corregir')}
-          >
-            Corregir objeto
-          </button>
-        )}
-
-        <button
-          type="button"
-          aria-pressed={vista === 'destruir'}
-          onClick={() => setVista('destruir')}
-        >
-          Destrucción Segura
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'entrega'}
-          onClick={() => setVista('entrega')}
-        >
-          Entrega de reclamo
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'crearReclamo'}
-          onClick={() => setVista('crearReclamo')}
-        >
-          Solicitar reclamo
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'revisarReclamo'}
-          onClick={() => setVista('revisarReclamo')}
-        >
-          Revisar reclamo
-        </button>
-
-        {/* RF5 y RF9: solo administrador */}
-        {esAdmin && (
-          <button
-            type="button"
-            aria-pressed={vista === 'puntos'}
-            onClick={() => setVista('puntos')}
-          >
-            Puntos
-          </button>
-        )}
+        {boton('catalogo', 'Buscar objetos', 'Consulta objetos en custodia por filtros.')}
+        {boton('crearReclamo', esEncargado ? 'Registrar solicitud' : 'Nueva solicitud', esEncargado ? 'Registra en el sistema una solicitud de devolución presentada presencialmente.' : 'Envía una solicitud para reclamar un objeto.')}
+        {esEncargado && <span className="nav-sep" aria-hidden="true">|</span>}
+        {boton('registrar', esEncargado ? 'Registrar hallazgo' : 'Registrar objeto', 'Ingresa al sistema un objeto encontrado en el punto de acopio.')}
+        {boton('corregir', 'Corregir objeto', 'Corrige datos de un objeto en custodia de tu punto.')}
+        {boton('revisarReclamo', 'Gestionar solicitudes', 'Aprueba o rechaza solicitudes de reclamo de tu punto.')}
+        {boton('entrega', 'Entregar objeto', 'Confirma la entrega tras registrar las verificaciones aprobadas.')}
+        {esAdmin && <span className="nav-sep" aria-hidden="true">|</span>}
+        {boton('destruir', 'Destrucción Segura', 'Gestiona la baja/destrucción de objetos no reclamados.')}
+        {boton('puntos', 'Puntos', 'Administra puntos de acopio y encargados.')}
       </nav>
 
-      {vista === 'catalogo' && <CatalogoPage />}
-      {vista === 'registrar' && <RegistrarObjetoPage />}
-      {vista === 'corregir' && esEncargado && <CorregirObjetoPage />}
-      {vista === 'destruir' && <DestruccionPage />}
-      {vista === 'entrega' && <EntregaReclamoPage />}
-      {vista === 'crearReclamo' && <CrearReclamoPage />}
-      {vista === 'revisarReclamo' && <RevisarReclamoPage />}
-      {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
+      {vistaActual === 'catalogo' && <CatalogoPage />}
+      {vistaActual === 'crearReclamo' && <CrearReclamoPage />}
+      {vistaActual === 'registrar' && puede('registrar') && <RegistrarObjetoPage />}
+      {vistaActual === 'corregir' && puede('corregir') && <CorregirObjetoPage />}
+      {vistaActual === 'revisarReclamo' && puede('revisarReclamo') && <RevisarReclamoPage />}
+      {vistaActual === 'entrega' && puede('entrega') && <EntregaReclamoPage />}
+      {vistaActual === 'destruir' && puede('destruir') && <DestruccionPage />}
+      {vistaActual === 'puntos' && puede('puntos') && <GestionPuntosPage />}
     </>
   );
 }

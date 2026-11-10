@@ -1,28 +1,24 @@
 import { useState } from 'react';
 import { entregarReclamoService } from '../services/reclamosService.js';
 
-// TEMPORAL: encargados del seed, hasta que exista el login
-const ENCARGADOS = [
-  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
-  { id: 3, nombre: 'Carla Encargada (FACE)' },
-];
-
 const METODOS_DISPONIBLES = [
-  'Cédula de identidad',
   'Boleta de compra',
-  'Factura de compra',
-  'Foto con el objeto',
-  'Testigo',
-  'Denuncia policial',
+  'Contenido de la mochila',
+  'Descripcion detallada',
+  'Fotografia con el objeto',
+  'Fotografia del documento',
+  'Marca y talla',
+  'Nombre del titular',
+  'Nombre o numero de serie',
+  'Numero de documento',
+  'Numero de llave',
+  'Numero de serie',
 ];
 
 export const EntregaReclamoPage = () => {
-  const [idUsuario, setIdUsuario] = useState('');
   const [idReclamo, setIdReclamo] = useState('');
-  const [usuarioReclamante, setUsuarioReclamante] = useState('');
   const [rutCedulaValidada, setRutCedulaValidada] = useState(false);
   const [propiedadAcreditada, setPropiedadAcreditada] = useState(false);
-  const [aprobadoPorEncargado, setAprobadoPorEncargado] = useState(false);
   const [metodosSeleccionados, setMetodosSeleccionados] = useState([]);
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState(null);
@@ -41,15 +37,14 @@ export const EntregaReclamoPage = () => {
     setResultado(null);
 
     try {
+      // El sistema registra los resultados de las verificaciones realizadas presencialmente.
       const datosValidacion = {
-        usuarioReclamante: usuarioReclamante.trim(),
         rutCedulaValidada,
         propiedadAcreditada,
-        aprobadoPorEncargado,
         metodosAplicados: metodosSeleccionados,
       };
 
-      const respuesta = await entregarReclamoService(Number(idReclamo), Number(idUsuario), datosValidacion);
+      const respuesta = await entregarReclamoService(Number(idReclamo), datosValidacion);
       setResultado(respuesta);
     } catch (err) {
       setError(err);
@@ -60,23 +55,14 @@ export const EntregaReclamoPage = () => {
 
   return (
     <main>
-      <h1>Entregar objeto reclamado</h1>
+      <h1>Entregar objeto</h1>
       <p>
-        Completa las verificaciones exigidas antes de entregar el objeto.
-        El Encargado debe aprobar la validación del RUT y la acreditación de propiedad.
+        Registra en el sistema los resultados de las verificaciones realizadas presencialmente.
+        La confirmación de entrega la realiza el Encargado autenticado del punto de custodia.
       </p>
 
       <form onSubmit={handleEntregar}>
         <fieldset disabled={loading}>
-          <label>Encargado que entrega
-            <select value={idUsuario} onChange={(e) => setIdUsuario(e.target.value)} required>
-              <option value="">Selecciona un encargado</option>
-              {ENCARGADOS.map(enc => (
-                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
-              ))}
-            </select>
-          </label>
-
           <label htmlFor="id-reclamo">ID del reclamo</label>
           <input
             id="id-reclamo"
@@ -88,28 +74,15 @@ export const EntregaReclamoPage = () => {
             required
           />
 
-          <label>Nombre del reclamante
-            <input
-              value={usuarioReclamante}
-              onChange={(e) => setUsuarioReclamante(e.target.value)}
-              placeholder="Ej: Juan Pérez"
-              required
-            />
-          </label>
-
           <fieldset>
-            <legend>Verificaciones obligatorias</legend>
+            <legend>Resultados de verificación (presencial → registro en sistema)</legend>
             <label>
               <input type="checkbox" checked={rutCedulaValidada} onChange={(e) => setRutCedulaValidada(e.target.checked)} />
-              RUT de la cédula validado
+              Identidad verificada: RUT de cédula validado
             </label>
             <label>
               <input type="checkbox" checked={propiedadAcreditada} onChange={(e) => setPropiedadAcreditada(e.target.checked)} />
-              Propiedad acreditada según la categoría
-            </label>
-            <label>
-              <input type="checkbox" checked={aprobadoPorEncargado} onChange={(e) => setAprobadoPorEncargado(e.target.checked)} />
-              Aprobado por el Encargado del punto de custodia
+              Propiedad acreditada según la categoría del objeto
             </label>
           </fieldset>
 
