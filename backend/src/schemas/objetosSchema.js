@@ -14,6 +14,14 @@ export const correccionObjetoSchema = registroObjetoSchema
     .omit({
         fotografias: true})
     .extend({
+        descripcion: z.string()
+        .trim()
+        .min(1, 'La descripcion es obligatoria')
+        .max(1000, 'La descripcion debe tener maximo 1000 caracteres'),
+        lugar_hallazgo: z.string()
+        .trim()
+        .min(1, 'El lugar de hallazgo es obligatorio')
+        .max(255, 'El lugar de hallazgo debe tener maximo 255 caracteres'),
         motivo: z.string().
         trim().
         min(10, 'El motivo debe tener minimo 10 caracteres')

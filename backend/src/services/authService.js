@@ -6,6 +6,10 @@ import { minutosDeBloqueo, registrarFallo, resetearIntentos } from '../utils/int
 
 const MENSAJE_CREDENCIALES = 'Correo o contrasena incorrectos';
 
+/* Hash de una clave cualquiera si el correo no existe se compara igual contra este hash
+asi la respuesta tarda lo mismo y no se puede saber por el tiempo que correos tienen cuenta */
+const HASH_FALSO = bcrypt.hashSync('clave-que-no-existe', 10);
+
 // Datos para el front
 const DATOS_PUBLICOS = {
   id_usuario: true,
@@ -29,10 +33,9 @@ export async function iniciarSesion({ correo, contrasena }) {
     select: { ...DATOS_PUBLICOS, activo: true, clave_hash: true },
   });
 
-  // Comparar la contrasena con el hash guardado
-  const contrasenaCorrecta = usuario
-    ? await bcrypt.compare(contrasena, usuario.clave_hash)
-    : false;
+  // Comparar la contrasena con el hash guardado (o con HASH_FALSO si el usuario no existe)
+  const coincide = await bcrypt.compare(contrasena, usuario?.clave_hash ?? HASH_FALSO);
+  const contrasenaCorrecta = Boolean(usuario) && coincide;
 
   if (!contrasenaCorrecta) {
     registrarFallo(correo);
