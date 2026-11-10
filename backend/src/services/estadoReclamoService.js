@@ -34,18 +34,15 @@ export const cambiarEstadoReclamoService = async (id, datosEstado, usuario) => {
     throw new Error(`El reclamo no puede ser modificado porque su estado actual es '${reclamo.estado}'.`);
   }
 
-  // Actualizar el estado en una transacción (condicional: solo si sigue en_revision)
+  // Actualizar el estado en una transacción
   const resultado = await prisma.$transaction(async (tx) => {
-    const actualizado = await tx.reclamo.updateMany({
-      where: { id_reclamo: reclamo.id_reclamo, estado: "en_revision" },
+    const reclamoActualizado = await tx.reclamo.update({
+      where: { id_reclamo: reclamo.id_reclamo },
       data: {
         estado,
         motivo_decision: motivo || null,
       },
     });
-    if (actualizado.count !== 1) {
-      throw new Error("El reclamo ya no está en revisión o fue modificado; no se puede cambiar su estado.");
-    }
 
     // Registrar en bitácora
     await tx.bitacora.create({
@@ -58,7 +55,7 @@ export const cambiarEstadoReclamoService = async (id, datosEstado, usuario) => {
       },
     });
 
-    return { estado, motivo_decision: motivo || null };
+    return reclamoActualizado;
   });
 
   return {
@@ -66,7 +63,7 @@ export const cambiarEstadoReclamoService = async (id, datosEstado, usuario) => {
       ? "Reclamo aprobado exitosamente. El objeto puede ser entregado."
       : "Reclamo rechazado.",
     reclamo: {
-      id_reclamo: reclamo.id_reclamo,
+      id_reclamo: resultado.id_reclamo,
       estado: resultado.estado,
       motivo_decision: resultado.motivo_decision,
     },

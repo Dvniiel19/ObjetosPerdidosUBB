@@ -1,13 +1,11 @@
 import prisma from '../config/prisma.js';
 
 /**
- * Servicio para registrar una solicitud de reclamo (devolución).
- * El reclamo queda en estado 'en_revision'.
- * - Encargado: debe pertenecer al punto de custodia del objeto; queda como atendido_por.
- * - Usuario/Administrador: se asigna atendido_por a un encargado activo del punto (responsable operativo).
- * La bitácora registra el usuario autenticado que realizó la acción en el sistema.
+ * Servicio para crear un reclamo (solicitud de devolución).
+ * El reclamo se crea en estado 'en_revision' y se asigna al encargado
+ * del punto donde el objeto está en custodia.
  */
-export const crearReclamoService = async (datosReclamo, usuario) => {
+export const crearReclamoService = async (datosReclamo) => {
   const { id_objeto, rut_reclamante, nombre_reclamante, evidencia_identidad, evidencia_propiedad } = datosReclamo;
 
   // Buscar el objeto y verificar que esté en custodia
@@ -33,19 +31,11 @@ export const crearReclamoService = async (datosReclamo, usuario) => {
     throw new Error("El objeto no está disponible para reclamar.");
   }
 
-  // Determinar encargado responsable (atendido_por) según perfil que registra
-  let atendidoPorId;
-  if (usuario?.rol === 'encargado') {
-    if (usuario.id_punto !== objeto.id_punto) {
-      throw new Error("Acción denegada: Solo el Encargado del punto de custodia del objeto puede registrar este reclamo.");
-    }
-    atendidoPorId = usuario.id_usuario;
-  } else {
-    const encargadoPunto = objeto.punto.encargados[0];
-    if (!encargadoPunto) {
-      throw new Error("No hay un encargado asignado al punto de custodia de este objeto.");
-    }
-    atendidoPorId = encargadoPunto.id_usuario;
+  // Buscar al encargado del punto
+  const encargado = objeto.punto.encargados[0];
+
+  if (!encargado) {
+    throw new Error("No hay un encargado asignado al punto de custodia de este objeto.");
   }
 
   // Crear el reclamo en una transacción
@@ -53,7 +43,7 @@ export const crearReclamoService = async (datosReclamo, usuario) => {
     const nuevoReclamo = await tx.reclamo.create({
       data: {
         id_objeto,
-        atendido_por: atendidoPorId,
+        atendido_por: encargado.id_usuario,
         rut_reclamante,
         nombre_reclamante,
         evidencia_identidad,
@@ -62,10 +52,10 @@ export const crearReclamoService = async (datosReclamo, usuario) => {
       },
     });
 
-    // Registrar en bitácora: actor real en el sistema
+    // Registrar en bitácora
     await tx.bitacora.create({
       data: {
-        id_usuario: usuario?.id_usuario ?? atendidoPorId,
+        id_usuario: encargado.id_usuario,
         accion: "crear_reclamo",
         recurso: `RECLAMO:${nuevoReclamo.id_reclamo}`,
         resultado: "permitido",
@@ -76,7 +66,7 @@ export const crearReclamoService = async (datosReclamo, usuario) => {
   });
 
   return {
-    mensaje: "Solicitud de reclamo registrada. Quedará en revisión por el Encargado del punto de custodia.",
+    mensaje: "Reclamo creado exitosamente. Quedará en revisión por el Encargado.",
     reclamo: {
       id_reclamo: reclamo.id_reclamo,
       estado: reclamo.estado,
