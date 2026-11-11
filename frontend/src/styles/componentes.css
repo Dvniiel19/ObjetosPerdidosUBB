@@ -10,6 +10,23 @@ main:has(.pestanas) {
   max-width: 1160px;
 }
 
+/* Página de entregas: ocupa todo el ancho disponible sin márgenes laterales */
+main.pagina-entregas {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Sin bordes/márgenes del contenedor raíz en la página de entregas */
+#root:has(.pagina-entregas) {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-inline: none;
+}
+
 /* ---------- Cabecera de una pantalla ---------- */
 
 .cabecera-pagina h1 {

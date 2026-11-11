@@ -1,4 +1,22 @@
-import { procesarEntregaService } from '../services/reclamosService.js';
+import { procesarEntregaService, listarReclamosDisponiblesService } from '../services/reclamosService.js';
+
+/**
+ * Lista reclamos disponibles para el encargado (en revisión o aprobados en su punto).
+ */
+export const listarReclamosDisponibles = async (req, res) => {
+  try {
+    const reclamos = await listarReclamosDisponiblesService(req.usuario);
+    return res.status(200).json({ reclamos });
+  } catch (error) {
+    console.error('Error al listar reclamos disponibles:', error);
+
+    if (error.message.includes('Solo un encargado')) {
+      return res.status(403).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: 'Error interno al listar los reclamos' });
+  }
+};
 
 /**
  * Controlador para gestionar la recepción y respuesta HTTP del reclamo y entrega de objetos.

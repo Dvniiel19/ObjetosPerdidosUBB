@@ -1,5 +1,9 @@
 import { pedir } from './api.js';
 
+export function listarReclamosDisponiblesService() {
+  return pedir('/reclamos');
+}
+
 export function crearReclamoService(datos) {
   return pedir('/reclamos', { metodo: 'POST', body: datos });
 }
