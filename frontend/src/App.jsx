@@ -20,7 +20,7 @@ const VISTAS = [
   { id: 'catalogo', etiqueta: 'Catálogo', roles: ['usuario', 'encargado', 'administrador'], ayuda: 'Busca objetos perdidos en custodia.' },
   { id: 'registrar', etiqueta: 'Registrar objeto', roles: ['encargado'], ayuda: 'Ingresa al sistema un objeto encontrado en el punto de acopio.' },
   { id: 'corregir', etiqueta: 'Corregir', roles: ['encargado'], ayuda: 'Corrige datos de un objeto en custodia de tu punto.' },
-  { id: 'reclamos', etiqueta: 'Reclamos', roles: ['encargado'], ayuda: 'Gestiona reclamos en tu punto: registrar solicitud, aprobar/rechazar y entregar.' },
+  { id: 'reclamos', etiqueta: 'Entregas', roles: ['encargado'], ayuda: 'Gestiona entregas en tu punto: registrar solicitud, aprobar/rechazar y entregar.' },
   { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
   { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
   { id: 'historial', etiqueta: 'Historial', roles: ['administrador'], ayuda: 'Consulta la trazabilidad completa de un objeto.' },
