@@ -8,8 +8,20 @@ import LoginPage from './pages/LoginPage.jsx';
 import AccesoExternoPage from './pages/AccesoExternoPage.jsx';
 import { obtenerUsuarioActual, logout } from './services/authService.js';
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
+import Encabezado from './components/Encabezado.jsx';
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
+
+// Opciones del menú y qué rol puede ver cada una.
+// Para agregar una pantalla: suma una línea aquí y su <Pagina /> más abajo.
+const VISTAS = [
+  { id: 'catalogo', etiqueta: 'Catálogo', roles: ['usuario', 'encargado', 'administrador'], ayuda: 'Busca objetos perdidos en custodia.' },
+  { id: 'registrar', etiqueta: 'Registrar objeto', roles: ['encargado'], ayuda: 'Ingresa al sistema un objeto encontrado en el punto de acopio.' },
+  { id: 'corregir', etiqueta: 'Corregir', roles: ['encargado'], ayuda: 'Corrige datos de un objeto en custodia de tu punto.' },
+  { id: 'reclamos', etiqueta: 'Reclamos', roles: ['encargado'], ayuda: 'Gestiona reclamos en tu punto: registrar solicitud, aprobar/rechazar y entregar.' },
+  { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
+  { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
+];
 
 export default function App() {
   const [vista, setVista] = useState('catalogo');
@@ -56,74 +68,17 @@ export default function App() {
 
   const esEncargado = usuario.rol === 'encargado';
   const esAdmin = usuario.rol === 'administrador';
+  const vistasPermitidas = VISTAS.filter((v) => v.roles.includes(usuario.rol));
 
   return (
     <>
-      {/* LOGIN: barra con el usuario y cerrar sesion */}
-      <header className="barra-sesion">
-        <span>{usuario.nombres} {usuario.apellidos} · {usuario.rol}{esEncargado && usuario.id_punto ? ` (punto ${usuario.id_punto})` : ''}</span>
-        <button type="button" onClick={salir}>Cerrar sesión</button>
-      </header>
-
-      <nav className="navegacion-objetos" aria-label="Gestión de objetos">
-        <button
-          type="button"
-          aria-pressed={vista === 'catalogo'}
-          onClick={() => setVista('catalogo')}
-        >
-          Buscar objetos
-        </button>
-
-        {esEncargado && (
-          <>
-            <button
-              type="button"
-              aria-pressed={vista === 'registrar'}
-              onClick={() => setVista('registrar')}
-              title="Ingresa al sistema un objeto encontrado en el punto de acopio."
-            >
-              Registrar hallazgo
-            </button>
-            <button
-              type="button"
-              aria-pressed={vista === 'corregir'}
-              onClick={() => setVista('corregir')}
-              title="Corrige datos de un objeto en custodia de tu punto."
-            >
-              Corregir objeto
-            </button>
-            <button
-              type="button"
-              aria-pressed={vista === 'reclamos'}
-              onClick={() => setVista('reclamos')}
-              title="Gestiona reclamos en tu punto: registrar solicitud, aprobar/rechazar y entregar."
-            >
-              Solicitudes de reclamo
-            </button>
-          </>
-        )}
-
-        {esAdmin && (
-          <>
-            <button
-              type="button"
-              aria-pressed={vista === 'destruir'}
-              onClick={() => setVista('destruir')}
-              title="Gestiona la baja/destrucción de objetos no reclamados."
-            >
-              Destrucción Segura
-            </button>
-            <button
-              type="button"
-              aria-pressed={vista === 'puntos'}
-              onClick={() => setVista('puntos')}
-              title="Administra puntos de acopio y encargados."
-            >
-              Puntos
-            </button>
-          </>
-        )}
-      </nav>
+      <Encabezado
+        usuario={usuario}
+        vistas={vistasPermitidas}
+        vistaActual={vista}
+        onCambiarVista={setVista}
+        onSalir={salir}
+      />
 
       {vista === 'catalogo' && <CatalogoPage />}
       {vista === 'registrar' && esEncargado && <RegistrarObjetoPage />}
