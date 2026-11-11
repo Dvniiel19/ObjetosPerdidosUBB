@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icono from '../components/Icono.jsx';
-import { obtenerObjetoParaEditar, guardarObjetoEditado, listarCategoria } from '../services/objetoService.js';
+import { obtenerObjetoParaEditar, obtenerObjetoPorNumero, guardarObjetoEditado, listarCategoria } from '../services/objetoService.js';
 import { buscarObjetos } from '../services/catalogoService.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
 import '../styles/gestion.css';
@@ -44,13 +44,14 @@ export default function CorregirObjetoPage() {
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
 
-  async function abrir(idObjeto) {
+  // Abre un objeto por su id interno (desde la busqueda) o por el numero de su etiqueta
+  async function abrir({ idObjeto, numeroEtiqueta }) {
     setCargando(true);
     setError('');
     setMensaje('');
     try {
       const [encontrado, listaCategorias] = await Promise.all([
-        obtenerObjetoParaEditar(idObjeto),
+        numeroEtiqueta ? obtenerObjetoPorNumero(numeroEtiqueta) : obtenerObjetoParaEditar(idObjeto),
         listarCategoria(),
       ]);
       if (encontrado.estado !== 'en_custodia') {
@@ -62,7 +63,7 @@ export default function CorregirObjetoPage() {
       setDatos(aFormulario(encontrado));
       setMotivo('');
       setCorrecciones([]);
-      setNumero(String(idObjeto));
+      setNumero(String(encontrado.numero_en_punto));
     } catch (err) {
       setObjeto(null);
       setError(err.message);
@@ -73,7 +74,9 @@ export default function CorregirObjetoPage() {
 
   function buscarPorNumero(evento) {
     evento.preventDefault();
-    abrir(Number(numero));
+    // Acepta "12" o "BIB-12": se usa solo la parte numerica
+    const soloNumero = numero.replace(/\D/g, '');
+    abrir({ numeroEtiqueta: Number(soloNumero) });
   }
 
   async function buscarPorTexto(evento) {
@@ -161,10 +164,9 @@ export default function CorregirObjetoPage() {
         </div>
         <form className="buscar-numero" onSubmit={buscarPorNumero}>
           <label>
-            N° de objeto
+            N° de etiqueta
             <input
-              type="number"
-              min="1"
+              placeholder="Ej: 12"
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
               required
@@ -209,7 +211,7 @@ export default function CorregirObjetoPage() {
                     type="button"
                     className="boton-secundario"
                     disabled={cargando}
-                    onClick={() => abrir(resultado.id_objeto)}
+                    onClick={() => abrir({ idObjeto: resultado.id_objeto })}
                   >
                     Corregir este objeto
                   </button>
@@ -227,7 +229,7 @@ export default function CorregirObjetoPage() {
               <div className="fila-campos">
                 <label>
                   Identificador
-                  <input value={`#${objeto.id_objeto}`} disabled />
+                  <input value={`${objeto.punto?.codigo ?? ''}-${objeto.numero_en_punto}`} disabled />
                   <span className="ayuda">No se puede modificar</span>
                 </label>
                 <label>

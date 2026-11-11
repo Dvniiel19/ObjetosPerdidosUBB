@@ -4,8 +4,8 @@ import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
 import { subirFotografias } from '../middlewares/subirFotografias.js';
 import { validar } from '../middlewares/validar.js';
 import { validarRegistroObjeto } from '../middlewares/validarRegistroObjeto.js';
-import { catalogoQuerySchema, idObjetoSchema, correccionObjetoSchema } from '../schemas/objetosSchema.js';
-import { listarCatalogo, registrarObjeto, verDetalleObjeto, mostrarObjetoParaEditar, guardarObjetoEditado } from '../controllers/objetosController.js';
+import { catalogoQuerySchema, idObjetoSchema, numeroObjetoSchema, correccionObjetoSchema } from '../schemas/objetosSchema.js';
+import { listarCatalogo, registrarObjeto, verDetalleObjeto, mostrarObjetoParaEditar, mostrarObjetoPorNumero, guardarObjetoEditado } from '../controllers/objetosController.js';
 
 const router = Router();
 
@@ -33,6 +33,15 @@ router.post(
   validarRegistroObjeto,
   registrarObjeto,
 );
+//GET /api/objetos/numero/:numero/editar (buscar por el numero de la etiqueta)
+router.get(
+    '/numero/:numero/editar',
+    autenticar,
+    permitirRoles('encargado'),
+    validar(numeroObjetoSchema, 'params'),
+    mostrarObjetoPorNumero,
+);
+
 //GET /api/objetos/:id/editar
 
 router.get(

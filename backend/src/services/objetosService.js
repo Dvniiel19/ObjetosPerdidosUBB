@@ -160,8 +160,18 @@ export async function registrarObjeto(datos, encargado) {
 
   await validarCategoriaExistente(datos.id_categoria);
 
-  return prisma.objeto.create({
+  // El contador del punto se incrementa en la base de datos y el objeto se crea en la misma
+  // transaccion: dos encargados registrando a la vez nunca reciben el mismo numero
+  return prisma.$transaction(async (tx) => {
+    const punto = await tx.puntoAcopio.update({
+      where: { id_punto: encargado.id_punto },
+      data: { ultimo_numero: { increment: 1 } },
+      select: { ultimo_numero: true },
+    });
+
+    return tx.objeto.create({
     data: {
+      numero_en_punto: punto.ultimo_numero,
       id_categoria: datos.id_categoria,
       descripcion: datos.descripcion,
       hallado_en: new Date(datos.hallado_en),
@@ -178,6 +188,7 @@ export async function registrarObjeto(datos, encargado) {
       },
     },
     include: {
+      punto: { select: { codigo: true } },
       fotografias: {
         select: {
           posicion: true,
@@ -188,6 +199,7 @@ export async function registrarObjeto(datos, encargado) {
         },
       },
     },
+    });
   });
 }
 
@@ -198,6 +210,19 @@ function validarEncargado(encargado) {
 }
 
 const camposEditables = ['id_categoria', 'descripcion', 'lugar_hallazgo', 'hallado_en'];
+
+// Datos que necesita la pantalla de correccion
+const SELECT_PARA_EDITAR = {
+  id_objeto: true,
+  numero_en_punto: true,
+  id_categoria: true,
+  descripcion: true,
+  lugar_hallazgo: true,
+  hallado_en: true,
+  estado: true,
+  id_punto: true,
+  punto: { select: { codigo: true } },
+};
 
 function sonIguales(a, b) {
   if (a instanceof Date && b instanceof Date) {
@@ -211,15 +236,7 @@ export async function obtenerObjetoParaEditar(idObjeto, encargado) {
 
   const objeto = await prisma.objeto.findUnique({
     where: { id_objeto: idObjeto },
-    select: {
-      id_objeto: true,
-      id_categoria: true,
-      descripcion: true,
-      lugar_hallazgo: true,
-      hallado_en: true,
-      estado: true,
-      id_punto: true,
-    },
+    select: SELECT_PARA_EDITAR,
   });
 
   if (!objeto) {
@@ -228,6 +245,24 @@ export async function obtenerObjetoParaEditar(idObjeto, encargado) {
 
   if (objeto.id_punto !== encargado.id_punto) {
     throw errorConCodigo('Solo puedes editar objetos de tu oficina', 403);
+  }
+  return objeto;
+}
+
+// Busca por el numero que el encargado ve en la etiqueta (por ejemplo el 12 de BIB-12).
+// Como el numero se repite entre puntos, siempre se busca dentro del punto del encargado.
+export async function obtenerObjetoPorNumero(numero, encargado) {
+  validarEncargado(encargado);
+
+  const objeto = await prisma.objeto.findUnique({
+    where: {
+      id_punto_numero_en_punto: { id_punto: encargado.id_punto, numero_en_punto: numero },
+    },
+    select: SELECT_PARA_EDITAR,
+  });
+
+  if (!objeto) {
+    throw errorConCodigo('Tu punto no tiene un objeto con ese numero', 404);
   }
   return objeto;
 }

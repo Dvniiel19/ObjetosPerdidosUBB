@@ -33,6 +33,11 @@ export const idObjetoSchema = z.object({
     id: z.coerce.number().int().positive()
 });
 
+// Numero del objeto dentro del punto (el de la etiqueta, por ejemplo 12 en BIB-12)
+export const numeroObjetoSchema = z.object({
+    numero: z.coerce.number('El numero debe ser un numero').int('El numero debe ser entero').positive('El numero debe ser positivo'),
+});
+
 // Filtros del catalogo. Llegan como texto en la URL, por eso se usa coerce en los numeros.
 export const catalogoQuerySchema = z.object({
     texto: z.string().trim().optional(),

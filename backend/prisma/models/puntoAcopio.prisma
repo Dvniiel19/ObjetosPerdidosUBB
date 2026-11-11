@@ -1,6 +1,10 @@
 model PuntoAcopio {
   id_punto   Int       @id @default(autoincrement())
   nombre     String    @unique @db.VarChar
+  /// codigo corto que antecede al numero de cada objeto, por ejemplo BIB en BIB-12
+  codigo        String  @unique @db.VarChar(6)
+  /// ultimo numero entregado a un objeto de este punto (contador por punto)
+  ultimo_numero Int     @default(0)
   ubicacion  String    @db.Text
   /// visible para los usuarios en la app
   publicado  Boolean   @default(false)

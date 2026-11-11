@@ -3,6 +3,7 @@ import {
   obtenerDetalleObjeto as obtenerDetalleObjetoService,
   registrarObjeto as registrarObjetoService,
   obtenerObjetoParaEditar,
+  obtenerObjetoPorNumero,
   editarObjeto,
 } from '../services/objetosService.js';
 
@@ -54,6 +55,16 @@ export async function verDetalleObjeto(req, res, next) {
   } catch (error) {
     return next(error);
   }
+}
+
+//GET /api/objetos/numero/:numero/editar (numero dentro del punto del encargado)
+export async function mostrarObjetoPorNumero(req, res, next){
+    try{
+        const objeto = await obtenerObjetoPorNumero(req.params.numero, req.usuario);
+        return res.json(objeto);
+    } catch (error){
+        return next(error);
+    }
 }
 
 //GET /api/objetos/:id/editar
