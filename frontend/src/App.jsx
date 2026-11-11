@@ -22,7 +22,7 @@ import InventarioPage from './pages/InventarioPage.jsx';
 const VISTAS = [
   { id: 'catalogo', etiqueta: 'Catálogo', roles: ['usuario', 'encargado', 'administrador'], ayuda: 'Busca objetos perdidos en custodia.' },
   { id: 'registrar', etiqueta: 'Registrar objeto', roles: ['encargado'], ayuda: 'Ingresa al sistema un objeto encontrado en el punto de acopio.' },
-  { id: 'corregir', etiqueta: 'Corregir', roles: ['encargado'], ayuda: 'Corrige datos de un objeto en custodia de tu punto.' },
+  //{ id: 'corregir', etiqueta: 'Corregir', roles: ['encargado'], ayuda: 'Corrige datos de un objeto en custodia de tu punto.' },
   { id: 'reclamos', etiqueta: 'Entregas', roles: ['encargado'], ayuda: 'Gestiona entregas en tu punto: registrar solicitud, aprobar/rechazar y entregar.' },
   { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
   { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
@@ -98,7 +98,7 @@ export default function App() {
       {vista === 'catalogo' && <CatalogoPage />}
       {vista === 'registrar' && esEncargado && <RegistrarObjetoPage onIrA={irA} />}
       {vista === 'inventario' && esEncargado && <InventarioPage onIrA={irA} />}
-      {vista === 'corregir' && esEncargado && <CorregirObjetoPage parametros={parametros} />}
+     {vista === 'corregir' && esEncargado && <CorregirObjetoPage parametros={parametros} />}
       {vista === 'reclamos' && esEncargado && <ReclamosPage />}
       {vista === 'destruir' && esAdmin && <DestruccionPage usuario={usuario} irA={irA} />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
