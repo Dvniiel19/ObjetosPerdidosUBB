@@ -61,6 +61,34 @@ main:has(.buscador) {
   background: var(--azul-institucional);
 }
 
+/* ---------- Chips de categoría ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chips button:not(.boton-enlace) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+/* Categoría elegida */
+.chips button[aria-pressed='true'] {
+  border-color: var(--azul-institucional);
+  background: var(--azul-institucional);
+  color: #ffffff;
+}
+
 /* ---------- Tarjetas de objetos ---------- */
 
 /* Varias tarjetas por fila; .objetos también lo usan otras pantallas, por eso va acotado al catálogo */

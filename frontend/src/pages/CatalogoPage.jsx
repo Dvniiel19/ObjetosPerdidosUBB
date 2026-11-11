@@ -57,6 +57,13 @@ export default function CatalogoPage() {
     buscar(filtros);
   }
 
+  // Los botones de categoría aplican el filtro de inmediato
+  function elegirCategoria(idCategoria) {
+    const nuevos = { ...filtros, categoria: idCategoria };
+    setFiltros(nuevos);
+    buscar(nuevos);
+  }
+
   function limpiar() {
     setFiltros(FILTROS_VACIOS);
     buscar(FILTROS_VACIOS);
@@ -127,8 +134,22 @@ export default function CatalogoPage() {
         </form>
       </div>
 
-      {/* Temporal: en el siguiente paso "Limpiar" pasa a la fila de categorías */}
-      <button type="button" className="boton-enlace" onClick={limpiar}>Limpiar</button>
+      <div className="chips" role="group" aria-label="Filtrar por categoría">
+        <button type="button" aria-pressed={filtros.categoria === ''} onClick={() => elegirCategoria('')}>
+          Todos
+        </button>
+        {categorias.map((categoria) => (
+          <button
+            key={categoria.id_categoria}
+            type="button"
+            aria-pressed={String(filtros.categoria) === String(categoria.id_categoria)}
+            onClick={() => elegirCategoria(String(categoria.id_categoria))}
+          >
+            {categoria.nombre}
+          </button>
+        ))}
+        <button type="button" className="boton-enlace" onClick={limpiar}>Limpiar</button>
+      </div>
 
       {error && <p role="alert">{error}</p>}
 
