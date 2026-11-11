@@ -1,0 +1,208 @@
+/* Estilos de las pantallas del ciclo de vida (Req 05 / RF1).
+   Todo va dentro de .ciclo-vida para no cambiar las pantallas de otros requisitos. */
+
+/* ---------- Base compartida ---------- */
+
+main.ciclo-vida {
+  max-width: 1078px;
+  --cv-verde: #2f855a;
+  --cv-verde-bg: rgba(47, 133, 90, 0.14);
+  --cv-ambar: #b7791f;
+  --cv-ambar-bg: rgba(249, 178, 20, 0.18);
+  --cv-rojo: #c53030;
+  --cv-rojo-bg: rgba(228, 27, 26, 0.12);
+  --cv-azul: #235dad;
+  --cv-azul-bg: rgba(35, 93, 173, 0.12);
+  --cv-neutro-bg: var(--code-bg);
+}
+
+.ciclo-vida h2 {
+  margin-top: 24px;
+}
+
+/* Título de la página a la izquierda y acciones a la derecha */
+.ciclo-vida .cabecera-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .cabecera-pagina h1 {
+  margin: 8px 0;
+}
+
+.ciclo-vida .cabecera-pagina p {
+  max-width: 640px;
+}
+
+/* Recuadro blanco con borde */
+.ciclo-vida .tarjeta {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.ciclo-vida .tarjeta.sin-relleno {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.ciclo-vida .vacio {
+  padding: 20px;
+  color: var(--text);
+}
+
+.ciclo-vida .ayuda {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  margin-top: 12px;
+}
+
+.ciclo-vida .numero {
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+/* En estas pantallas "Cargando…" no lleva recuadro */
+.ciclo-vida [role="status"] {
+  border: 0;
+  padding: 0;
+}
+
+.ciclo-vida p.vacio[role="status"] {
+  padding: 20px;
+}
+
+/* Etiqueta de color (estado, días restantes, elegible o bloqueado) */
+.ciclo-vida .pastilla {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-h);
+  background: var(--cv-neutro-bg);
+}
+
+.ciclo-vida .pastilla.verde { color: var(--cv-verde); background: var(--cv-verde-bg); }
+.ciclo-vida .pastilla.ambar { color: var(--cv-ambar); background: var(--cv-ambar-bg); }
+.ciclo-vida .pastilla.rojo { color: var(--cv-rojo); background: var(--cv-rojo-bg); }
+.ciclo-vida .pastilla.azul { color: var(--cv-azul); background: var(--cv-azul-bg); }
+
+/* Tablas */
+.ciclo-vida .tabla-min {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.ciclo-vida .tabla-min th,
+.ciclo-vida .tabla-min td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.ciclo-vida .tabla-min th {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: var(--cv-neutro-bg);
+}
+
+.ciclo-vida .tabla-min tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ciclo-vida .tabla-min small {
+  color: var(--text);
+}
+
+.ciclo-vida .celda-principal {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.ciclo-vida .celda-acciones {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Botones */
+.ciclo-vida button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ciclo-vida .boton-secundario {
+  background: var(--bg);
+  color: var(--cv-azul);
+  border-color: var(--cv-azul);
+  padding: 6px 12px;
+  font-size: 15px;
+}
+
+.ciclo-vida .boton-secundario[aria-pressed="true"] {
+  background: var(--cv-azul);
+  color: white;
+}
+
+.ciclo-vida .boton-enlace {
+  background: none;
+  border: 0;
+  padding: 6px 4px;
+  font-size: 15px;
+  color: var(--cv-azul);
+  text-decoration: underline;
+}
+
+.ciclo-vida .boton-peligro.relleno,
+.ciclo-vida button[type="submit"].boton-peligro {
+  background: var(--cv-rojo);
+  border-color: var(--cv-rojo);
+  color: white;
+}
+
+.ciclo-vida .boton-ancho {
+  width: 100%;
+}
+
+/* Mensajes destacados */
+.ciclo-vida .aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 8px;
+  border-left: 4px solid var(--cv-azul);
+  background: var(--cv-azul-bg);
+  color: var(--text-h);
+}
+
+.ciclo-vida .aviso.alerta {
+  border-left-color: var(--cv-ambar);
+  background: var(--cv-ambar-bg);
+}
+
+.ciclo-vida .aviso.exito {
+  border-left-color: var(--cv-verde);
+  background: var(--cv-verde-bg);
+}
+
+.ciclo-vida .aviso .icono {
+  flex: none;
+  margin-top: 2px;
+}
