@@ -170,7 +170,11 @@ export const EntregaReclamoPage = ({ idInicial = '' }) => {
           </li>
         </ul>
 
-        <button type="submit" className="boton-ancho" disabled={!listo || loading}>
+        <button
+          type="submit"
+          className={`boton-ancho${listo ? ' boton-confirmar-listo' : ''}`}
+          disabled={!listo || loading}
+        >
           {loading ? 'Procesando…' : 'Confirmar entrega'}
         </button>
         {!listo && (
