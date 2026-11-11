@@ -125,6 +125,23 @@ aside.tarjeta.lateral {
   width: 100%;
 }
 
+.boton-confirmar-listo {
+  background: #003366;
+  border-color: #003366;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.boton-confirmar-listo:hover:not(:disabled) {
+  background: #002952;
+  border-color: #002952;
+}
+
+.boton-confirmar-listo:focus-visible {
+  outline: 3px solid rgba(0, 51, 102, 0.35);
+  outline-offset: 2px;
+}
+
 .boton-enlace {
   padding: 4px 0;
   border: 0;
