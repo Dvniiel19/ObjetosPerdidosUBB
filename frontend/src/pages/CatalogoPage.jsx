@@ -82,7 +82,7 @@ export default function CatalogoPage() {
 
   // Si hay un detalle abierto se muestra en vez del listado (los resultados se mantienen al volver)
   if (detalle) {
-    return <main><DetalleObjeto objeto={detalle} onVolver={() => setDetalle(null)} /></main>;
+    return <main className="catalogo"><DetalleObjeto objeto={detalle} onVolver={() => setDetalle(null)} /></main>;
   }
 
   // Los resultados se ordenan por fecha del hallazgo; el usuario elige si de más nuevos a más viejos
@@ -92,7 +92,7 @@ export default function CatalogoPage() {
   });
 
   return (
-    <main>
+    <main className="catalogo">
       <div>
         <div className="portada">
           <h1>Buscar objetos perdidos</h1>
@@ -121,7 +121,7 @@ export default function CatalogoPage() {
           <label>
             ¿Dónde se retira?
             <select value={filtros.punto} onChange={(e) => cambiarFiltro('punto', e.target.value)}>
-              <option value="">Todos los puntos de acopio</option>
+              <option value="">Todos</option>
               {puntos.map((punto) => (
                 <option key={punto.id_punto} value={punto.id_punto}>{punto.nombre}</option>
               ))}

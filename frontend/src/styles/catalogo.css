@@ -22,8 +22,35 @@
 }
 
 /* La página del catálogo necesita más ancho que un formulario (mismo ancho que las pantallas de dos columnas) */
-main:has(.buscador) {
-  max-width: 1160px;
+main.catalogo {
+  --catalogo-fondo: #f3f6fb;
+}
+
+@media (prefers-color-scheme: dark) {
+  main.catalogo {
+    --catalogo-fondo: #101116;
+  }
+}
+
+/* ---------- Pantalla completa (igual que Registrar objeto) ---------- */
+
+/* Mientras se muestra el catálogo, #root (que en index.css mide 1280px con bordes)
+   ocupa todo el ancho, así no quedan franjas a los lados. Las demás pantallas no cambian. */
+#root:has(> main.catalogo) {
+  width: 100%;
+  max-width: none;
+  border-inline: 0;
+}
+
+/* Se usa #root para ganarle a main:has(.dos-columnas) de componentes.css (1160px) en el detalle.
+   flex: 1 estira el fondo hasta abajo aunque haya pocos resultados. */
+#root > main.catalogo {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  padding: 28px clamp(16px, 3vw, 48px) 40px;
+  background: var(--catalogo-fondo);
 }
 
 /* ---------- Encabezado y buscador ---------- */
@@ -162,10 +189,10 @@ main:has(.buscador) .objeto h2 {
   font-size: 19px;
 }
 
-/* El botón queda siempre abajo, aunque la descripción sea más corta */
+/* El botón va justo debajo de "En custodia" */
 main:has(.buscador) .objeto button {
   align-self: stretch;
-  margin-top: auto;
+  margin-top: 10px;
   border-color: var(--azul-institucional);
   background: var(--azul-institucional);
   color: #ffffff;
@@ -185,19 +212,21 @@ main:has(.buscador) .objeto button:focus-visible {
 /* Datos con ícono: lugar, fecha y punto de retiro */
 .dato {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: 15px;
 }
 
 .dato .icono {
   flex-shrink: 0;
+  margin-top: 4px;
   color: var(--azul-institucional);
 }
 
-/* Estado "En custodia" (mismo verde que las pantallas del ciclo de vida) */
+/* Estado "En custodia" (mismo verde que las pantallas del ciclo de vida).
+   margin-top: auto lo empuja abajo junto con el botón, así quedan alineados en toda la fila */
 .objeto .pastilla.verde {
-  margin: 6px 0 10px;
+  margin: auto 0 0;
   color: #2f855a;
   background: rgba(47, 133, 90, 0.14);
 }
