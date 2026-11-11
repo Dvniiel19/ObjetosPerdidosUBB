@@ -60,7 +60,7 @@ export async function verDetalleObjeto(req, res, next) {
 //GET /api/objetos/numero/:numero/editar (numero dentro del punto del encargado)
 export async function mostrarObjetoPorNumero(req, res, next){
     try{
-        const objeto = await obtenerObjetoPorNumero(req.params.numero, req.usuario);
+        const objeto = await obtenerObjetoPorNumero(req.params.numero, req.usuario, req.query.codigo);
         return res.json(objeto);
     } catch (error){
         return next(error);

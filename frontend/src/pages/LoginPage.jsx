@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { login, esUBB } from '../services/authService.js';
 import '../styles/acceso.css';
 
-const CORREO_SOPORTE = 'soporte.objetosperdidos@ubiobio.cl';
-
 // Iconos chicos que van dentro de los campos
 function IconoCorreo() {
   return (

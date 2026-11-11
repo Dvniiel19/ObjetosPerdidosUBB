@@ -13,6 +13,8 @@ export default function GestionPuntosPage(){
     const [porConfirmar, setPorConfirmar] = useState(null);
     const [error, setError] = useState('');
     const [mensaje, setMensaje] = useState('');
+    // Aviso del formulario de crear (se muestra junto al boton para que se vea)
+    const [avisoFormulario, setAvisoFormulario] = useState(null);
     const [cargando, setCargando] = useState(false);
 
     async function cargar(){
@@ -45,14 +47,15 @@ export default function GestionPuntosPage(){
         evento.preventDefault();
         setError('');
         setMensaje('');
+        setAvisoFormulario(null);
         if(seleccionados.length === 0){
-            setError('Debes seleccionar al menos un encargado para crear el punto.');
+            setAvisoFormulario({ tipo: 'error', texto: 'Debes seleccionar al menos un encargado para crear el punto.' });
             return;
         }
         setCargando(true);
         try{
             await crearPunto({nombre, codigo, ubicacion, encargados: seleccionados});
-            setMensaje('Punto creado exitosamente.');
+            setAvisoFormulario({ tipo: 'exito', texto: 'Punto creado exitosamente.' });
             setNombre('');
             setCodigo('');
             setUbicacion('');
@@ -60,7 +63,10 @@ export default function GestionPuntosPage(){
             await cargar();
         } catch (err){
             // Si es un error de validacion se muestran los mensajes de cada campo
-            setError(err.detalles?.length ? err.detalles.map((d) => d.mensaje).join('. ') : err.message);
+            setAvisoFormulario({
+                tipo: 'error',
+                texto: err.detalles?.length ? err.detalles.map((d) => d.mensaje).join('. ') : err.message,
+            });
         } finally {
             setCargando(false);
         }
@@ -70,6 +76,7 @@ export default function GestionPuntosPage(){
     async function desactivar(punto){
         setError('');
         setMensaje('');
+        setAvisoFormulario(null);
         setCargando(true);
         try{
             await desactivarPunto(punto.id_punto);
@@ -230,6 +237,8 @@ export default function GestionPuntosPage(){
               ))}
               {encargados.length === 0 && <span className="ayuda">No hay encargados activos.</span>}
             </fieldset>
+            {avisoFormulario?.tipo === 'error' && <p role="alert">{avisoFormulario.texto}</p>}
+            {avisoFormulario?.tipo === 'exito' && <p className="aviso exito" role="status">{avisoFormulario.texto}</p>}
             <button type="submit" className="boton-ancho">{cargando ? 'Guardando…' : 'Crear punto'}</button>
           </fieldset>
           <p className="ayuda">

@@ -251,8 +251,20 @@ export async function obtenerObjetoParaEditar(idObjeto, encargado) {
 
 // Busca por el numero que el encargado ve en la etiqueta (por ejemplo el 12 de BIB-12).
 // Como el numero se repite entre puntos, siempre se busca dentro del punto del encargado.
-export async function obtenerObjetoPorNumero(numero, encargado) {
+// Si viene la sigla (BIB de BIB-12) se revisa que sea la del punto del encargado.
+export async function obtenerObjetoPorNumero(numero, encargado, codigo) {
   validarEncargado(encargado);
+
+  if (codigo !== undefined) {
+    const sigla = String(codigo).trim().toUpperCase();
+    const punto = await prisma.puntoAcopio.findUnique({
+      where: { id_punto: encargado.id_punto },
+      select: { codigo: true },
+    });
+    if (punto?.codigo !== sigla) {
+      throw errorConCodigo(`Ese objeto es de otro punto. Solo puedes corregir objetos de tu punto (${punto?.codigo}).`, 403);
+    }
+  }
 
   const objeto = await prisma.objeto.findUnique({
     where: {
