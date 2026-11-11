@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -21,6 +24,14 @@ app.use(RUTA_PUBLICA_FOTOS_OBJETOS, express.static(CARPETA_FOTOS_OBJETOS, {
 }));
 
 app.use('/api', rutas);
+
+// Frontend compilado (npm run build en frontend/). En el servidor de la universidad
+// Express entrega la página y la API desde el mismo puerto, así el frontend usa '/api'.
+// En desarrollo la carpeta dist no existe y esto no hace nada (se usa Vite en el 5173).
+const CARPETA_FRONTEND = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../frontend/dist');
+if (fs.existsSync(CARPETA_FRONTEND)) {
+  app.use(express.static(CARPETA_FRONTEND));
+}
 
 app.use(rutaNoEncontrada);
 app.use(manejarErrores);
