@@ -4,7 +4,8 @@ model ActaDestruccion {
   numero_acta  String   @unique @db.VarChar
   responsable  Int
   ejecutada_en DateTime @db.Timestamp(6)
-  archivo_url  String   @db.Text
+  /// enlace opcional a la copia firmada y escaneada; el acta en si la genera el sistema
+  archivo_url  String?  @db.Text
 
   objetos      Objeto[]
   firmante     Usuario  @relation(fields: [responsable], references: [id_usuario], onDelete: Restrict, onUpdate: Cascade)

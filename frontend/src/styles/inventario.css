@@ -1,0 +1,138 @@
+/* Estilos del inventario del encargado y de la etiqueta para imprimir */
+
+main.inventario {
+  max-width: 1160px;
+}
+
+/* ---------- Filtros ---------- */
+
+.filtros-inventario {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.filtros-inventario label {
+  flex: 1 1 220px;
+}
+
+.filtros-inventario label:nth-of-type(2) {
+  flex: 0 1 200px;
+}
+
+/* ---------- Tabla ---------- */
+
+.celda-codigo {
+  font-family: var(--mono);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.celda-objeto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.foto-mini {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--code-bg);
+}
+
+.pastilla.ambar {
+  color: #9a5b00;
+  background: rgba(249, 178, 20, 0.2);
+}
+
+.pastilla.rojo {
+  color: #c53030;
+  background: rgba(228, 27, 26, 0.12);
+}
+
+/* ---------- Etiqueta para imprimir ---------- */
+
+/* Hoja del tamano de una etiqueta adhesiva de 80 x 50 mm, sin margenes.
+   Es una pagina con nombre: solo la usa la etiqueta, no afecta otras impresiones. */
+@page etiqueta {
+  size: 80mm 50mm;
+  margin: 0;
+}
+
+/* En pantalla no se ve */
+.zona-impresion {
+  display: none;
+}
+
+@media print {
+  /* Se quita todo lo demas de la pagina (la app vive en #root) */
+  body > *:not(.zona-impresion) {
+    display: none !important;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .zona-impresion {
+    page: etiqueta;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80mm;
+    height: 50mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .etiqueta {
+    box-sizing: border-box;
+    width: 76mm;
+    height: 46mm;
+    padding: 3mm 4mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 0.6mm solid #000000;
+    border-radius: 2mm;
+    color: #000000;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .etiqueta-titulo {
+    font-size: 8pt;
+  }
+
+  .etiqueta-codigo {
+    margin: 1mm 0;
+    font-size: 32pt;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+
+  /* Maximo 2 lineas de descripcion para que no se salga de la etiqueta */
+  .etiqueta-descripcion {
+    font-size: 10pt;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .etiqueta-fecha {
+    margin-top: 1mm;
+    font-size: 8pt;
+  }
+}

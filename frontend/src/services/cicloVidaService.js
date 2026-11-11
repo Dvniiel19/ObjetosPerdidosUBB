@@ -22,11 +22,11 @@ export async function listarActasDestruccion() {
 }
 
 // POST /api/destrucciones (solo Administrador)
-// El responsable y la fecha los pone el servidor.
+// El responsable y la fecha los pone el servidor. El enlace a la copia firmada es opcional.
 export function registrarDestruccion(idObjeto, archivoUrl) {
   return pedir('/destrucciones', {
     metodo: 'POST',
-    body: { id_objeto: idObjeto, archivo_url: archivoUrl },
+    body: { id_objeto: idObjeto, archivo_url: archivoUrl || null },
   });
 }
 

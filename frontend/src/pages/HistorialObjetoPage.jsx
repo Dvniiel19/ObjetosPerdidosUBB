@@ -152,7 +152,13 @@ export default function HistorialObjetoPage({ parametros }) {
                 <div>
                   <dt>Acta</dt>
                   <dd>
-                    <a href={objeto.acta.archivo_url} target="_blank" rel="noreferrer">{objeto.acta.numero_acta}</a>
+                    {objeto.acta.numero_acta}
+                    {objeto.acta.archivo_url && (
+                      <>
+                        {' · '}
+                        <a href={objeto.acta.archivo_url} target="_blank" rel="noreferrer">Copia firmada</a>
+                      </>
+                    )}
                   </dd>
                 </div>
               )}
