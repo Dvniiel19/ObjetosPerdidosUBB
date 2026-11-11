@@ -206,3 +206,113 @@ main.ciclo-vida {
   flex: none;
   margin-top: 2px;
 }
+
+/* ---------- Historial del objeto ---------- */
+
+/* Buscador por número de objeto, en la cabecera */
+.ciclo-vida .buscar-numero {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+}
+
+.ciclo-vida .buscar-numero label {
+  font-size: 14px;
+}
+
+.ciclo-vida .buscar-numero input {
+  width: 140px;
+}
+
+/* Resumen del objeto: descripción a la izquierda y datos a la derecha */
+.ciclo-vida .resumen-objeto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px 32px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .resumen-objeto h2 {
+  margin: 4px 0 0;
+}
+
+.ciclo-vida .resumen-objeto dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin: 0;
+}
+
+.ciclo-vida .resumen-objeto dt {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ciclo-vida .resumen-objeto dd {
+  margin: 4px 0 0;
+  color: var(--text-h);
+}
+
+/* Línea de tiempo: un punto de color por evento, unidos por un hilo */
+.ciclo-vida .linea-tiempo {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.ciclo-vida .linea-tiempo li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+}
+
+.ciclo-vida .marca-evento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ciclo-vida .marca-evento .punto {
+  width: 12px;
+  height: 12px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--gris);
+}
+
+.ciclo-vida .marca-evento .punto.verde { background: var(--cv-verde); }
+.ciclo-vida .marca-evento .punto.ambar { background: var(--amarillo); }
+.ciclo-vida .marca-evento .punto.rojo { background: var(--cv-rojo); }
+.ciclo-vida .marca-evento .punto.negro { background: var(--text-h); }
+
+.ciclo-vida .marca-evento .hilo {
+  flex: 1;
+  width: 2px;
+  margin-top: 4px;
+  background: var(--border);
+}
+
+.ciclo-vida .linea-tiempo li:last-child .hilo {
+  display: none;
+}
+
+.ciclo-vida .evento {
+  padding-bottom: 20px;
+}
+
+.ciclo-vida .evento-titulo {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.ciclo-vida .evento-meta {
+  font-size: 14px;
+}
+
+.ciclo-vida .evento p {
+  margin-top: 4px;
+  font-size: 15px;
+}

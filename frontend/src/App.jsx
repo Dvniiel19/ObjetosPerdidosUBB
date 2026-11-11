@@ -10,11 +10,20 @@ import LoginPage from './pages/LoginPage.jsx'; // LOGIN
 import AccesoExternoPage from './pages/AccesoExternoPage.jsx'; // LOGIN
 import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOGIN
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
+import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 
 export default function App() {
   const [vista, setVista] = useState('catalogo');
+  // Req 05: datos que una pantalla le pasa a otra (por ejemplo, el objeto del historial)
+  const [parametros, setParametros] = useState(null);
+
+  // Req 05: cambia de pantalla y, si hace falta, le pasa datos
+  function irA(nuevaVista, nuevosParametros = null) {
+    setParametros(nuevosParametros);
+    setVista(nuevaVista);
+  }
 
   // LOGIN: usuario de la sesion
   const [usuario, setUsuario] = useState(null);
@@ -129,6 +138,17 @@ export default function App() {
           Revisar reclamo
         </button>
 
+        {/* Req 05: historial de objetos, solo administrador */}
+        {esAdmin && (
+          <button
+            type="button"
+            aria-pressed={vista === 'historial'}
+            onClick={() => irA('historial')}
+          >
+            Historial
+          </button>
+        )}
+
         {/* RF5 y RF9: solo administrador */}
         {esAdmin && (
           <button
@@ -149,6 +169,7 @@ export default function App() {
       {vista === 'crearReclamo' && <CrearReclamoPage />}
       {vista === 'revisarReclamo' && <RevisarReclamoPage />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
+      {vista === 'historial' && esAdmin && <HistorialObjetoPage parametros={parametros} />}
     </>
   );
 }
