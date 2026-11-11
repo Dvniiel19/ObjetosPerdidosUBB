@@ -23,6 +23,27 @@ const TRAZOS = {
       <path d="m20 20-4.5-4.5" />
     </>
   ),
+  // Marcador de mapa: lugar del hallazgo (catálogo, RF3)
+  lugar: (
+    <>
+      <path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z" />
+      <circle cx="12" cy="9" r="2.5" />
+    </>
+  ),
+  // Calendario: fecha del hallazgo (catálogo, RF3)
+  calendario: (
+    <>
+      <rect x="4" y="5" width="16" height="16" rx="2" />
+      <path d="M8 3v4M16 3v4M4 10h16" />
+    </>
+  ),
+  // Edificio: punto de acopio donde se retira (catálogo, RF3)
+  edificio: (
+    <>
+      <path d="M5 21V4h10v17M15 9h4v12" />
+      <path d="M3 21h18M8 8h4M8 12h4M8 16h4" />
+    </>
+  ),
 };
 
 export default function Icono({ nombre, tamano = 16 }) {

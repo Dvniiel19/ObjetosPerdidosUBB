@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { buscarObjetos, listarPuntos, verDetalleObjeto } from '../services/catalogoService.js';
 import { listarCategoria } from '../services/objetoService.js';
 import DetalleObjeto from '../components/detalleObjeto.jsx';
+import Icono from '../components/Icono.jsx';
 import { urlArchivo } from '../services/api.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
 import '../styles/catalogo.css';
@@ -74,56 +75,88 @@ export default function CatalogoPage() {
     return <main><DetalleObjeto objeto={detalle} onVolver={() => setDetalle(null)} /></main>;
   }
 
-  return <main>
-    <h1>Buscar objetos perdidos</h1>
-    <p>Revisa los objetos que están en custodia en los puntos de acopio.</p>
-    {error && <p role="alert">{error}</p>}
-    <form onSubmit={enviar}>
-      <fieldset disabled={cargando}>
-        <label>Buscar objeto<input value={filtros.texto} onChange={e => cambiarFiltro('texto', e.target.value)} placeholder="Descripción o lugar de hallazgo" /></label>
-        <label>Categoría
-          <select value={filtros.categoria} onChange={e => cambiarFiltro('categoria', e.target.value)}>
-            <option value="">Todas las categorías</option>
-            {categorias.map(categoria => (
-              <option key={categoria.id_categoria} value={categoria.id_categoria}>{categoria.nombre}</option>
-            ))}
-          </select>
-        </label>
-        <label>Punto de acopio
-          <select value={filtros.punto} onChange={e => cambiarFiltro('punto', e.target.value)}>
-            <option value="">Todos los puntos</option>
-            {puntos.map(punto => (
-              <option key={punto.id_punto} value={punto.id_punto}>{punto.nombre}</option>
-            ))}
-          </select>
-        </label>
-        <label>Lugar de hallazgo<input value={filtros.lugar} onChange={e => cambiarFiltro('lugar', e.target.value)} placeholder="Ej: Biblioteca, casino, sala" /></label>
-        {/* Se muestran los objetos encontrados desde ese día en adelante. */}
-        <label>¿Cuándo lo perdiste?<input type="date" value={filtros.fecha_desde} max={HOY} onChange={e => cambiarFiltro('fecha_desde', e.target.value)} /></label>
-        <button type="submit">{cargando ? 'Cargando…' : 'Buscar objetos'}</button>
-        <button type="button" onClick={limpiar}>Limpiar filtros</button>
-      </fieldset>
-    </form>
-    {objetos && <p role="status">{objetos.length === 0 ? 'No se encontraron objetos con esa búsqueda.' : `Se encontraron ${objetos.length} objetos.`}</p>}
-    <div className="objetos">
-      {objetos?.map((objeto) => {
-        const portada = objeto.fotografias?.[0];
-        return (
-          <article className="objeto" key={objeto.id_objeto}>
-            <div className="objeto-foto">
-              {portada
-                ? <img src={urlArchivo(portada.archivo_url)} alt={`Fotografía de ${objeto.descripcion}`} loading="lazy" />
-                : <span>Sin fotografía</span>}
-            </div>
-            <small>Objeto #{objeto.id_objeto} · {objeto.categoria?.nombre}</small>
-            <h2>{objeto.descripcion}</h2>
-            <p>Lugar: {objeto.lugar_hallazgo}</p>
-            <p>Encontrado el: {fechaParaMostrar(objeto.hallado_en)}</p>
-            <p>Retirar en: {objeto.punto?.nombre ?? 'Sin información'}{objeto.punto?.ubicacion && ` (${objeto.punto.ubicacion})`}</p>
-            <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>Ver detalle</button>
-          </article>
-        );
-      })}
-    </div>
-  </main>;
+  return (
+    <main>
+      <div>
+        <div className="portada">
+          <h1>Buscar objetos perdidos</h1>
+          <p>Encuentra tus pertenencias extraviadas en los campus de la UBB.</p>
+        </div>
+
+        <form className="buscador" onSubmit={enviar}>
+          <label>
+            ¿Qué buscas?
+            <input
+              type="search"
+              value={filtros.texto}
+              onChange={(e) => cambiarFiltro('texto', e.target.value)}
+              placeholder="Ej: mochila, llaves, audífonos"
+            />
+          </label>
+          <label>
+            Categoría
+            <select value={filtros.categoria} onChange={(e) => cambiarFiltro('categoria', e.target.value)}>
+              <option value="">Todas las categorías</option>
+              {categorias.map((categoria) => (
+                <option key={categoria.id_categoria} value={categoria.id_categoria}>{categoria.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            ¿Dónde se retira?
+            <select value={filtros.punto} onChange={(e) => cambiarFiltro('punto', e.target.value)}>
+              <option value="">Todos los puntos de acopio</option>
+              {puntos.map((punto) => (
+                <option key={punto.id_punto} value={punto.id_punto}>{punto.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            ¿Desde cuándo?
+            <input
+              type="date"
+              value={filtros.fecha_desde}
+              max={HOY}
+              onChange={(e) => cambiarFiltro('fecha_desde', e.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={cargando}>
+            <Icono nombre="buscar" tamano={20} />
+            {cargando ? 'Buscando…' : 'Buscar'}
+          </button>
+        </form>
+      </div>
+
+      {/* Temporal: en el siguiente paso "Limpiar" pasa a la fila de categorías */}
+      <button type="button" className="boton-enlace" onClick={limpiar}>Limpiar</button>
+
+      {error && <p role="alert">{error}</p>}
+
+      {objetos && <p role="status">{objetos.length === 0 ? 'No se encontraron objetos con esa búsqueda.' : `Se encontraron ${objetos.length} objetos.`}</p>}
+
+      <div className="objetos">
+        {objetos?.map((objeto) => {
+          const portada = objeto.fotografias?.[0];
+          return (
+            <article className="objeto" key={objeto.id_objeto}>
+              <div className="objeto-foto">
+                {portada
+                  ? <img src={urlArchivo(portada.archivo_url)} alt={`Fotografía de ${objeto.descripcion}`} loading="lazy" />
+                  : <span>Sin fotografía</span>}
+              </div>
+              <span className="pastilla azul">{objeto.categoria?.nombre}</span>
+              <h2>{objeto.descripcion}</h2>
+              <p className="dato"><Icono nombre="lugar" tamano={15} />Encontrado en: {objeto.lugar_hallazgo}</p>
+              <p className="dato"><Icono nombre="calendario" tamano={15} />Fecha: {fechaParaMostrar(objeto.hallado_en)}</p>
+              <p className="dato"><Icono nombre="edificio" tamano={15} />Retirar en: {objeto.punto?.nombre ?? 'Sin información'}</p>
+              <span className="pastilla verde">En custodia</span>
+              <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>
+                Ver detalle y cómo retirar
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </main>
+  );
 }

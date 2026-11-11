@@ -20,3 +20,113 @@
   height: 100%;
   object-fit: cover;
 }
+
+/* La página del catálogo necesita más ancho que un formulario (mismo ancho que las pantallas de dos columnas) */
+main:has(.buscador) {
+  max-width: 1160px;
+}
+
+/* ---------- Encabezado y buscador ---------- */
+
+.portada h1 {
+  margin: 0 0 6px;
+}
+
+.portada p {
+  color: var(--text);
+}
+
+/* Campos en una fila: el texto ocupa más y el botón va al final */
+.buscador {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin: 20px 0 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.buscador button[type='submit'] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border-color: var(--azul-institucional);
+  background: var(--azul-institucional);
+}
+
+/* ---------- Tarjetas de objetos ---------- */
+
+/* Varias tarjetas por fila; .objetos también lo usan otras pantallas, por eso va acotado al catálogo */
+main:has(.buscador) .objetos {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+main:has(.buscador) .objeto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+main:has(.buscador) .objeto .objeto-foto {
+  align-self: stretch;
+}
+
+main:has(.buscador) .objeto h2 {
+  margin: 4px 0;
+  font-size: 19px;
+}
+
+/* El botón queda siempre abajo, aunque la descripción sea más corta */
+main:has(.buscador) .objeto button {
+  align-self: stretch;
+  margin-top: auto;
+}
+
+/* Datos con ícono: lugar, fecha y punto de retiro */
+.dato {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.dato .icono {
+  flex-shrink: 0;
+  color: var(--azul-institucional);
+}
+
+/* Estado "En custodia" (mismo verde que las pantallas del ciclo de vida) */
+.objeto .pastilla.verde {
+  margin: 6px 0 10px;
+  color: #2f855a;
+  background: rgba(47, 133, 90, 0.14);
+}
+
+/* ---------- Pantallas chicas ---------- */
+
+@media (max-width: 900px) {
+  .buscador {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .buscador label:first-child,
+  .buscador button[type='submit'] {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .buscador {
+    grid-template-columns: 1fr;
+  }
+}
