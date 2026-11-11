@@ -1,6 +1,37 @@
 import prisma from '../config/prisma.js';
 
 /**
+ * Lista reclamos disponibles para gestión por el encargado (en su punto):
+ * en revisión (aprobar/rechazar) o aprobados (verificar y entregar).
+ */
+export const listarReclamosDisponiblesService = async (usuario) => {
+  if (usuario?.rol !== 'encargado' || !usuario.id_punto) {
+    throw new Error('Solo un encargado con punto asignado puede ver los reclamos disponibles.');
+  }
+
+  return prisma.reclamo.findMany({
+    where: {
+      estado: { in: ['en_revision', 'aprobado'] },
+      objeto: { id_punto: usuario.id_punto },
+    },
+    select: {
+      id_reclamo: true,
+      estado: true,
+      rut_reclamante: true,
+      nombre_reclamante: true,
+      creado_en: true,
+      id_objeto: true,
+      objeto: {
+        select: {
+          descripcion: true,
+        },
+      },
+    },
+    orderBy: [{ estado: 'asc' }, { creado_en: 'desc' }],
+  });
+};
+
+/**
  * Servicio para gestionar la lógica de negocio de devoluciones y entregas.
  * Conectado a la base de datos mediante Prisma.
  */

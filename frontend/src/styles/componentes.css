@@ -10,33 +10,21 @@ main:has(.pestanas) {
   max-width: 1160px;
 }
 
-/* ---------- Pantalla completa (opcional) ---------- */
-
-/* Para que una pantalla ocupe todo el ancho de la ventana, sin las franjas
-   blancas de los lados, basta con ponerle <main className="pagina-completa">.
-   #root mide 1280px en index.css: solo mientras esa pantalla está abierta
-   pasa a ocupar todo el ancho. Las pantallas sin esta clase no cambian. */
-#root:has(> main.pagina-completa) {
-  width: 100%;
+/* Página de entregas: ocupa todo el ancho disponible sin márgenes laterales */
+main.pagina-entregas {
   max-width: none;
-  border-inline: 0;
-}
-
-/* Se usa #root para ganarle a main:has(.dos-columnas) (1160px).
-   flex: 1 estira el fondo hasta abajo aunque el contenido sea corto. */
-#root > main.pagina-completa {
   width: 100%;
-  max-width: none;
   margin: 0;
-  flex: 1;
-  padding: 28px clamp(16px, 3vw, 48px) 40px;
-  background: #f3f6fb;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  #root > main.pagina-completa {
-    background: #101116;
-  }
+/* Sin bordes/márgenes del contenedor raíz en la página de entregas */
+#root:has(.pagina-entregas) {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-inline: none;
 }
 
 /* ---------- Cabecera de una pantalla ---------- */

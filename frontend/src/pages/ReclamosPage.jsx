@@ -1,27 +1,24 @@
 import { useState } from 'react';
 import CrearReclamoPage from './CrearReclamoPage.jsx';
-import RevisarReclamoPage from './RevisarReclamoPage.jsx';
-import { EntregaReclamoPage } from './EntregaReclamoPage.jsx';
+import GestionReclamoEntregaPage from './GestionReclamoEntregaPage.jsx';
 
 const PASOS = [
   { id: 'crear', etiqueta: '1. Nueva solicitud' },
-  { id: 'revisar', etiqueta: '2. Aprobar o rechazar' },
-  { id: 'entregar', etiqueta: '3. Verificar y entregar' },
+  { id: 'gestionar', etiqueta: '2. Aprobar, verificar y entregar' },
 ];
 
-// RF10: sección de reclamos del Encargado. Reúne los tres pasos de un reclamo
-// y lleva el número del reclamo de un paso al siguiente.
+// Sección de entregas del Encargado: registrar solicitud y gestionar (aprobar/rechazar + entrega).
 export default function ReclamosPage() {
   const [paso, setPaso] = useState('crear');
   const [idReclamo, setIdReclamo] = useState('');
 
-  function continuar(siguientePaso, id) {
+  function continuarGestion(id) {
     setIdReclamo(String(id));
-    setPaso(siguientePaso);
+    setPaso('gestionar');
   }
 
   return (
-    <main>
+    <main className="pagina-entregas">
       <div className="cabecera-pagina">
         <div>
           <h1>Entregas</h1>
@@ -43,15 +40,8 @@ export default function ReclamosPage() {
         ))}
       </div>
 
-      {paso === 'crear' && <CrearReclamoPage onContinuar={(id) => continuar('revisar', id)} />}
-      {paso === 'revisar' && (
-        <RevisarReclamoPage
-          key={idReclamo}
-          idInicial={idReclamo}
-          onContinuar={(id) => continuar('entregar', id)}
-        />
-      )}
-      {paso === 'entregar' && <EntregaReclamoPage key={idReclamo} idInicial={idReclamo} />}
+      {paso === 'crear' && <CrearReclamoPage onContinuar={(id) => continuarGestion(id)} />}
+      {paso === 'gestionar' && <GestionReclamoEntregaPage key={idReclamo} idInicial={idReclamo} />}
     </main>
   );
 }

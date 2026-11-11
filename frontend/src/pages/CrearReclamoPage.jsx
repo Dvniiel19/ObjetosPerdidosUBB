@@ -109,8 +109,7 @@ export default function CrearReclamoPage({ onContinuar }) {
           <h2>Cómo sigue</h2>
           <ol className="lista-simple">
             <li>La solicitud queda <strong>en revisión</strong>.</li>
-            <li>Luego la apruebas o la rechazas indicando el motivo.</li>
-            <li>Si se aprueba, verificas identidad y propiedad y confirmas la entrega.</li>
+            <li>En "Aprobar, verificar y entregar" podrás aprobar/rechazar y, si se aprueba, confirmar la entrega.</li>
           </ol>
         </section>
 
@@ -126,7 +125,7 @@ export default function CrearReclamoPage({ onContinuar }) {
                 className="boton-enlace"
                 onClick={() => onContinuar?.(creado.reclamo.id_reclamo)}
               >
-                Revisar esta solicitud
+                Gestionar esta solicitud
               </button>
             </div>
           </section>
