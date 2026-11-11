@@ -524,3 +524,133 @@ main.ciclo-vida {
   border-radius: 3px 3px 0 0;
   background: var(--cv-azul);
 }
+
+/* ---------- Acta de destrucción imprimible ---------- */
+
+/* En pantalla no se ve: solo existe mientras se imprime o se guarda como PDF */
+.acta-impresion {
+  display: none;
+}
+
+@page acta {
+  size: A4;
+  margin: 18mm;
+}
+
+@media print {
+  /* inventario.css oculta todo lo que no sea su etiqueta al imprimir;
+     esta regla es más específica, así el acta sí aparece */
+  body > div.acta-impresion {
+    display: block !important;
+    page: acta;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body:has(> .acta-impresion) > #root {
+    display: none !important;
+  }
+}
+
+.acta {
+  color: #000000;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.acta-encabezado {
+  text-align: center;
+  padding-bottom: 10pt;
+  margin-bottom: 14pt;
+  border-bottom: 1.5pt solid #000000;
+}
+
+.acta-encabezado p {
+  margin: 0;
+  font-size: 10pt;
+}
+
+.acta-encabezado h1 {
+  margin: 6pt 0 2pt;
+  font-size: 18pt;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.acta-encabezado .acta-numero {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.acta section {
+  margin-bottom: 14pt;
+  break-inside: avoid;
+}
+
+.acta h2 {
+  margin: 0 0 6pt;
+  font-size: 12pt;
+  color: #000000;
+}
+
+.acta p {
+  margin: 0 0 6pt;
+}
+
+/* Datos en dos columnas: título arriba y valor abajo */
+.acta-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6pt 18pt;
+  margin: 0 0 8pt;
+  padding: 8pt 10pt;
+  border: 0.75pt solid #000000;
+}
+
+.acta-datos dt {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #444444;
+}
+
+.acta-datos dd {
+  margin: 1pt 0 0;
+}
+
+.acta-copia {
+  font-size: 9.5pt;
+  overflow-wrap: anywhere;
+}
+
+/* Líneas para firmar a mano */
+.acta-firmas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36pt;
+  margin-top: 42pt;
+  text-align: center;
+}
+
+.acta-firmas p {
+  margin: 0;
+  font-size: 10pt;
+}
+
+.acta-linea {
+  display: block;
+  margin-bottom: 4pt;
+  border-top: 0.75pt solid #000000;
+}
+
+.acta-pie {
+  margin-top: 24pt;
+  padding-top: 6pt;
+  border-top: 0.5pt solid #777777;
+  font-size: 8.5pt;
+  color: #444444;
+}

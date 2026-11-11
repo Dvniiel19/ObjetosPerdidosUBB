@@ -27,6 +27,8 @@ const VISTAS = [
   { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
   { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
   { id: 'historial', etiqueta: 'Historial', roles: ['administrador'], ayuda: 'Consulta la trazabilidad completa de un objeto.' },
+  { id: 'alertas', etiqueta: 'Por vencer', roles: ['encargado', 'administrador'], ayuda: 'Objetos que están por cumplir un año en custodia.' },
+  { id: 'reportes', etiqueta: 'Reportes', roles: ['administrador'], ayuda: 'Estadísticas agregadas del ciclo de vida de los objetos.' },
   { id: 'inventario', etiqueta: 'Inventario', roles: ['encargado'], ayuda: 'Revisa todos los objetos de tu punto e imprime sus etiquetas.' },
 ];
 
