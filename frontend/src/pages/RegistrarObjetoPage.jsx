@@ -1,111 +1,308 @@
-import { useEffect, useState } from 'react';
-import FormularioObjeto from '../components/formularioObjeto.jsx';
-import { listarCategoria } from '../services/objetoService.js';
+import { useEffect, useRef, useState } from 'react';
+import { listarCategorias, registrarObjeto } from '../services/registroService.js';
+import { obtenerUsuarioActual } from '../services/authService.js';
+import { listarPuntos } from '../services/catalogoService.js';
+import '../styles/registro.css';
+
+// Mismos límites que valida el backend (config/almacenamiento.js)
+const MAX_FOTOS = 3;
+const MAX_MB = 5;
+const FORMATOS = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_DESCRIPCION = 1000;
+
+const dosDigitos = (numero) => String(numero).padStart(2, '0');
+
+// Fecha y hora actuales en el formato que usan <input type="date"> y <input type="time">
+function ahoraParaFormulario() {
+  const ahora = new Date();
+  return {
+    fecha: `${ahora.getFullYear()}-${dosDigitos(ahora.getMonth() + 1)}-${dosDigitos(ahora.getDate())}`,
+    hora: `${dosDigitos(ahora.getHours())}:${dosDigitos(ahora.getMinutes())}`,
+  };
+}
+
+function formularioVacio() {
+  return { id_categoria: '', descripcion: '', lugar_hallazgo: '', ...ahoraParaFormulario() };
+}
 
 export default function RegistrarObjetoPage() {
   const [categorias, setCategorias] = useState([]);
+  const [encargado, setEncargado] = useState(null);
+  const [nombrePunto, setNombrePunto] = useState('');
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState('');
-  const [resumen, setResumen] = useState(null);
+  const [errorCarga, setErrorCarga] = useState('');
 
+  const [datos, setDatos] = useState(formularioVacio);
+  // Cada foto guarda el archivo y una dirección temporal para mostrar la vista previa
+  const [fotos, setFotos] = useState([]);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState(null);
+  const [registrado, setRegistrado] = useState(null);
+
+  // Al abrir: categorías, el Encargado de la sesión y el nombre de su punto
   useEffect(() => {
-    let activo = true;
+    Promise.all([listarCategorias(), obtenerUsuarioActual(), listarPuntos()])
+      .then(([listaCategorias, usuario, puntos]) => {
+        setCategorias(listaCategorias);
+        setEncargado(usuario);
+        setNombrePunto(puntos.find((p) => p.id_punto === usuario?.id_punto)?.nombre ?? '');
+      })
+      .catch((err) => setErrorCarga(`No se pudieron cargar los datos del formulario: ${err.message}`))
+      .finally(() => setCargando(false));
+  }, []);
 
-    async function cargarCategorias() {
-      try {
-        const datos = await listarCategoria();
+  // Al salir de la pantalla se liberan las vistas previas que queden en memoria
+  const fotosActuales = useRef(fotos);
+  useEffect(() => {
+    fotosActuales.current = fotos;
+  }, [fotos]);
+  useEffect(() => () => {
+    fotosActuales.current.forEach((foto) => URL.revokeObjectURL(foto.vista));
+  }, []);
 
-        if (!Array.isArray(datos)) {
-          throw new Error('La respuesta de categorías no es válida.');
-        }
+  function cambiar(campo, valor) {
+    setDatos((anteriores) => ({ ...anteriores, [campo]: valor }));
+  }
 
-        if (activo) {
-          setCategorias(datos);
-        }
-      } catch (err) {
-        if (activo) {
-          setError(`No se pudieron cargar las categorías: ${err.message}`);
-        }
-      } finally {
-        if (activo) {
-          setCargando(false);
-        }
+  // Revisa formato y tamaño antes de agregar, para avisar sin esperar al servidor
+  function agregarFotos(evento) {
+    const elegidos = [...evento.target.files];
+    evento.target.value = ''; // permite volver a elegir el mismo archivo
+    setError(null);
+
+    const problemas = [];
+    const validos = [];
+
+    for (const archivo of elegidos) {
+      if (!FORMATOS.includes(archivo.type)) {
+        problemas.push({ campo: 'fotografias', mensaje: `"${archivo.name}" no es JPG, PNG ni WEBP.` });
+      } else if (archivo.size > MAX_MB * 1024 * 1024) {
+        problemas.push({ campo: 'fotografias', mensaje: `"${archivo.name}" pesa más de ${MAX_MB} MB.` });
+      } else {
+        validos.push(archivo);
       }
     }
 
-    cargarCategorias();
+    const cupo = MAX_FOTOS - fotos.length;
+    if (validos.length > cupo) {
+      problemas.push({ campo: 'fotografias', mensaje: `Se permiten hasta ${MAX_FOTOS} fotografías.` });
+    }
 
-    return () => {
-      activo = false;
-    };
-  }, []);
+    const nuevas = validos.slice(0, cupo).map((archivo) => ({
+      archivo,
+      vista: URL.createObjectURL(archivo),
+    }));
+
+    setFotos((anteriores) => [...anteriores, ...nuevas]);
+    if (problemas.length > 0) {
+      setError({ mensaje: 'Algunas fotografías no se agregaron', detalles: problemas });
+    }
+  }
+
+  function quitarFoto(indice) {
+    URL.revokeObjectURL(fotos[indice].vista);
+    setFotos(fotos.filter((_, i) => i !== indice));
+  }
+
+  function limpiar() {
+    fotos.forEach((foto) => URL.revokeObjectURL(foto.vista));
+    setFotos([]);
+    setDatos(formularioVacio());
+    setError(null);
+  }
+
+  async function enviar(evento) {
+    evento.preventDefault();
+    if (guardando) return;
+    setError(null);
+    setRegistrado(null);
+
+    // La fecha y la hora se interpretan en la hora local del computador del Encargado
+    const hallado = new Date(`${datos.fecha}T${datos.hora}`);
+
+    if (Number.isNaN(hallado.getTime())) {
+      setError({ mensaje: 'Ingresa una fecha y una hora válidas.', detalles: [] });
+      return;
+    }
+    if (hallado > new Date()) {
+      setError({ mensaje: 'La fecha y hora del hallazgo no pueden estar en el futuro.', detalles: [] });
+      return;
+    }
+    if (fotos.length === 0) {
+      setError({ mensaje: 'Agrega al menos una fotografía del objeto.', detalles: [] });
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      const respuesta = await registrarObjeto({
+        id_categoria: datos.id_categoria,
+        descripcion: datos.descripcion.trim(),
+        lugar_hallazgo: datos.lugar_hallazgo.trim(),
+        hallado_en: hallado.toISOString(),
+        fotografias: fotos.map((foto) => foto.archivo),
+      });
+      setRegistrado(respuesta.objeto);
+      limpiar();
+    } catch (err) {
+      setError({ mensaje: err.message, detalles: err.detalles ?? [] });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  const hoy = ahoraParaFormulario().fecha;
 
   return (
     <main>
       <h1>Registrar objeto encontrado</h1>
-      <p>Completa la información del objeto recibido en el punto de acopio.</p>
+      <p>Completa los datos del objeto que acabas de recibir en tu punto de acopio.</p>
 
-      <aside className="registro-aviso">
-        <strong>Prototipo de registro</strong>
-        <p>Esta pantalla permite revisar los datos, pero todavía no los guarda.</p>
-        <p>
-          Las categorías se obtienen del sistema. Las fotografías todavía
-          se indican mediante URLs de prueba.
-        </p>
-      </aside>
+      {errorCarga && <p role="alert">{errorCarga}</p>}
+      {cargando && <p role="status">Cargando formulario…</p>}
 
-      {cargando && <p role="status">Cargando categorías…</p>}
+      {!cargando && !errorCarga && (
+        <>
+          <aside className="registro-aviso">
+            <p>
+              Se registrará en <strong>{nombrePunto || 'tu punto de acopio'}</strong>
+              {encargado && <> a nombre de <strong>{encargado.nombres} {encargado.apellidos}</strong></>}.
+            </p>
+            <p>El autor y la fecha de registro se guardan automáticamente y no se pueden editar después.</p>
+          </aside>
 
-      {error && <p role="alert">{error}</p>}
+          <form onSubmit={enviar} onReset={limpiar}>
+            <fieldset disabled={guardando}>
+              <label>
+                Categoría
+                <select
+                  value={datos.id_categoria}
+                  onChange={(e) => cambiar('id_categoria', e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Selecciona una categoría</option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                      {categoria.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-      {!cargando && !error && categorias.length === 0 && (
-        <p role="status">
-          No hay categorías disponibles para registrar un objeto.
-        </p>
-      )}
+              <label>
+                Descripción
+                <textarea
+                  value={datos.descripcion}
+                  onChange={(e) => cambiar('descripcion', e.target.value)}
+                  placeholder="Color, marca y señas que ayuden a reconocerlo"
+                  maxLength={MAX_DESCRIPCION}
+                  required
+                />
+                <span className="registro-ayuda">{datos.descripcion.length} de {MAX_DESCRIPCION} caracteres</span>
+              </label>
 
-      {!cargando && !error && categorias.length > 0 && (
-        <FormularioObjeto
-          categorias={categorias}
-          onGuardar={setResumen}
-          textoBoton="Revisar datos"
-          textoProcesando="Revisando…"
-        />
-      )}
+              <label>
+                Lugar del hallazgo
+                <input
+                  value={datos.lugar_hallazgo}
+                  onChange={(e) => cambiar('lugar_hallazgo', e.target.value)}
+                  placeholder="Ej: Biblioteca, segundo piso"
+                  maxLength={255}
+                  required
+                />
+              </label>
 
-      {resumen && (
-        <section
-          className="registro-resumen"
-          aria-labelledby="titulo-resumen"
-        >
-          <h2 id="titulo-resumen">Últimos datos revisados</h2>
-          <p role="status">
-            Revisión completada. El objeto no se ha guardado.
-          </p>
+              <label>
+                Fecha del hallazgo
+                <input
+                  type="date"
+                  value={datos.fecha}
+                  max={hoy}
+                  onChange={(e) => cambiar('fecha', e.target.value)}
+                  required
+                />
+              </label>
 
-          <dl>
-            <dt>Categoría</dt>
-            <dd>
-              {categorias.find(
-                categoria => categoria.id_categoria === resumen.id_categoria,
-              )?.nombre}
-            </dd>
+              <label>
+                Hora del hallazgo
+                <input
+                  type="time"
+                  value={datos.hora}
+                  onChange={(e) => cambiar('hora', e.target.value)}
+                  required
+                />
+              </label>
 
-            <dt>Descripción</dt>
-            <dd>{resumen.descripcion}</dd>
+              <fieldset>
+                <legend>
+                  Fotografías{' '}
+                  <span className="registro-ayuda">
+                    (hasta {MAX_FOTOS} · JPG, PNG o WEBP · máx. {MAX_MB} MB cada una)
+                  </span>
+                </legend>
+                <div className="registro-fotos">
+                  {fotos.map((foto, indice) => (
+                    <div className="registro-miniatura" key={foto.vista}>
+                      <img src={foto.vista} alt={`Vista previa de la fotografía ${indice + 1}`} />
+                      <div>
+                        <span title={foto.archivo.name}>{indice + 1} · {foto.archivo.name}</span>
+                        <button
+                          type="button"
+                          aria-label={`Quitar la fotografía ${indice + 1}`}
+                          onClick={() => quitarFoto(indice)}
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
 
-            <dt>Lugar de hallazgo</dt>
-            <dd>{resumen.lugar_hallazgo}</dd>
+                  {fotos.length < MAX_FOTOS && (
+                    <label className="registro-agregar">
+                      <span className="registro-mas" aria-hidden="true">+</span>
+                      <strong>Agregar foto</strong>
+                      <span className="registro-ayuda">Cámara o galería</span>
+                      <input
+                        type="file"
+                        accept={FORMATOS.join(',')}
+                        multiple
+                        onChange={agregarFotos}
+                      />
+                    </label>
+                  )}
+                </div>
+              </fieldset>
 
-            <dt>Fecha y hora de hallazgo</dt>
-            <dd>
-              {new Date(resumen.hallado_en).toLocaleString('es-CL')}
-            </dd>
+              <div className="registro-acciones">
+                <button type="reset">Descartar</button>
+                <button type="submit">{guardando ? 'Registrando…' : 'Registrar objeto'}</button>
+              </div>
+            </fieldset>
+          </form>
 
-            <dt>Referencias de fotografías</dt>
-            <dd>{resumen.fotografias.length} de un máximo de 3</dd>
-          </dl>
-        </section>
+          {registrado && (
+            <section className="registro-mensaje exito" role="status">
+              <strong>Objeto #{registrado.id_objeto} registrado correctamente.</strong>
+              <p>
+                Quedó en custodia con {registrado.fotografias.length}{' '}
+                {registrado.fotografias.length === 1 ? 'fotografía' : 'fotografías'} y ya aparece en el catálogo.
+              </p>
+            </section>
+          )}
+
+          {error && (
+            <section className="registro-mensaje error" role="alert">
+              <strong>{error.mensaje}</strong>
+              {error.detalles.length > 0 && (
+                <ul>
+                  {error.detalles.map((detalle, i) => (
+                    <li key={i}>{detalle.mensaje}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+        </>
       )}
     </main>
   );

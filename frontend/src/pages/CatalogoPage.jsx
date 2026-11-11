@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { buscarObjetos, listarPuntos, verDetalleObjeto } from '../services/catalogoService.js';
 import { listarCategoria } from '../services/objetoService.js';
 import DetalleObjeto from '../components/detalleObjeto.jsx';
+import { urlArchivo } from '../services/api.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
+import '../styles/catalogo.css';
 
 const FILTROS_VACIOS = { texto: '', categoria: '', punto: '', lugar: '', fecha_desde: '' };
 
@@ -14,10 +16,11 @@ export default function CatalogoPage() {
   const [categorias, setCategorias] = useState([]);
   const [puntos, setPuntos] = useState([]);
   const [objetos, setObjetos] = useState(null);
-  const [cargando, setCargando] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [detalle, setDetalle] = useState(null);
 
+  // Al abrir: listas de los filtros y todos los objetos disponibles
   useEffect(() => {
     listarCategoria()
       .then(setCategorias)
@@ -25,26 +28,37 @@ export default function CatalogoPage() {
     listarPuntos()
       .then(setPuntos)
       .catch(() => setError('No se pudieron cargar los puntos de acopio.'));
+    buscarObjetos(FILTROS_VACIOS)
+      .then((resultado) => setObjetos(resultado.objetos))
+      .catch((err) => setError(err.message))
+      .finally(() => setCargando(false));
   }, []);
 
   function cambiarFiltro(nombre, valor) {
     setFiltros(anteriores => ({ ...anteriores, [nombre]: valor }));
   }
 
-  async function buscar(evento) {
-    evento.preventDefault();
-    setCargando(true); setError('');
+  async function buscar(nuevosFiltros) {
+    setCargando(true);
+    setError('');
     try {
-      const resultado = await buscarObjetos(filtros);
+      const resultado = await buscarObjetos(nuevosFiltros);
       setObjetos(resultado.objetos);
-    } catch (err) { setError(err.message); }
-    finally { setCargando(false); }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  function enviar(evento) {
+    evento.preventDefault();
+    buscar(filtros);
   }
 
   function limpiar() {
     setFiltros(FILTROS_VACIOS);
-    setObjetos(null);
-    setError('');
+    buscar(FILTROS_VACIOS);
   }
 
   async function verDetalle(id) {
@@ -64,7 +78,7 @@ export default function CatalogoPage() {
     <h1>Buscar objetos perdidos</h1>
     <p>Revisa los objetos que están en custodia en los puntos de acopio.</p>
     {error && <p role="alert">{error}</p>}
-    <form onSubmit={buscar}>
+    <form onSubmit={enviar}>
       <fieldset disabled={cargando}>
         <label>Buscar objeto<input value={filtros.texto} onChange={e => cambiarFiltro('texto', e.target.value)} placeholder="Descripción o lugar de hallazgo" /></label>
         <label>Categoría
@@ -92,14 +106,24 @@ export default function CatalogoPage() {
     </form>
     {objetos && <p role="status">{objetos.length === 0 ? 'No se encontraron objetos con esa búsqueda.' : `Se encontraron ${objetos.length} objetos.`}</p>}
     <div className="objetos">
-      {objetos?.map(objeto => <article className="objeto" key={objeto.id_objeto}>
-        <small>Objeto #{objeto.id_objeto} · {objeto.categoria?.nombre}</small>
-        <h2>{objeto.descripcion}</h2>
-        <p>Lugar: {objeto.lugar_hallazgo}</p>
-        <p>Encontrado el: {fechaParaMostrar(objeto.hallado_en)}</p>
-        <p>Retirar en: {objeto.punto?.nombre ?? 'Sin información'}{objeto.punto?.ubicacion && ` (${objeto.punto.ubicacion})`}</p>
-        <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>Ver detalle</button>
-      </article>)}
+      {objetos?.map((objeto) => {
+        const portada = objeto.fotografias?.[0];
+        return (
+          <article className="objeto" key={objeto.id_objeto}>
+            <div className="objeto-foto">
+              {portada
+                ? <img src={urlArchivo(portada.archivo_url)} alt={`Fotografía de ${objeto.descripcion}`} loading="lazy" />
+                : <span>Sin fotografía</span>}
+            </div>
+            <small>Objeto #{objeto.id_objeto} · {objeto.categoria?.nombre}</small>
+            <h2>{objeto.descripcion}</h2>
+            <p>Lugar: {objeto.lugar_hallazgo}</p>
+            <p>Encontrado el: {fechaParaMostrar(objeto.hallado_en)}</p>
+            <p>Retirar en: {objeto.punto?.nombre ?? 'Sin información'}{objeto.punto?.ubicacion && ` (${objeto.punto.ubicacion})`}</p>
+            <button type="button" onClick={() => verDetalle(objeto.id_objeto)}>Ver detalle</button>
+          </article>
+        );
+      })}
     </div>
   </main>;
 }

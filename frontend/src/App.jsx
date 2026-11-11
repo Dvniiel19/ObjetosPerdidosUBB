@@ -10,6 +10,7 @@ import AccesoExternoPage from './pages/AccesoExternoPage.jsx';
 import { obtenerUsuarioActual, logout } from './services/authService.js';
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
 import './App.css';
+import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 
 export default function App() {
   const [vista, setVista] = useState('catalogo');
