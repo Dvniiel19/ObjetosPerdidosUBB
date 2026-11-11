@@ -11,6 +11,7 @@ import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
 import Encabezado from './components/Encabezado.jsx';
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
+import './styles/componentes.css'; // tarjetas, columnas, avisos y pestañas compartidos
 
 // Opciones del menú y qué rol puede ver cada una.
 // Para agregar una pantalla: suma una línea aquí y su <Pagina /> más abajo.
