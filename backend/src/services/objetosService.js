@@ -1,4 +1,6 @@
 import prisma from '../config/prisma.js';
+import { errorConCodigo } from '../utils/errorConCodigo.js';
+import { DIAS_TOTAL_CUSTODIA } from './retencionService.js';
 
 // Las fechas de los filtros (AAAA-MM-DD) se interpretan en hora de Chile.
 // La diferencia con UTC cambia en el año (-03:00 verano, -04:00 invierno).
@@ -19,6 +21,12 @@ function finDiaChile(fechaTexto) {
   return new Date(`${fechaTexto}T23:59:59.999${diferenciaChile(fechaTexto)}`);
 }
 
+// Fotos del objeto en el orden en que se registraron (1 a 3)
+const SELECT_FOTOGRAFIAS = {
+  select: { posicion: true, archivo_url: true },
+  orderBy: { posicion: 'asc' },
+};
+
 // Catalogo publico: solo objetos publicados y que siguen en custodia.
 // Los no publicados, entregados, no reclamados o dados de baja no se muestran.
 // Si viene "texto", filtra por descripcion o lugar de hallazgo (sin importar mayusculas).
@@ -29,6 +37,8 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
   const where = {
     publicado: true,
     estado: 'en_custodia',
+    // Solo objetos de puntos visibles y funcionando (igual que el filtro de puntos)
+    punto: { publicado: true, habilitado: true },
     ...(categoria && { id_categoria: categoria }),
     ...(punto && { id_punto: punto }),
     ...(fechaDesde && fechaHasta && {
@@ -61,9 +71,38 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
       lugar_hallazgo: true,
       categoria: { select: { id_categoria: true, nombre: true } },
       punto: { select: { id_punto: true, nombre: true, ubicacion: true } },
+      fotografias: SELECT_FOTOGRAFIAS,
     },
     orderBy: { hallado_en: 'desc' },
   });
+}
+
+// Detalle publico: mismas reglas que el catalogo (publicado, en custodia y de un punto disponible).
+// Si no cumple, se responde 404 para no revelar objetos ocultos.
+export async function obtenerDetalleObjeto(idObjeto) {
+  const objeto = await prisma.objeto.findFirst({
+    where: { id_objeto: idObjeto, publicado: true, estado: 'en_custodia', punto: { publicado: true, habilitado: true } },
+    select: {
+      id_objeto: true,
+      descripcion: true,
+      hallado_en: true,
+      lugar_hallazgo: true,
+      registrado_en: true,
+      categoria: { select: { id_categoria: true, nombre: true, metodos_verificacion: true } },
+      punto: { select: { id_punto: true, nombre: true, ubicacion: true } },
+      fotografias: SELECT_FOTOGRAFIAS,
+    },
+  });
+
+  if (!objeto) {
+    throw errorConCodigo('El objeto no existe', 404);
+  }
+
+  // Plazo de retiro: 1 año desde que se registro
+  const disponibleHasta = new Date(objeto.registrado_en);
+  disponibleHasta.setDate(disponibleHasta.getDate() + DIAS_TOTAL_CUSTODIA);
+
+  return { ...objeto, disponible_hasta: disponibleHasta };
 }
 
 function validarContextoEncargado(encargado) {
@@ -121,8 +160,18 @@ export async function registrarObjeto(datos, encargado) {
 
   await validarCategoriaExistente(datos.id_categoria);
 
-  return prisma.objeto.create({
+  // El contador del punto se incrementa en la base de datos y el objeto se crea en la misma
+  // transaccion: dos encargados registrando a la vez nunca reciben el mismo numero
+  return prisma.$transaction(async (tx) => {
+    const punto = await tx.puntoAcopio.update({
+      where: { id_punto: encargado.id_punto },
+      data: { ultimo_numero: { increment: 1 } },
+      select: { ultimo_numero: true },
+    });
+
+    return tx.objeto.create({
     data: {
+      numero_en_punto: punto.ultimo_numero,
       id_categoria: datos.id_categoria,
       descripcion: datos.descripcion,
       hallado_en: new Date(datos.hallado_en),
@@ -130,6 +179,7 @@ export async function registrarObjeto(datos, encargado) {
       id_punto: encargado.id_punto,
       registrado_por: encargado.id_usuario,
       estado: 'en_custodia',
+      publicado: true,
       fotografias: {
         create: fotografias.map((fotografia, indice) => ({
           posicion: indice + 1,
@@ -137,5 +187,146 @@ export async function registrarObjeto(datos, encargado) {
         })),
       },
     },
+    include: {
+      punto: { select: { codigo: true } },
+      fotografias: {
+        select: {
+          posicion: true,
+          archivo_url: true,
+        },
+        orderBy: {
+          posicion: 'asc',
+        },
+      },
+    },
+    });
   });
+}
+
+function validarEncargado(encargado) {
+  if (encargado?.rol !== 'encargado' || !encargado.id_punto) {
+    throw errorConCodigo('Solo un encargado con oficina asignada puede editar un objeto', 403);
+  }
+}
+
+const camposEditables = ['id_categoria', 'descripcion', 'lugar_hallazgo', 'hallado_en'];
+
+// Datos que necesita la pantalla de correccion
+const SELECT_PARA_EDITAR = {
+  id_objeto: true,
+  numero_en_punto: true,
+  id_categoria: true,
+  descripcion: true,
+  lugar_hallazgo: true,
+  hallado_en: true,
+  estado: true,
+  id_punto: true,
+  punto: { select: { codigo: true } },
+};
+
+function sonIguales(a, b) {
+  if (a instanceof Date && b instanceof Date) {
+    return a.getTime() === b.getTime();
+  }
+  return a === b;
+}
+
+export async function obtenerObjetoParaEditar(idObjeto, encargado) {
+  validarEncargado(encargado);
+
+  const objeto = await prisma.objeto.findUnique({
+    where: { id_objeto: idObjeto },
+    select: SELECT_PARA_EDITAR,
+  });
+
+  if (!objeto) {
+    throw errorConCodigo('El objeto no existe', 404);
+  }
+
+  if (objeto.id_punto !== encargado.id_punto) {
+    throw errorConCodigo('Solo puedes editar objetos de tu oficina', 403);
+  }
+  return objeto;
+}
+
+// Busca por el numero que el encargado ve en la etiqueta (por ejemplo el 12 de BIB-12).
+// Como el numero se repite entre puntos, siempre se busca dentro del punto del encargado.
+// Si viene la sigla (BIB de BIB-12) se revisa que sea la del punto del encargado.
+export async function obtenerObjetoPorNumero(numero, encargado, codigo) {
+  validarEncargado(encargado);
+
+  if (codigo !== undefined) {
+    const sigla = String(codigo).trim().toUpperCase();
+    const punto = await prisma.puntoAcopio.findUnique({
+      where: { id_punto: encargado.id_punto },
+      select: { codigo: true },
+    });
+    if (punto?.codigo !== sigla) {
+      throw errorConCodigo(`Ese objeto es de otro punto. Solo puedes corregir objetos de tu punto (${punto?.codigo}).`, 403);
+    }
+  }
+
+  const objeto = await prisma.objeto.findUnique({
+    where: {
+      id_punto_numero_en_punto: { id_punto: encargado.id_punto, numero_en_punto: numero },
+    },
+    select: SELECT_PARA_EDITAR,
+  });
+
+  if (!objeto) {
+    throw errorConCodigo('Tu punto no tiene un objeto con ese numero', 404);
+  }
+  return objeto;
+}
+
+export async function editarObjeto(idObjeto, datos, encargado) {
+  const objeto = await obtenerObjetoParaEditar(idObjeto, encargado);
+
+  if (objeto.estado !== 'en_custodia') {
+    throw errorConCodigo('Solo se pueden editar objeos que esten en custodia', 409);
+  }
+  const nuevos = { ...datos, hallado_en: new Date(datos.hallado_en) };
+  const cambios = {};
+  const valoresAnteriores = {};
+
+  for (const campo of camposEditables) {
+    if (!sonIguales(objeto[campo], nuevos[campo])) {
+      cambios[campo] = nuevos[campo];
+      valoresAnteriores[campo] = objeto[campo] instanceof Date
+        ? objeto[campo].toISOString()
+        : objeto[campo];
+    }
+  }
+
+  if (Object.keys(cambios).length === 0) {
+    throw errorConCodigo('No hay cambios que registrar', 400);
+  }
+
+  // Si cambia la categoria, validar que exista
+  if (cambios.id_categoria !== undefined) {
+    const categoria = await prisma.categoria.findUnique({
+      where: { id_categoria: cambios.id_categoria },
+    });
+    if (!categoria) {
+      throw errorConCodigo(' La categoria seleccionada no existe', 400);
+    }
+  }
+
+  // Actualizar el objeto y registrar el historial
+  const [objetoEditable] = await prisma.$transaction([
+    prisma.objeto.update({
+      where: { id_objeto: idObjeto, estado: 'en_custodia', id_punto: encargado.id_punto },
+      data: cambios,
+    }),
+    prisma.historialObjeto.create({
+      data: {
+        id_objeto: idObjeto,
+        modificado_por: encargado.id_usuario,
+        motivo: datos.motivo,
+        valores_anteriores: valoresAnteriores,
+      },
+    }),
+  ]);
+
+  return objetoEditable;
 }

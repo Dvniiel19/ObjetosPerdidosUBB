@@ -1,0 +1,656 @@
+/* Estilos de las pantallas del ciclo de vida (Req 05 / RF1).
+   Todo va dentro de .ciclo-vida para no cambiar las pantallas de otros requisitos. */
+
+/* ---------- Base compartida ---------- */
+
+main.ciclo-vida {
+  --cv-fondo: #f3f6fb;
+  --cv-verde: #2f855a;
+  --cv-verde-bg: rgba(47, 133, 90, 0.14);
+  --cv-ambar: #b7791f;
+  --cv-ambar-bg: rgba(249, 178, 20, 0.18);
+  --cv-rojo: #c53030;
+  --cv-rojo-bg: rgba(228, 27, 26, 0.12);
+  --cv-azul: #235dad;
+  --cv-azul-bg: rgba(35, 93, 173, 0.12);
+  --cv-neutro-bg: var(--code-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  main.ciclo-vida {
+    --cv-fondo: #101116;
+  }
+}
+
+/* ---------- Pantalla completa ---------- */
+
+/* Mientras se muestra una pantalla del Req 05, #root (que en index.css mide 1280px
+   con bordes) ocupa todo el ancho, así no quedan franjas blancas a los lados.
+   Es el mismo criterio que usa la pantalla de registro (registro.css). */
+#root:has(> main.ciclo-vida) {
+  width: 100%;
+  max-width: none;
+  border-inline: 0;
+}
+
+/* Se usa #root para ganarle a App.css (720px) y a main:has(.dos-columnas) de
+   componentes.css (1160px). flex: 1 estira el fondo hasta abajo aunque haya poco contenido. */
+#root > main.ciclo-vida {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  padding: 28px clamp(16px, 3vw, 48px) 40px;
+  background: var(--cv-fondo);
+}
+
+.ciclo-vida h2 {
+  margin-top: 24px;
+}
+
+/* Título de la página a la izquierda y acciones a la derecha */
+.ciclo-vida .cabecera-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .cabecera-pagina h1 {
+  margin: 8px 0;
+}
+
+.ciclo-vida .cabecera-pagina p {
+  max-width: 640px;
+}
+
+/* Recuadro blanco con borde */
+.ciclo-vida .tarjeta {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.ciclo-vida .tarjeta.sin-relleno {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.ciclo-vida .vacio {
+  padding: 20px;
+  color: var(--text);
+}
+
+.ciclo-vida .ayuda {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  margin-top: 12px;
+}
+
+.ciclo-vida .numero {
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+/* En estas pantallas "Cargando…" no lleva recuadro */
+.ciclo-vida [role="status"] {
+  border: 0;
+  padding: 0;
+}
+
+.ciclo-vida p.vacio[role="status"] {
+  padding: 20px;
+}
+
+/* Etiqueta de color (estado, días restantes, elegible o bloqueado) */
+.ciclo-vida .pastilla {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-h);
+  background: var(--cv-neutro-bg);
+}
+
+.ciclo-vida .pastilla.verde { color: var(--cv-verde); background: var(--cv-verde-bg); }
+.ciclo-vida .pastilla.ambar { color: var(--cv-ambar); background: var(--cv-ambar-bg); }
+.ciclo-vida .pastilla.rojo { color: var(--cv-rojo); background: var(--cv-rojo-bg); }
+.ciclo-vida .pastilla.azul { color: var(--cv-azul); background: var(--cv-azul-bg); }
+
+/* Tablas */
+.ciclo-vida .tabla-min {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.ciclo-vida .tabla-min th,
+.ciclo-vida .tabla-min td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.ciclo-vida .tabla-min th {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: var(--cv-neutro-bg);
+}
+
+.ciclo-vida .tabla-min tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ciclo-vida .tabla-min small {
+  color: var(--text);
+}
+
+.ciclo-vida .celda-principal {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.ciclo-vida .celda-acciones {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Botones */
+.ciclo-vida button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ciclo-vida .boton-secundario {
+  background: var(--bg);
+  color: var(--cv-azul);
+  border-color: var(--cv-azul);
+  padding: 6px 12px;
+  font-size: 15px;
+}
+
+.ciclo-vida .boton-secundario[aria-pressed="true"] {
+  background: var(--cv-azul);
+  color: white;
+}
+
+.ciclo-vida .boton-enlace {
+  background: none;
+  border: 0;
+  padding: 6px 4px;
+  font-size: 15px;
+  color: var(--cv-azul);
+  text-decoration: underline;
+}
+
+.ciclo-vida .boton-peligro.relleno,
+.ciclo-vida button[type="submit"].boton-peligro {
+  background: var(--cv-rojo);
+  border-color: var(--cv-rojo);
+  color: white;
+}
+
+.ciclo-vida .boton-ancho {
+  width: 100%;
+}
+
+/* Mensajes destacados */
+.ciclo-vida .aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 8px;
+  border-left: 4px solid var(--cv-azul);
+  background: var(--cv-azul-bg);
+  color: var(--text-h);
+}
+
+.ciclo-vida .aviso.alerta {
+  border-left-color: var(--cv-ambar);
+  background: var(--cv-ambar-bg);
+}
+
+.ciclo-vida .aviso.exito {
+  border-left-color: var(--cv-verde);
+  background: var(--cv-verde-bg);
+}
+
+.ciclo-vida .aviso .icono {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---------- Historial del objeto ---------- */
+
+/* Buscador por número de objeto, en la cabecera */
+.ciclo-vida .buscar-numero {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+}
+
+.ciclo-vida .buscar-numero label {
+  font-size: 14px;
+}
+
+.ciclo-vida .buscar-numero input {
+  width: 140px;
+}
+
+/* Resumen del objeto: descripción a la izquierda y datos a la derecha */
+.ciclo-vida .resumen-objeto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px 32px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .resumen-objeto h2 {
+  margin: 4px 0 0;
+}
+
+.ciclo-vida .resumen-objeto dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin: 0;
+}
+
+.ciclo-vida .resumen-objeto dt {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ciclo-vida .resumen-objeto dd {
+  margin: 4px 0 0;
+  color: var(--text-h);
+}
+
+/* Línea de tiempo: un punto de color por evento, unidos por un hilo */
+.ciclo-vida .linea-tiempo {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.ciclo-vida .linea-tiempo li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+}
+
+.ciclo-vida .marca-evento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ciclo-vida .marca-evento .punto {
+  width: 12px;
+  height: 12px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--gris);
+}
+
+.ciclo-vida .marca-evento .punto.verde { background: var(--cv-verde); }
+.ciclo-vida .marca-evento .punto.ambar { background: var(--amarillo); }
+.ciclo-vida .marca-evento .punto.rojo { background: var(--cv-rojo); }
+.ciclo-vida .marca-evento .punto.negro { background: var(--text-h); }
+
+.ciclo-vida .marca-evento .hilo {
+  flex: 1;
+  width: 2px;
+  margin-top: 4px;
+  background: var(--border);
+}
+
+.ciclo-vida .linea-tiempo li:last-child .hilo {
+  display: none;
+}
+
+.ciclo-vida .evento {
+  padding-bottom: 20px;
+}
+
+.ciclo-vida .evento-titulo {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.ciclo-vida .evento-meta {
+  font-size: 14px;
+}
+
+.ciclo-vida .evento p {
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+/* ---------- Destrucción segura ---------- */
+/* Las columnas (.dos-columnas, .principal, .lateral) vienen de componentes.css */
+
+.ciclo-vida .principal h2 {
+  margin: 8px 0 0;
+}
+
+/* El formulario lateral no lleva el margen que App.css da a todos los form */
+.ciclo-vida form.lateral {
+  margin: 0;
+}
+
+.ciclo-vida .lateral h2 {
+  margin: 0;
+}
+
+.ciclo-vida .lateral .ayuda {
+  margin-top: 0;
+}
+
+/* Casilla de confirmación: el texto puede ocupar varias líneas */
+.ciclo-vida .casilla {
+  align-items: flex-start;
+  font-size: 15px;
+}
+
+.ciclo-vida .casilla input {
+  margin-top: 4px;
+}
+
+/* Las fechas (3.ª columna de ambas tablas) no se cortan en dos líneas */
+.ciclo-vida .dos-columnas .tabla-min td:nth-child(3) {
+  white-space: nowrap;
+}
+
+/* ---------- Objetos por vencer ---------- */
+
+/* componentes.css quita el margen a los avisos; aquí se separan de la tabla */
+.ciclo-vida .aviso[role] {
+  margin: 0 0 16px;
+}
+
+/* ---------- Reportes estadísticos ---------- */
+
+/* Fila de indicadores principales */
+.ciclo-vida .indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .indicador {
+  gap: 4px;
+}
+
+.ciclo-vida .indicador span {
+  font-size: 14px;
+}
+
+.ciclo-vida .indicador strong {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+/* Tres gráficos de barras lado a lado (uno debajo del otro en pantallas chicas) */
+.ciclo-vida .graficos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .graficos h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+/* Barra horizontal: nombre, pista con la barra y valor */
+.ciclo-vida .barra {
+  display: grid;
+  grid-template-columns: minmax(90px, 40%) 1fr 32px;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.ciclo-vida .barra span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ciclo-vida .barra b {
+  text-align: right;
+  color: var(--text-h);
+}
+
+.ciclo-vida .barra-pista {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--cv-neutro-bg);
+  overflow: hidden;
+}
+
+.ciclo-vida .barra-valor {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cv-azul);
+}
+
+/* Registros y bajas por mes: columnas verticales */
+.ciclo-vida .cabecera-pagina h2 {
+  margin: 0;
+}
+
+.ciclo-vida .leyenda {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.ciclo-vida .leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ciclo-vida .leyenda i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--cv-azul);
+}
+
+.ciclo-vida .leyenda i.baja,
+.ciclo-vida .mes-barras .baja {
+  background: var(--cv-rojo);
+}
+
+.ciclo-vida .meses {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.ciclo-vida .mes {
+  flex: 1 0 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.ciclo-vida .mes strong {
+  color: var(--text-h);
+}
+
+.ciclo-vida .mes-barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 140px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ciclo-vida .mes-barras div {
+  width: 16px;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--cv-azul);
+}
+
+/* ---------- Acta de destrucción imprimible ---------- */
+
+/* En pantalla no se ve: solo existe mientras se imprime o se guarda como PDF */
+.acta-impresion {
+  display: none;
+}
+
+@page acta {
+  size: A4;
+  margin: 18mm;
+}
+
+@media print {
+  /* inventario.css oculta todo lo que no sea su etiqueta al imprimir;
+     esta regla es más específica, así el acta sí aparece */
+  body > div.acta-impresion {
+    display: block !important;
+    page: acta;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body:has(> .acta-impresion) > #root {
+    display: none !important;
+  }
+}
+
+.acta {
+  color: #000000;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.acta-encabezado {
+  text-align: center;
+  padding-bottom: 10pt;
+  margin-bottom: 14pt;
+  border-bottom: 1.5pt solid #000000;
+}
+
+.acta-encabezado p {
+  margin: 0;
+  font-size: 10pt;
+}
+
+.acta-encabezado h1 {
+  margin: 6pt 0 2pt;
+  font-size: 18pt;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.acta-encabezado .acta-numero {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.acta section {
+  margin-bottom: 14pt;
+  break-inside: avoid;
+}
+
+.acta h2 {
+  margin: 0 0 6pt;
+  font-size: 12pt;
+  color: #000000;
+}
+
+.acta p {
+  margin: 0 0 6pt;
+}
+
+/* Datos en dos columnas: título arriba y valor abajo */
+.acta-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6pt 18pt;
+  margin: 0 0 8pt;
+  padding: 8pt 10pt;
+  border: 0.75pt solid #000000;
+}
+
+.acta-datos dt {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #444444;
+}
+
+.acta-datos dd {
+  margin: 1pt 0 0;
+}
+
+.acta-copia {
+  font-size: 9.5pt;
+  overflow-wrap: anywhere;
+}
+
+/* Líneas para firmar a mano */
+.acta-firmas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36pt;
+  margin-top: 42pt;
+  text-align: center;
+}
+
+.acta-firmas p {
+  margin: 0;
+  font-size: 10pt;
+}
+
+.acta-linea {
+  display: block;
+  margin-bottom: 4pt;
+  border-top: 0.75pt solid #000000;
+}
+
+.acta-pie {
+  margin-top: 24pt;
+  padding-top: 6pt;
+  border-top: 0.5pt solid #777777;
+  font-size: 8.5pt;
+  color: #444444;
+}

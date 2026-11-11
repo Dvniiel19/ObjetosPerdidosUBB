@@ -14,6 +14,14 @@ export const correccionObjetoSchema = registroObjetoSchema
     .omit({
         fotografias: true})
     .extend({
+        descripcion: z.string()
+        .trim()
+        .min(1, 'La descripcion es obligatoria')
+        .max(1000, 'La descripcion debe tener maximo 1000 caracteres'),
+        lugar_hallazgo: z.string()
+        .trim()
+        .min(1, 'El lugar de hallazgo es obligatorio')
+        .max(255, 'El lugar de hallazgo debe tener maximo 255 caracteres'),
         motivo: z.string().
         trim().
         min(10, 'El motivo debe tener minimo 10 caracteres')
@@ -25,6 +33,11 @@ export const idObjetoSchema = z.object({
     id: z.coerce.number().int().positive()
 });
 
+// Numero del objeto dentro del punto (el de la etiqueta, por ejemplo 12 en BIB-12)
+export const numeroObjetoSchema = z.object({
+    numero: z.coerce.number('El numero debe ser un numero').int('El numero debe ser entero').positive('El numero debe ser positivo'),
+});
+
 // Filtros del catalogo. Llegan como texto en la URL, por eso se usa coerce en los numeros.
 export const catalogoQuerySchema = z.object({
     texto: z.string().trim().optional(),
@@ -33,4 +46,9 @@ export const catalogoQuerySchema = z.object({
     lugar: z.string().trim().optional(),
     fecha_desde: z.iso.date('La fecha debe tener formato AAAA-MM-DD').optional(),
     fecha_hasta: z.iso.date('La fecha debe tener formato AAAA-MM-DD').optional(),
-}).strict();
+}).strict()
+    // Las fechas vienen como AAAA-MM-DD, asi que se pueden comparar como texto
+    .refine(
+        (filtros) => !filtros.fecha_desde || !filtros.fecha_hasta || filtros.fecha_desde <= filtros.fecha_hasta,
+        { message: 'La fecha desde no puede ser posterior a la fecha hasta', path: ['fecha_hasta'] },
+    );

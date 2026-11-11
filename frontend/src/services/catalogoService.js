@@ -15,3 +15,7 @@ export function buscarObjetos(filtros) {
 export function listarPuntos() {
   return pedir('/puntos');
 }
+
+export function verDetalleObjeto(id) {
+  return pedir(`/objetos/${id}`);
+}
