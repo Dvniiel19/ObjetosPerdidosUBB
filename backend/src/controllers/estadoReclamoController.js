@@ -6,7 +6,7 @@ import { cambiarEstadoReclamoService } from '../services/estadoReclamoService.js
 export const cambiarEstadoReclamo = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const resultado = await cambiarEstadoReclamoService(id, req.body, req.usuario);
+    const resultado = await cambiarEstadoReclamoService(id, req.datosEstado, req.usuario);
 
     return res.status(200).json(resultado);
   } catch (error) {
