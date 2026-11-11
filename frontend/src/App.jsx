@@ -10,6 +10,7 @@ import { obtenerUsuarioActual, logout } from './services/authService.js';
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
 import Encabezado from './components/Encabezado.jsx';
 import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
+import AlertasRetencionPage from './pages/AlertasRetencionPage.jsx'; // Req 05
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 import './styles/componentes.css'; // tarjetas, columnas, avisos y pestañas compartidos
@@ -24,6 +25,7 @@ const VISTAS = [
   { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
   { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
   { id: 'historial', etiqueta: 'Historial', roles: ['administrador'], ayuda: 'Consulta la trazabilidad completa de un objeto.' },
+  { id: 'alertas', etiqueta: 'Por vencer', roles: ['encargado', 'administrador'], ayuda: 'Objetos que están por cumplir un año en custodia.' },
 ];
 
 export default function App() {
@@ -98,6 +100,7 @@ export default function App() {
       {vista === 'destruir' && esAdmin && <DestruccionPage usuario={usuario} irA={irA} />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
       {vista === 'historial' && esAdmin && <HistorialObjetoPage parametros={parametros} />}
+      {vista === 'alertas' && (esEncargado || esAdmin) && <AlertasRetencionPage usuario={usuario} irA={irA} />}
     </>
   );
 }
