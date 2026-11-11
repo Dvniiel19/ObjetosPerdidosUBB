@@ -95,7 +95,7 @@ export default function App() {
       {vista === 'registrar' && esEncargado && <RegistrarObjetoPage onIrA={irA} />}
       {vista === 'corregir' && esEncargado && <CorregirObjetoPage />}
       {vista === 'reclamos' && esEncargado && <ReclamosPage />}
-      {vista === 'destruir' && esAdmin && <DestruccionPage />}
+      {vista === 'destruir' && esAdmin && <DestruccionPage usuario={usuario} irA={irA} />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
       {vista === 'historial' && esAdmin && <HistorialObjetoPage parametros={parametros} />}
     </>

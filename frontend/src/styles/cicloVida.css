@@ -316,3 +316,38 @@ main.ciclo-vida {
   margin-top: 4px;
   font-size: 15px;
 }
+
+/* ---------- Destrucción segura ---------- */
+/* Las columnas (.dos-columnas, .principal, .lateral) vienen de componentes.css */
+
+.ciclo-vida .principal h2 {
+  margin: 8px 0 0;
+}
+
+/* El formulario lateral no lleva el margen que App.css da a todos los form */
+.ciclo-vida form.lateral {
+  margin: 0;
+}
+
+.ciclo-vida .lateral h2 {
+  margin: 0;
+}
+
+.ciclo-vida .lateral .ayuda {
+  margin-top: 0;
+}
+
+/* Casilla de confirmación: el texto puede ocupar varias líneas */
+.ciclo-vida .casilla {
+  align-items: flex-start;
+  font-size: 15px;
+}
+
+.ciclo-vida .casilla input {
+  margin-top: 4px;
+}
+
+/* Las fechas (3.ª columna de ambas tablas) no se cortan en dos líneas */
+.ciclo-vida .dos-columnas .tabla-min td:nth-child(3) {
+  white-space: nowrap;
+}
