@@ -5,7 +5,7 @@ import { crearReclamoService } from '../services/crearReclamoService.js';
  */
 export const crearReclamo = async (req, res, next) => {
   try {
-    const resultado = await crearReclamoService(req.datosReclamo);
+    const resultado = await crearReclamoService(req.body);
 
     return res.status(201).json(resultado);
   } catch (error) {

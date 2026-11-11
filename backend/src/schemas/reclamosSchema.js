@@ -45,3 +45,7 @@ export const crearReclamoSchema = z.object({
     .trim()
     .min(1, 'La evidencia de propiedad es obligatoria'),
 }).strict();
+
+export const idReclamoSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
