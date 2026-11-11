@@ -1,0 +1,122 @@
+/* Estilos del registro de objetos encontrados (RF2) */
+
+.registro-ayuda {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Fotografías: miniaturas en una grilla que se acomoda al ancho */
+.registro-fotos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.registro-miniatura {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.registro-miniatura img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--code-bg);
+}
+
+.registro-miniatura div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.registro-miniatura span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registro-miniatura button {
+  padding: 4px 10px;
+  font-size: 14px;
+}
+
+/* Recuadro para agregar fotos: todo el recuadro es el botón para elegir archivos */
+.registro-agregar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 140px;
+  padding: 12px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-h);
+}
+
+.registro-agregar:hover {
+  border-color: var(--azul-institucional);
+}
+
+.registro-agregar:focus-within {
+  outline: 3px solid var(--azul-institucional);
+  outline-offset: 2px;
+}
+
+.registro-agregar input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.registro-mas {
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* Botones del final del formulario */
+.registro-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Mensajes de resultado */
+.registro-mensaje {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  border-left: 4px solid;
+  background: var(--code-bg);
+  color: var(--text-h);
+}
+
+.registro-mensaje.exito {
+  border-left-color: #1b7f3b;
+}
+
+.registro-mensaje.error {
+  border-left-color: var(--rojo);
+}
+
+.registro-mensaje ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.registro-mensaje button {
+  margin-top: 10px;
+}
