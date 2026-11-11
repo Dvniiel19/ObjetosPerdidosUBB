@@ -107,6 +107,36 @@ main:has(.buscador) {
   border-top: 1px solid var(--border);
 }
 
+/* ---------- Barra de resultados ---------- */
+
+/* Contador a la izquierda y selector de orden a la derecha */
+.barra-resultados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+/* El contador conserva [role='status'] por accesibilidad, pero sin el recuadro verde de App.css */
+.barra-resultados [role='status'] {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.barra-resultados label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.barra-resultados select {
+  width: auto;
+}
+
 /* ---------- Tarjetas de objetos ---------- */
 
 /* Varias tarjetas por fila; .objetos también lo usan otras pantallas, por eso va acotado al catálogo */

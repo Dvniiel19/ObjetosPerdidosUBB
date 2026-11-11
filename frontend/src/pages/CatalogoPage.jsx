@@ -17,6 +17,7 @@ export default function CatalogoPage() {
   const [categorias, setCategorias] = useState([]);
   const [puntos, setPuntos] = useState([]);
   const [objetos, setObjetos] = useState(null);
+  const [orden, setOrden] = useState('recientes');
   const [avanzados, setAvanzados] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -84,6 +85,12 @@ export default function CatalogoPage() {
     return <main><DetalleObjeto objeto={detalle} onVolver={() => setDetalle(null)} /></main>;
   }
 
+  // Los resultados se ordenan por fecha del hallazgo; el usuario elige si de más nuevos a más viejos
+  const ordenados = [...(objetos ?? [])].sort((a, b) => {
+    const diferencia = new Date(b.hallado_en) - new Date(a.hallado_en);
+    return orden === 'recientes' ? diferencia : -diferencia;
+  });
+
   return (
     <main>
       <div>
@@ -105,7 +112,7 @@ export default function CatalogoPage() {
           <label>
             Categoría
             <select value={filtros.categoria} onChange={(e) => cambiarFiltro('categoria', e.target.value)}>
-              <option value="">Todas las categorías</option>
+              <option value="">Todas</option>
               {categorias.map((categoria) => (
                 <option key={categoria.id_categoria} value={categoria.id_categoria}>{categoria.nombre}</option>
               ))}
@@ -187,10 +194,27 @@ export default function CatalogoPage() {
 
       {error && <p role="alert">{error}</p>}
 
-      {objetos && <p role="status">{objetos.length === 0 ? 'No se encontraron objetos con esa búsqueda.' : `Se encontraron ${objetos.length} objetos.`}</p>}
+      {objetos && (
+        <div className="barra-resultados">
+          <p role="status">
+            {objetos.length === 0
+              ? 'No se encontraron objetos con esa búsqueda.'
+              : `Se ${objetos.length === 1 ? 'encontró 1 objeto' : `encontraron ${objetos.length} objetos`}`}
+          </p>
+          {objetos.length > 1 && (
+            <label>
+              Ordenar por
+              <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+                <option value="recientes">Más recientes</option>
+                <option value="antiguos">Más antiguos</option>
+              </select>
+            </label>
+          )}
+        </div>
+      )}
 
       <div className="objetos">
-        {objetos?.map((objeto) => {
+        {ordenados.map((objeto) => {
           const portada = objeto.fotografias?.[0];
           return (
             <article className="objeto" key={objeto.id_objeto}>
