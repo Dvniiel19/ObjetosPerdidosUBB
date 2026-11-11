@@ -4,9 +4,7 @@
 /* ---------- Base compartida ---------- */
 
 main.ciclo-vida {
-  max-width: 1078px;
-  /* Arriba de la pantalla, no centrado en vertical (App.css usa margin: auto) */
-  margin: 0 auto;
+  --cv-fondo: #f3f6fb;
   --cv-verde: #2f855a;
   --cv-verde-bg: rgba(47, 133, 90, 0.14);
   --cv-ambar: #b7791f;
@@ -16,6 +14,34 @@ main.ciclo-vida {
   --cv-azul: #235dad;
   --cv-azul-bg: rgba(35, 93, 173, 0.12);
   --cv-neutro-bg: var(--code-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  main.ciclo-vida {
+    --cv-fondo: #101116;
+  }
+}
+
+/* ---------- Pantalla completa ---------- */
+
+/* Mientras se muestra una pantalla del Req 05, #root (que en index.css mide 1280px
+   con bordes) ocupa todo el ancho, así no quedan franjas blancas a los lados.
+   Es el mismo criterio que usa la pantalla de registro (registro.css). */
+#root:has(> main.ciclo-vida) {
+  width: 100%;
+  max-width: none;
+  border-inline: 0;
+}
+
+/* Se usa #root para ganarle a App.css (720px) y a main:has(.dos-columnas) de
+   componentes.css (1160px). flex: 1 estira el fondo hasta abajo aunque haya poco contenido. */
+#root > main.ciclo-vida {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  padding: 28px clamp(16px, 3vw, 48px) 40px;
+  background: var(--cv-fondo);
 }
 
 .ciclo-vida h2 {
