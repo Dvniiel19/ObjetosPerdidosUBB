@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react';
 import CatalogoPage from './pages/CatalogoPage.jsx';
 import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
+<<<<<<< HEAD
+import DestruccionPage from './pages/DestruccionPage.jsx'; 
+import { EntregaReclamoPage } from './pages/EntregaReclamoPage.jsx';
+import CrearReclamoPage from './pages/CrearReclamoPage.jsx';
+import RevisarReclamoPage from './pages/RevisarReclamoPage.jsx';
+import LoginPage from './pages/LoginPage.jsx'; // LOGIN
+import AccesoExternoPage from './pages/AccesoExternoPage.jsx'; // LOGIN
+import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOGIN
+import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
+import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
+=======
 import DestruccionPage from './pages/DestruccionPage.jsx';
 import ReclamosPage from './pages/ReclamosPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -9,6 +20,8 @@ import AccesoExternoPage from './pages/AccesoExternoPage.jsx';
 import { obtenerUsuarioActual, logout } from './services/authService.js';
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
 import Encabezado from './components/Encabezado.jsx';
+import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
+>>>>>>> aeb801e8ab7af30463f38ab576ff1431951eb5b7
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 import './styles/componentes.css'; // tarjetas, columnas, avisos y pestañas compartidos
@@ -26,6 +39,14 @@ const VISTAS = [
 
 export default function App() {
   const [vista, setVista] = useState('catalogo');
+  // Req 05: datos que una pantalla le pasa a otra (por ejemplo, el objeto del historial)
+  const [parametros, setParametros] = useState(null);
+
+  // Req 05: cambia de pantalla y, si hace falta, le pasa datos
+  function irA(nuevaVista, nuevosParametros = null) {
+    setParametros(nuevosParametros);
+    setVista(nuevaVista);
+  }
 
   // LOGIN: usuario de la sesion
   const [usuario, setUsuario] = useState(null);
@@ -87,6 +108,7 @@ export default function App() {
       {vista === 'reclamos' && esEncargado && <ReclamosPage />}
       {vista === 'destruir' && esAdmin && <DestruccionPage />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
+      {vista === 'historial' && esAdmin && <HistorialObjetoPage parametros={parametros} />}
     </>
   );
 }
