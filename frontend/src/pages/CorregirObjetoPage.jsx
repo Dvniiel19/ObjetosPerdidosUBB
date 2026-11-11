@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Icono from '../components/Icono.jsx';
 import { obtenerObjetoParaEditar, obtenerObjetoPorNumero, guardarObjetoEditado, listarCategoria } from '../services/objetoService.js';
 import { buscarObjetos } from '../services/catalogoService.js';
@@ -27,7 +27,7 @@ const NOMBRES_CAMPOS = {
   hora: 'Hora',
 };
 
-export default function CorregirObjetoPage() {
+export default function CorregirObjetoPage({ parametros }) {
   const [numero, setNumero] = useState('');
   const [texto, setTexto] = useState('');
   const [resultados, setResultados] = useState(null);
@@ -71,6 +71,14 @@ export default function CorregirObjetoPage() {
       setCargando(false);
     }
   }
+
+  // Si se llego desde el inventario, se abre directo el objeto elegido
+  useEffect(() => {
+    if (parametros?.numero) {
+      abrir({ numeroEtiqueta: parametros.numero });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parametros]);
 
   function buscarPorNumero(evento) {
     evento.preventDefault();

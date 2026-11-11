@@ -8,6 +8,7 @@ import authRoutes from './authRoutes.js';
 import retencionRoutes from './retencionRoutes.js';
 import historialRoutes from './historialRoutes.js';
 import reportesRoutes from './reportesRoutes.js';
+import inventarioRoutes from './inventarioRoutes.js';
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use('/destrucciones', destruccionRoutes);
 router.use('/retencion', retencionRoutes);
 router.use('/historial', historialRoutes);
 router.use('/reportes', reportesRoutes);
+router.use('/inventario', inventarioRoutes);
 
 export default router;

@@ -15,6 +15,7 @@ import ReportesPage from './pages/ReportesPage.jsx'; // Req 05
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 import './styles/componentes.css'; // tarjetas, columnas, avisos y pestañas compartidos
+import InventarioPage from './pages/InventarioPage.jsx';
 
 // Opciones del menú y qué rol puede ver cada una.
 // Para agregar una pantalla: suma una línea aquí y su <Pagina /> más abajo.
@@ -26,8 +27,7 @@ const VISTAS = [
   { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
   { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
   { id: 'historial', etiqueta: 'Historial', roles: ['administrador'], ayuda: 'Consulta la trazabilidad completa de un objeto.' },
-  { id: 'alertas', etiqueta: 'Por vencer', roles: ['encargado', 'administrador'], ayuda: 'Objetos que están por cumplir un año en custodia.' },
-  { id: 'reportes', etiqueta: 'Reportes', roles: ['administrador'], ayuda: 'Estadísticas agregadas del ciclo de vida de los objetos.' },
+  { id: 'inventario', etiqueta: 'Inventario', roles: ['encargado'], ayuda: 'Revisa todos los objetos de tu punto e imprime sus etiquetas.' },
 ];
 
 export default function App() {
@@ -97,7 +97,8 @@ export default function App() {
 
       {vista === 'catalogo' && <CatalogoPage />}
       {vista === 'registrar' && esEncargado && <RegistrarObjetoPage onIrA={irA} />}
-      {vista === 'corregir' && esEncargado && <CorregirObjetoPage />}
+      {vista === 'inventario' && esEncargado && <InventarioPage onIrA={irA} />}
+      {vista === 'corregir' && esEncargado && <CorregirObjetoPage parametros={parametros} />}
       {vista === 'reclamos' && esEncargado && <ReclamosPage />}
       {vista === 'destruir' && esAdmin && <DestruccionPage usuario={usuario} irA={irA} />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
