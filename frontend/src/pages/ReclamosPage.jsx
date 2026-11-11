@@ -24,12 +24,12 @@ export default function ReclamosPage() {
     <main>
       <div className="cabecera-pagina">
         <div>
-          <h1>Solicitudes de reclamo</h1>
-          <p>Reclamos presenciales de objetos en custodia en tu punto de acopio.</p>
+          <h1>Entregas</h1>
+          <p>Entregas presenciales de objetos en custodia en tu punto de acopio.</p>
         </div>
       </div>
 
-      <div className="pestanas" role="tablist" aria-label="Pasos del reclamo">
+      <div className="pestanas" role="tablist" aria-label="Pasos de la entrega">
         {PASOS.map((p) => (
           <button
             key={p.id}
