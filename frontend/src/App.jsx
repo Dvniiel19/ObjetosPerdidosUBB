@@ -11,6 +11,7 @@ import AccesoExternoPage from './pages/AccesoExternoPage.jsx'; // LOGIN
 import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOGIN
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
 import './App.css';
+import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 
 export default function App() {
   const [vista, setVista] = useState('catalogo');
