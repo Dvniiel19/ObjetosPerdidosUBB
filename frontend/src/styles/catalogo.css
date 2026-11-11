@@ -89,6 +89,24 @@ main:has(.buscador) {
   color: #ffffff;
 }
 
+/* "Filtros avanzados" y "Limpiar" quedan a la derecha de la fila */
+.chips .separado {
+  margin-left: auto;
+}
+
+.chips .separado[aria-expanded='true'] {
+  border-color: var(--azul-institucional);
+  color: var(--azul-institucional);
+}
+
+/* Panel desplegable dentro del buscador */
+.avanzados {
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 /* ---------- Tarjetas de objetos ---------- */
 
 /* Varias tarjetas por fila; .objetos también lo usan otras pantallas, por eso va acotado al catálogo */
@@ -154,7 +172,8 @@ main:has(.buscador) .objeto button {
 }
 
 @media (max-width: 560px) {
-  .buscador {
+  .buscador,
+  .avanzados {
     grid-template-columns: 1fr;
   }
 }
