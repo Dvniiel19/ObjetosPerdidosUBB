@@ -5,6 +5,8 @@
 
 main.ciclo-vida {
   max-width: 1078px;
+  /* Arriba de la pantalla, no centrado en vertical (App.css usa margin: auto) */
+  margin: 0 auto;
   --cv-verde: #2f855a;
   --cv-verde-bg: rgba(47, 133, 90, 0.14);
   --cv-ambar: #b7791f;
@@ -350,4 +352,11 @@ main.ciclo-vida {
 /* Las fechas (3.ª columna de ambas tablas) no se cortan en dos líneas */
 .ciclo-vida .dos-columnas .tabla-min td:nth-child(3) {
   white-space: nowrap;
+}
+
+/* ---------- Objetos por vencer ---------- */
+
+/* componentes.css quita el margen a los avisos; aquí se separan de la tabla */
+.ciclo-vida .aviso[role] {
+  margin: 0 0 16px;
 }
