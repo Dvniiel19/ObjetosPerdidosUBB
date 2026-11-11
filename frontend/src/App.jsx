@@ -2,17 +2,6 @@ import { useEffect, useState } from 'react';
 import CatalogoPage from './pages/CatalogoPage.jsx';
 import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
-<<<<<<< HEAD
-import DestruccionPage from './pages/DestruccionPage.jsx'; 
-import { EntregaReclamoPage } from './pages/EntregaReclamoPage.jsx';
-import CrearReclamoPage from './pages/CrearReclamoPage.jsx';
-import RevisarReclamoPage from './pages/RevisarReclamoPage.jsx';
-import LoginPage from './pages/LoginPage.jsx'; // LOGIN
-import AccesoExternoPage from './pages/AccesoExternoPage.jsx'; // LOGIN
-import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOGIN
-import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
-import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
-=======
 import DestruccionPage from './pages/DestruccionPage.jsx';
 import ReclamosPage from './pages/ReclamosPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -21,7 +10,6 @@ import { obtenerUsuarioActual, logout } from './services/authService.js';
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
 import Encabezado from './components/Encabezado.jsx';
 import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
->>>>>>> aeb801e8ab7af30463f38ab576ff1431951eb5b7
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 import './styles/componentes.css'; // tarjetas, columnas, avisos y pestañas compartidos
@@ -35,6 +23,7 @@ const VISTAS = [
   { id: 'reclamos', etiqueta: 'Reclamos', roles: ['encargado'], ayuda: 'Gestiona reclamos en tu punto: registrar solicitud, aprobar/rechazar y entregar.' },
   { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
   { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
+  { id: 'historial', etiqueta: 'Historial', roles: ['administrador'], ayuda: 'Consulta la trazabilidad completa de un objeto.' },
 ];
 
 export default function App() {
@@ -98,7 +87,7 @@ export default function App() {
         usuario={usuario}
         vistas={vistasPermitidas}
         vistaActual={vista}
-        onCambiarVista={setVista}
+        onCambiarVista={irA}
         onSalir={salir}
       />
 
