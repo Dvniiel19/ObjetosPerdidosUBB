@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icono from '../components/Icono.jsx';
+import ActaDestruccion from '../components/ActaDestruccion.jsx';
 import {
   listarCandidatosDestruccion,
   listarActasDestruccion,
@@ -21,6 +23,8 @@ export default function DestruccionPage({ usuario, irA }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
+  // Acta que se está imprimiendo (o guardando como PDF) en este momento
+  const [actaImprimir, setActaImprimir] = useState(null);
 
   useEffect(() => {
     cargarDatos()
@@ -30,6 +34,23 @@ export default function DestruccionPage({ usuario, irA }) {
       })
       .catch((err) => setError(err.message));
   }, []);
+
+  // Igual que la etiqueta del inventario: primero se dibuja el acta y después se abre
+  // el diálogo de impresión. Al cerrarlo se quita, así la próxima lleva solo esa acta.
+  useEffect(() => {
+    if (!actaImprimir) return undefined;
+
+    function alTerminar() {
+      setActaImprimir(null);
+    }
+    window.addEventListener('afterprint', alTerminar);
+    const espera = setTimeout(() => window.print(), 50);
+
+    return () => {
+      clearTimeout(espera);
+      window.removeEventListener('afterprint', alTerminar);
+    };
+  }, [actaImprimir]);
 
   function elegir(candidato) {
     setElegido(candidato);
@@ -46,11 +67,17 @@ export default function DestruccionPage({ usuario, irA }) {
     setEnviando(true);
     try {
       const respuesta = await registrarDestruccion(elegido.id_objeto, archivoUrl.trim());
-      setMensaje(`Objeto #${elegido.id_objeto} dado de baja. Acta: ${respuesta.datos.acta.numero_acta}.`);
+      const nuevaActa = respuesta.datos.acta;
+      setMensaje(
+        `Objeto #${elegido.id_objeto} dado de baja. Acta N° ${nuevaActa.numero_acta}: `
+        + 'se abrió para imprimirla o guardarla como PDF, y puedes descargarla de nuevo cuando quieras.',
+      );
       setElegido(null);
       const [listaCandidatos, listaActas] = await cargarDatos();
       setCandidatos(listaCandidatos);
       setActas(listaActas);
+      // El acta se genera sola con los datos recién guardados
+      setActaImprimir(listaActas.find((acta) => acta.id_acta === nuevaActa.id_acta) ?? null);
     } catch (err) {
       setError(err.detalles?.length ? err.detalles.map((d) => d.mensaje).join('. ') : err.message);
     } finally {
@@ -149,7 +176,7 @@ export default function DestruccionPage({ usuario, irA }) {
                     <th>Objeto</th>
                     <th>Fecha</th>
                     <th>Responsable</th>
-                    <th className="celda-acciones">Respaldo</th>
+                    <th className="celda-acciones">Acta</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -166,7 +193,16 @@ export default function DestruccionPage({ usuario, irA }) {
                       <td>{fechaParaMostrar(acta.ejecutada_en)}</td>
                       <td>{acta.firmante.nombres} {acta.firmante.apellidos}</td>
                       <td className="celda-acciones">
-                        <a href={acta.archivo_url} target="_blank" rel="noreferrer">Ver acta</a>
+                        <button type="button" className="boton-secundario" onClick={() => setActaImprimir(acta)}>
+                          <Icono nombre="documento" />
+                          Descargar acta
+                        </button>
+                        {acta.archivo_url && (
+                          <>
+                            <br />
+                            <a href={acta.archivo_url} target="_blank" rel="noreferrer">Copia firmada</a>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -197,17 +233,22 @@ export default function DestruccionPage({ usuario, irA }) {
                   <dd>{fechaParaMostrar(new Date())} (automática)</dd>
                 </div>
               </dl>
+              <p className="aviso">
+                El acta se genera automáticamente al dar de baja el objeto, con estos datos.
+                Se abrirá para imprimirla o guardarla como PDF.
+              </p>
               <label>
-                Enlace al acta de respaldo
+                Enlace a la copia firmada (opcional)
                 <input
                   type="url"
                   value={archivoUrl}
                   onChange={(e) => setArchivoUrl(e.target.value)}
-                  placeholder="https://…/acta.pdf"
+                  placeholder="https://…/acta-firmada.pdf"
                   pattern="https?://.+"
-                  required
                 />
-                <span className="ayuda">Dirección del documento firmado (debe empezar con http:// o https://).</span>
+                <span className="ayuda">
+                  Si ya tienen el acta firmada y escaneada (por ejemplo en Drive), peguen aquí su enlace.
+                </span>
               </label>
               <label className="casilla">
                 <input
@@ -226,6 +267,15 @@ export default function DestruccionPage({ usuario, irA }) {
           )}
         </form>
       </div>
+
+      {/* El acta se dibuja directo en <body>, fuera de la app, para que al imprimir
+          sea lo único en la hoja (ver cicloVida.css). En pantalla no se ve. */}
+      {actaImprimir && createPortal(
+        <div className="acta-impresion">
+          <ActaDestruccion acta={actaImprimir} />
+        </div>,
+        document.body,
+      )}
     </main>
   );
 }
