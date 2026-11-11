@@ -25,7 +25,8 @@ function formularioVacio() {
   return { id_categoria: '', descripcion: '', lugar_hallazgo: '', ...ahoraParaFormulario() };
 }
 
-export default function RegistrarObjetoPage() {
+// onIrA: función de App.jsx para cambiar de pantalla (se usa en "Ver en el catálogo")
+export default function RegistrarObjetoPage({ onIrA }) {
   const [categorias, setCategorias] = useState([]);
   const [encargado, setEncargado] = useState(null);
   const [nombrePunto, setNombrePunto] = useState('');
@@ -155,154 +156,177 @@ export default function RegistrarObjetoPage() {
 
   return (
     <main>
-      <h1>Registrar objeto encontrado</h1>
-      <p>Completa los datos del objeto que acabas de recibir en tu punto de acopio.</p>
+      <div className="cabecera-pagina registro-cabecera">
+        <h1>Registrar objeto encontrado</h1>
+        <p>Completa los datos del objeto que acabas de recibir en tu punto de acopio.</p>
+      </div>
 
-      {errorCarga && <p role="alert">{errorCarga}</p>}
+      {errorCarga && <p className="aviso error" role="alert">{errorCarga}</p>}
       {cargando && <p role="status">Cargando formulario…</p>}
 
       {!cargando && !errorCarga && (
-        <>
-          <aside className="registro-aviso">
-            <p>
-              Se registrará en <strong>{nombrePunto || 'tu punto de acopio'}</strong>
-              {encargado && <> a nombre de <strong>{encargado.nombres} {encargado.apellidos}</strong></>}.
-            </p>
-            <p>El autor y la fecha de registro se guardan automáticamente y no se pueden editar después.</p>
-          </aside>
+        <div className="dos-columnas">
+          <div className="principal">
+            <form className="tarjeta" onSubmit={enviar} onReset={limpiar}>
+              <p className="aviso">
+                Se registrará en <strong>{nombrePunto || 'tu punto de acopio'}</strong>
+                {encargado && <> a nombre de <strong>{encargado.nombres} {encargado.apellidos}</strong></>}.
+                {' '}El autor y la fecha de registro se guardan automáticamente y no se pueden editar después.
+              </p>
 
-          <form onSubmit={enviar} onReset={limpiar}>
-            <fieldset disabled={guardando}>
-              <label>
-                Categoría
-                <select
-                  value={datos.id_categoria}
-                  onChange={(e) => cambiar('id_categoria', e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Selecciona una categoría</option>
-                  {categorias.map((categoria) => (
-                    <option key={categoria.id_categoria} value={categoria.id_categoria}>
-                      {categoria.nombre}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <fieldset disabled={guardando}>
+                <div className="fila-campos">
+                  <label>
+                    Categoría
+                    <select
+                      value={datos.id_categoria}
+                      onChange={(e) => cambiar('id_categoria', e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Selecciona una categoría</option>
+                      {categorias.map((categoria) => (
+                        <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                          {categoria.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-              <label>
-                Descripción
-                <textarea
-                  value={datos.descripcion}
-                  onChange={(e) => cambiar('descripcion', e.target.value)}
-                  placeholder="Color, marca y señas que ayuden a reconocerlo"
-                  maxLength={MAX_DESCRIPCION}
-                  required
-                />
-                <span className="registro-ayuda">{datos.descripcion.length} de {MAX_DESCRIPCION} caracteres</span>
-              </label>
+                  <label>
+                    Lugar del hallazgo
+                    <input
+                      value={datos.lugar_hallazgo}
+                      onChange={(e) => cambiar('lugar_hallazgo', e.target.value)}
+                      placeholder="Ej: Biblioteca, segundo piso"
+                      maxLength={255}
+                      required
+                    />
+                  </label>
+                </div>
 
-              <label>
-                Lugar del hallazgo
-                <input
-                  value={datos.lugar_hallazgo}
-                  onChange={(e) => cambiar('lugar_hallazgo', e.target.value)}
-                  placeholder="Ej: Biblioteca, segundo piso"
-                  maxLength={255}
-                  required
-                />
-              </label>
+                <label>
+                  Descripción
+                  <textarea
+                    value={datos.descripcion}
+                    onChange={(e) => cambiar('descripcion', e.target.value)}
+                    placeholder="Color, marca y señas que ayuden a reconocerlo"
+                    maxLength={MAX_DESCRIPCION}
+                    required
+                  />
+                  <span className="ayuda">{datos.descripcion.length} de {MAX_DESCRIPCION} caracteres</span>
+                </label>
 
-              <label>
-                Fecha del hallazgo
-                <input
-                  type="date"
-                  value={datos.fecha}
-                  max={hoy}
-                  onChange={(e) => cambiar('fecha', e.target.value)}
-                  required
-                />
-              </label>
+                <div className="fila-campos">
+                  <label>
+                    Fecha del hallazgo
+                    <input
+                      type="date"
+                      value={datos.fecha}
+                      max={hoy}
+                      onChange={(e) => cambiar('fecha', e.target.value)}
+                      required
+                    />
+                  </label>
 
-              <label>
-                Hora del hallazgo
-                <input
-                  type="time"
-                  value={datos.hora}
-                  onChange={(e) => cambiar('hora', e.target.value)}
-                  required
-                />
-              </label>
+                  <label>
+                    Hora del hallazgo
+                    <input
+                      type="time"
+                      value={datos.hora}
+                      onChange={(e) => cambiar('hora', e.target.value)}
+                      required
+                    />
+                  </label>
+                </div>
 
-              <fieldset>
-                <legend>
-                  Fotografías{' '}
-                  <span className="registro-ayuda">
-                    (hasta {MAX_FOTOS} · JPG, PNG o WEBP · máx. {MAX_MB} MB cada una)
-                  </span>
-                </legend>
-                <div className="registro-fotos">
-                  {fotos.map((foto, indice) => (
-                    <div className="registro-miniatura" key={foto.vista}>
-                      <img src={foto.vista} alt={`Vista previa de la fotografía ${indice + 1}`} />
-                      <div>
-                        <span title={foto.archivo.name}>{indice + 1} · {foto.archivo.name}</span>
-                        <button
-                          type="button"
-                          aria-label={`Quitar la fotografía ${indice + 1}`}
-                          onClick={() => quitarFoto(indice)}
-                        >
-                          Quitar
-                        </button>
+                <fieldset>
+                  <legend>
+                    Fotografías{' '}
+                    <span className="ayuda">
+                      (hasta {MAX_FOTOS} · JPG, PNG o WEBP · máx. {MAX_MB} MB cada una)
+                    </span>
+                  </legend>
+                  <div className="registro-fotos">
+                    {fotos.map((foto, indice) => (
+                      <div className="registro-miniatura" key={foto.vista}>
+                        <img src={foto.vista} alt={`Vista previa de la fotografía ${indice + 1}`} />
+                        <div>
+                          <span title={foto.archivo.name}>{indice + 1} · {foto.archivo.name}</span>
+                          <button
+                            type="button"
+                            aria-label={`Quitar la fotografía ${indice + 1}`}
+                            onClick={() => quitarFoto(indice)}
+                          >
+                            Quitar
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  {fotos.length < MAX_FOTOS && (
-                    <label className="registro-agregar">
-                      <span className="registro-mas" aria-hidden="true">+</span>
-                      <strong>Agregar foto</strong>
-                      <span className="registro-ayuda">Cámara o galería</span>
-                      <input
-                        type="file"
-                        accept={FORMATOS.join(',')}
-                        multiple
-                        onChange={agregarFotos}
-                      />
-                    </label>
-                  )}
+                    {fotos.length < MAX_FOTOS && (
+                      <label className="registro-agregar">
+                        <span className="registro-mas" aria-hidden="true">+</span>
+                        <strong>Agregar foto</strong>
+                        <span className="ayuda">Cámara o galería</span>
+                        <input
+                          type="file"
+                          accept={FORMATOS.join(',')}
+                          multiple
+                          onChange={agregarFotos}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </fieldset>
+
+                {error && (
+                  <div className="aviso error" role="alert">
+                    <strong>{error.mensaje}</strong>
+                    {error.detalles.length > 0 && (
+                      <ul>
+                        {error.detalles.map((detalle, i) => (
+                          <li key={i}>{detalle.mensaje}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                <div className="acciones">
+                  <button type="reset">Descartar</button>
+                  <button type="submit">{guardando ? 'Registrando…' : 'Registrar objeto'}</button>
                 </div>
               </fieldset>
+            </form>
+          </div>
 
-              <div className="registro-acciones">
-                <button type="reset">Descartar</button>
-                <button type="submit">{guardando ? 'Registrando…' : 'Registrar objeto'}</button>
+          <aside className="lateral">
+            <section className="tarjeta">
+              <h2>Al confirmar</h2>
+              <ul className="lista-simple">
+                <li>El objeto queda <strong>en custodia</strong> en tu punto de acopio.</li>
+                <li>Recibe un número único y aparece en el catálogo con sus fotos.</li>
+                <li>Queda trazable hasta su entrega o baja.</li>
+                <li>El plazo de retiro es de <strong>un año</strong> desde hoy.</li>
+              </ul>
+            </section>
+
+            {registrado && (
+              <div className="aviso exito" role="status">
+                <strong>Objeto #{registrado.id_objeto} registrado correctamente.</strong>
+                <p className="registro-detalle-exito">
+                  En custodia · {registrado.fotografias.length}{' '}
+                  {registrado.fotografias.length === 1 ? 'fotografía' : 'fotografías'}.
+                </p>
+                {onIrA && (
+                  <button type="button" className="boton-enlace" onClick={() => onIrA('catalogo')}>
+                    Ver en el catálogo
+                  </button>
+                )}
               </div>
-            </fieldset>
-          </form>
-
-          {registrado && (
-            <section className="registro-mensaje exito" role="status">
-              <strong>Objeto #{registrado.id_objeto} registrado correctamente.</strong>
-              <p>
-                Quedó en custodia con {registrado.fotografias.length}{' '}
-                {registrado.fotografias.length === 1 ? 'fotografía' : 'fotografías'} y ya aparece en el catálogo.
-              </p>
-            </section>
-          )}
-
-          {error && (
-            <section className="registro-mensaje error" role="alert">
-              <strong>{error.mensaje}</strong>
-              {error.detalles.length > 0 && (
-                <ul>
-                  {error.detalles.map((detalle, i) => (
-                    <li key={i}>{detalle.mensaje}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          )}
-        </>
+            )}
+          </aside>
+        </div>
       )}
     </main>
   );

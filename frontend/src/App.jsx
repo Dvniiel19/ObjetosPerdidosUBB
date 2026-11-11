@@ -92,7 +92,7 @@ export default function App() {
       />
 
       {vista === 'catalogo' && <CatalogoPage />}
-      {vista === 'registrar' && esEncargado && <RegistrarObjetoPage />}
+      {vista === 'registrar' && esEncargado && <RegistrarObjetoPage onIrA={irA} />}
       {vista === 'corregir' && esEncargado && <CorregirObjetoPage />}
       {vista === 'reclamos' && esEncargado && <ReclamosPage />}
       {vista === 'destruir' && esAdmin && <DestruccionPage />}
