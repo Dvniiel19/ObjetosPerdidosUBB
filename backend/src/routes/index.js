@@ -5,6 +5,9 @@ import puntoRoutes from './puntoRoutes.js';
 import reclamosRoutes from './reclamosRoutes.js';
 import destruccionRoutes from './destruccionRoutes.js';
 import authRoutes from './authRoutes.js';
+import retencionRoutes from './retencionRoutes.js';
+import historialRoutes from './historialRoutes.js';
+import reportesRoutes from './reportesRoutes.js';
 
 const router = Router();
 
@@ -15,5 +18,8 @@ router.use('/categoria', categoriaRoutes);
 router.use('/puntos', puntoRoutes);
 router.use(reclamosRoutes);
 router.use('/destrucciones', destruccionRoutes);
+router.use('/retencion', retencionRoutes);
+router.use('/historial', historialRoutes);
+router.use('/reportes', reportesRoutes);
 
 export default router;
