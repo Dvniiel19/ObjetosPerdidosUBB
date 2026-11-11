@@ -84,7 +84,7 @@ export default function GestionPuntosPage(){
     }
 
   return (
-    <main>
+    <main className="pagina-completa">
       <div className="cabecera-pagina">
         <div>
           <h1>Puntos de acopio</h1>
