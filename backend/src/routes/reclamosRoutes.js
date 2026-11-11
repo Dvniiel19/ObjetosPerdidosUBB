@@ -4,35 +4,25 @@ import { crearReclamo } from '../controllers/crearReclamoController.js';
 import { cambiarEstadoReclamo } from '../controllers/estadoReclamoController.js';
 import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
 import { validar } from '../middlewares/validar.js';
-import { crearReclamoSchema, idReclamoSchema } from '../schemas/reclamosSchema.js';
-import { estadoReclamoSchema } from '../schemas/estadoReclamoSchema.js';
+import { validarReclamo } from '../middlewares/validarReclamo.js';
+import { validarEstadoReclamo } from '../middlewares/validarEstadoReclamo.js';
+import { confirmarEntregaSchema, idReclamoParamSchema } from '../schemas/reclamosSchema.js';
 
 const router = Router();
 
 // Ruta para crear un reclamo (solicitud de devolución)
-router.post(
-  '/reclamos',
-  autenticar,
-  validar(crearReclamoSchema),
-  crearReclamo,
-);
+router.post('/reclamos', autenticar, permitirRoles('encargado'), validarReclamo, crearReclamo);
 
 // Ruta para aprobar o rechazar un reclamo
-router.patch(
-  '/reclamos/:id/estado',
-  autenticar,
-  permitirRoles('encargado'),
-  validar(idReclamoSchema, 'params'),
-  validar(estadoReclamoSchema),
-  cambiarEstadoReclamo,
-);
+router.patch('/reclamos/:id/estado', autenticar, permitirRoles('encargado'), validarEstadoReclamo, cambiarEstadoReclamo);
 
-// Ruta para procesar la verificación de propiedad y entrega irreversible
+// Ruta para confirmar entrega (registra verificaciones realizadas presencialmente)
 router.post(
   '/reclamos/:id/entregar',
   autenticar,
   permitirRoles('encargado'),
-  validar(idReclamoSchema, 'params'),
+  validar(idReclamoParamSchema, 'params'),
+  validar(confirmarEntregaSchema),
   procesarEntregaObjeto,
 );
 

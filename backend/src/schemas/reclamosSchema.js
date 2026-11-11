@@ -46,6 +46,25 @@ export const crearReclamoSchema = z.object({
     .min(1, 'La evidencia de propiedad es obligatoria'),
 }).strict();
 
-export const idReclamoSchema = z.object({
-  id: z.coerce.number().int().positive(),
-});
+export const idReclamoParamSchema = z.object({
+  id: z.coerce.number().int().positive('El ID del reclamo debe ser un número positivo'),
+}).strict();
+
+// Confirmación de entrega: registra en el sistema los resultados de verificaciones
+// realizadas presencialmente por el Encargado (identidad por cédula/RUT y acreditación
+// de propiedad), más los métodos aplicados según la categoría del objeto.
+export const confirmarEntregaSchema = z.object({
+  rutCedulaValidada: z.boolean({
+    error: (issue) => issue.input === undefined
+      ? 'Debes indicar el resultado de la verificación de identidad (RUT/cédula)'
+      : 'rutCedulaValidada debe ser booleano',
+  }),
+  propiedadAcreditada: z.boolean({
+    error: (issue) => issue.input === undefined
+      ? 'Debes indicar el resultado de la acreditación de propiedad'
+      : 'propiedadAcreditada debe ser booleano',
+  }),
+  metodosAplicados: z.array(
+    z.string().trim().min(1, 'Cada método debe ser un texto no vacío'),
+  ).min(1, 'Debes registrar al menos un método de acreditación de propiedad'),
+}).strict();

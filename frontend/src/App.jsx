@@ -4,7 +4,6 @@ import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
 import DestruccionPage from './pages/DestruccionPage.jsx';
 import ReclamosPage from './pages/ReclamosPage.jsx';
-import CrearReclamoPage from './pages/CrearReclamoPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import AccesoExternoPage from './pages/AccesoExternoPage.jsx';
 import { obtenerUsuarioActual, logout } from './services/authService.js';
@@ -104,17 +103,6 @@ export default function App() {
           </>
         )}
 
-        {!esEncargado && (
-          <button
-            type="button"
-            aria-pressed={vista === 'crearReclamo'}
-            onClick={() => setVista('crearReclamo')}
-            title="Envía una solicitud para reclamar un objeto."
-          >
-            Nueva solicitud
-          </button>
-        )}
-
         {esAdmin && (
           <>
             <button
@@ -141,7 +129,6 @@ export default function App() {
       {vista === 'registrar' && esEncargado && <RegistrarObjetoPage />}
       {vista === 'corregir' && esEncargado && <CorregirObjetoPage />}
       {vista === 'reclamos' && esEncargado && <ReclamosPage />}
-      {vista === 'crearReclamo' && !esEncargado && <CrearReclamoPage />}
       {vista === 'destruir' && esAdmin && <DestruccionPage />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
     </>
