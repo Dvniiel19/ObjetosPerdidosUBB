@@ -34,8 +34,9 @@ export const EntregaReclamoPage = ({ idInicial = '' }) => {
   }
 
   // La entrega solo se puede confirmar cuando todas las verificaciones están aprobadas
+  const identidadLista = Boolean(idReclamo) && rutCedulaValidada;
   const hayMetodo = metodosSeleccionados.length > 0;
-  const listo = Boolean(idReclamo) && rutCedulaValidada && propiedadAcreditada && hayMetodo;
+  const listo = identidadLista && propiedadAcreditada && hayMetodo;
 
   const handleEntregar = async (e) => {
     e.preventDefault();
@@ -156,9 +157,9 @@ export const EntregaReclamoPage = ({ idInicial = '' }) => {
       <aside className="tarjeta lateral">
         <h2>3. Confirmar entrega</h2>
         <ul className="lista-verificacion">
-          <li className={rutCedulaValidada ? 'ok' : 'falta'}>
-            <span aria-hidden="true">{rutCedulaValidada ? '✓' : '!'}</span>
-            Identidad {rutCedulaValidada ? 'aprobada' : 'pendiente'}
+          <li className={identidadLista ? 'ok' : 'falta'}>
+            <span aria-hidden="true">{identidadLista ? '✓' : '!'}</span>
+            Identidad {identidadLista ? 'aprobada' : 'pendiente'}
           </li>
           <li className={hayMetodo ? 'ok' : 'falta'}>
             <span aria-hidden="true">{hayMetodo ? '✓' : '!'}</span>
