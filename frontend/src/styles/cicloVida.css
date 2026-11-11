@@ -360,3 +360,141 @@ main.ciclo-vida {
 .ciclo-vida .aviso[role] {
   margin: 0 0 16px;
 }
+
+/* ---------- Reportes estadísticos ---------- */
+
+/* Fila de indicadores principales */
+.ciclo-vida .indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .indicador {
+  gap: 4px;
+}
+
+.ciclo-vida .indicador span {
+  font-size: 14px;
+}
+
+.ciclo-vida .indicador strong {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+/* Tres gráficos de barras lado a lado (uno debajo del otro en pantallas chicas) */
+.ciclo-vida .graficos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ciclo-vida .graficos h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+/* Barra horizontal: nombre, pista con la barra y valor */
+.ciclo-vida .barra {
+  display: grid;
+  grid-template-columns: minmax(90px, 40%) 1fr 32px;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.ciclo-vida .barra span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ciclo-vida .barra b {
+  text-align: right;
+  color: var(--text-h);
+}
+
+.ciclo-vida .barra-pista {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--cv-neutro-bg);
+  overflow: hidden;
+}
+
+.ciclo-vida .barra-valor {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cv-azul);
+}
+
+/* Registros y bajas por mes: columnas verticales */
+.ciclo-vida .cabecera-pagina h2 {
+  margin: 0;
+}
+
+.ciclo-vida .leyenda {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.ciclo-vida .leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ciclo-vida .leyenda i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--cv-azul);
+}
+
+.ciclo-vida .leyenda i.baja,
+.ciclo-vida .mes-barras .baja {
+  background: var(--cv-rojo);
+}
+
+.ciclo-vida .meses {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.ciclo-vida .mes {
+  flex: 1 0 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.ciclo-vida .mes strong {
+  color: var(--text-h);
+}
+
+.ciclo-vida .mes-barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 140px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ciclo-vida .mes-barras div {
+  width: 16px;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--cv-azul);
+}
