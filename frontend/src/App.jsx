@@ -10,6 +10,8 @@ import { obtenerUsuarioActual, logout } from './services/authService.js';
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
 import Encabezado from './components/Encabezado.jsx';
 import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
+import AlertasRetencionPage from './pages/AlertasRetencionPage.jsx'; // Req 05
+import ReportesPage from './pages/ReportesPage.jsx'; // Req 05
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
 import './styles/componentes.css'; // tarjetas, columnas, avisos y pestañas compartidos
@@ -101,6 +103,8 @@ export default function App() {
       {vista === 'destruir' && esAdmin && <DestruccionPage usuario={usuario} irA={irA} />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
       {vista === 'historial' && esAdmin && <HistorialObjetoPage parametros={parametros} />}
+      {vista === 'alertas' && (esEncargado || esAdmin) && <AlertasRetencionPage usuario={usuario} irA={irA} />}
+      {vista === 'reportes' && esAdmin && <ReportesPage />}
     </>
   );
 }

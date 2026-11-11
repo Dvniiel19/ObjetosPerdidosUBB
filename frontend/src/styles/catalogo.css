@@ -22,8 +22,35 @@
 }
 
 /* La página del catálogo necesita más ancho que un formulario (mismo ancho que las pantallas de dos columnas) */
-main:has(.buscador) {
-  max-width: 1160px;
+main.catalogo {
+  --catalogo-fondo: #f3f6fb;
+}
+
+@media (prefers-color-scheme: dark) {
+  main.catalogo {
+    --catalogo-fondo: #101116;
+  }
+}
+
+/* ---------- Pantalla completa (igual que Registrar objeto) ---------- */
+
+/* Mientras se muestra el catálogo, #root (que en index.css mide 1280px con bordes)
+   ocupa todo el ancho, así no quedan franjas a los lados. Las demás pantallas no cambian. */
+#root:has(> main.catalogo) {
+  width: 100%;
+  max-width: none;
+  border-inline: 0;
+}
+
+/* Se usa #root para ganarle a main:has(.dos-columnas) de componentes.css (1160px) en el detalle.
+   flex: 1 estira el fondo hasta abajo aunque haya pocos resultados. */
+#root > main.catalogo {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  padding: 28px clamp(16px, 3vw, 48px) 40px;
+  background: var(--catalogo-fondo);
 }
 
 /* ---------- Encabezado y buscador ---------- */
@@ -89,6 +116,54 @@ main:has(.buscador) {
   color: #ffffff;
 }
 
+/* "Filtros avanzados" y "Limpiar" quedan a la derecha de la fila */
+.chips .separado {
+  margin-left: auto;
+}
+
+.chips .separado[aria-expanded='true'] {
+  border-color: var(--azul-institucional);
+  color: var(--azul-institucional);
+}
+
+/* Panel desplegable dentro del buscador */
+.avanzados {
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Barra de resultados ---------- */
+
+/* Contador a la izquierda y selector de orden a la derecha */
+.barra-resultados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+/* El contador conserva [role='status'] por accesibilidad, pero sin el recuadro verde de App.css */
+.barra-resultados [role='status'] {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.barra-resultados label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.barra-resultados select {
+  width: auto;
+}
+
 /* ---------- Tarjetas de objetos ---------- */
 
 /* Varias tarjetas por fila; .objetos también lo usan otras pantallas, por eso va acotado al catálogo */
@@ -114,28 +189,44 @@ main:has(.buscador) .objeto h2 {
   font-size: 19px;
 }
 
-/* El botón queda siempre abajo, aunque la descripción sea más corta */
+/* El botón va justo debajo de "En custodia" */
 main:has(.buscador) .objeto button {
   align-self: stretch;
-  margin-top: auto;
+  margin-top: 10px;
+  border-color: var(--azul-institucional);
+  background: var(--azul-institucional);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+main:has(.buscador) .objeto button:hover {
+  filter: brightness(1.15);
+}
+
+/* Borde visible al navegar con teclado (Tab) */
+main:has(.buscador) .objeto button:focus-visible {
+  outline: 2px solid var(--amarillo);
+  outline-offset: 2px;
 }
 
 /* Datos con ícono: lugar, fecha y punto de retiro */
 .dato {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: 15px;
 }
 
 .dato .icono {
   flex-shrink: 0;
+  margin-top: 4px;
   color: var(--azul-institucional);
 }
 
-/* Estado "En custodia" (mismo verde que las pantallas del ciclo de vida) */
+/* Estado "En custodia" (mismo verde que las pantallas del ciclo de vida).
+   margin-top: auto lo empuja abajo junto con el botón, así quedan alineados en toda la fila */
 .objeto .pastilla.verde {
-  margin: 6px 0 10px;
+  margin: auto 0 0;
   color: #2f855a;
   background: rgba(47, 133, 90, 0.14);
 }
@@ -154,7 +245,87 @@ main:has(.buscador) .objeto button {
 }
 
 @media (max-width: 560px) {
-  .buscador {
+  .buscador,
+  .avanzados {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---------- Detalle de un objeto ---------- */
+
+/* Botón "Volver al catálogo": discreto, con borde, arriba de la pantalla */
+.boton-secundario {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.boton-secundario:hover {
+  border-color: var(--azul-institucional);
+  color: var(--azul-institucional);
+}
+
+.dos-columnas .principal h1 {
+  margin: 4px 0 0;
+  font-size: 30px;
+}
+
+/* Fotos: la primera grande y las demás en fila debajo; cada una se abre en otra pestaña */
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.galeria .objeto-foto {
+  margin: 0;
+}
+
+.galeria .objeto-foto:first-child {
+  grid-column: 1 / -1;
+  aspect-ratio: 16 / 9;
+}
+
+.galeria .objeto-foto:focus-visible {
+  outline: 2px solid var(--amarillo);
+  outline-offset: 2px;
+}
+
+/* Recuadro lateral "¿Es tuyo? Retíralo en persona" */
+.retiro {
+  border-top: 4px solid var(--azul-institucional);
+}
+
+.retiro h2 {
+  font-size: 21px;
+}
+
+.retiro ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-h);
+}
+
+.retiro ol ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--text);
+}
+
+.retiro .aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.retiro .aviso .icono {
+  flex-shrink: 0;
+  margin-top: 3px;
 }
