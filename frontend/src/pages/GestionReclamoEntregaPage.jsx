@@ -95,23 +95,41 @@ export default function GestionReclamoEntregaPage({ idInicial = '' }) {
     if (!idReclamo) return;
     setResultadoDecision(null);
     setErrorDecision(null);
+    setErrorEntrega(null);
     setEnviandoDecision(true);
     try {
-      const respuesta = await cambiarEstadoReclamoService(Number(idReclamo), {
-        estado: estadoDecision,
-        motivo: motivo.trim() || undefined,
-      });
-      setResultadoDecision(respuesta);
-      if (respuesta.reclamo?.estado === 'aprobado') {
-        // pasa a estado aprobado en la misma vista para poder entregar
-        await cargarReclamos(idReclamo);
-        limpiarEntrega();
+      if (estadoDecision === 'aprobado') {
+        // Primero se aprueba el reclamo y luego se confirma la entrega con las verificaciones realizadas.
+        const respuestaDecision = await cambiarEstadoReclamoService(Number(idReclamo), {
+          estado: 'aprobado',
+          motivo: motivo.trim() || undefined,
+        });
+        const respuestaEntrega = await entregarReclamoService(Number(idReclamo), {
+          rutCedulaValidada,
+          propiedadAcreditada,
+          metodosAplicados: metodosSeleccionados,
+        });
+        setResultadoDecision(respuestaDecision);
+        setResultadoEntrega(respuestaEntrega);
+        await cargarReclamos(null);
       } else {
-        // rechazado: ya no está disponible
+        const respuesta = await cambiarEstadoReclamoService(Number(idReclamo), {
+          estado: 'rechazado',
+          motivo: motivo.trim() || undefined,
+        });
+        setResultadoDecision(respuesta);
         await cargarReclamos(null);
       }
     } catch (err) {
-      setErrorDecision(err);
+      // Si falló algo, mostramos el error (puede ser de aprobación o de entrega)
+      if (err?.message?.includes('entrega') || err?.message?.includes('Entrega') || err?.message?.includes('Verificación') || err?.message?.includes('aprobado para poder confirmar')) {
+        setErrorEntrega(err);
+        // el reclamo pudo quedar aprobado; recargar para reflejar estado real
+        await cargarReclamos(idReclamo);
+      } else {
+        setErrorDecision(err);
+      }
+      setResultadoDecision(null);
     } finally {
       setEnviandoDecision(false);
     }
@@ -204,12 +222,72 @@ export default function GestionReclamoEntregaPage({ idInicial = '' }) {
 
         {reclamoSeleccionado?.estado === 'en_revision' && (
           <form className="tarjeta" onSubmit={enviarDecision}>
-            <h2>Aprobar o rechazar</h2>
+            <h2>1. Verificación (obligatoria antes de decidir)</h2>
             <fieldset disabled={enviandoDecision}>
+              <section>
+                <h3>Identidad (cédula presencial)</h3>
+                <label className="casilla">
+                  <input
+                    type="checkbox"
+                    checked={rutCedulaValidada}
+                    onChange={(e) => setRutCedulaValidada(e.target.checked)}
+                  />
+                  <span>Revisé la cédula y el RUT coincide con el de la solicitud</span>
+                </label>
+              </section>
+
+              <section>
+                <h3>Acreditación de propiedad</h3>
+                <fieldset className="grupo-casillas">
+                  <legend>Métodos aplicados según la categoría del objeto (al menos uno)</legend>
+                  <div className="fila-campos" style={{ gap: '0 16px' }}>
+                    {METODOS_DISPONIBLES.map((metodo) => (
+                      <label className="casilla" key={metodo}>
+                        <input
+                          type="checkbox"
+                          checked={metodosSeleccionados.includes(metodo)}
+                          onChange={() => toggleMetodo(metodo)}
+                        />
+                        <span>{metodo}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <label className="casilla">
+                  <input
+                    type="checkbox"
+                    checked={propiedadAcreditada}
+                    onChange={(e) => setPropiedadAcreditada(e.target.checked)}
+                  />
+                  <span>La persona acreditó que el objeto es suyo</span>
+                </label>
+              </section>
+            </fieldset>
+
+            <ul className="lista-verificacion">
+              <li className={identidadLista ? 'ok' : 'falta'}>
+                <span aria-hidden="true">{identidadLista ? '✓' : '!'}</span>
+                Identidad {identidadLista ? 'aprobada' : 'pendiente'}
+              </li>
+              <li className={hayMetodo ? 'ok' : 'falta'}>
+                <span aria-hidden="true">{hayMetodo ? '✓' : '!'}</span>
+                {hayMetodo ? `${metodosSeleccionados.length} método(s) de acreditación` : 'Falta un método de acreditación'}
+              </li>
+              <li className={propiedadAcreditada ? 'ok' : 'falta'}>
+                <span aria-hidden="true">{propiedadAcreditada ? '✓' : '!'}</span>
+                Propiedad {propiedadAcreditada ? 'aprobada' : 'pendiente'}
+              </li>
+            </ul>
+
+            <h2>2. Decisión (aprobar o rechazar)</h2>
+            {!listoEntrega && (
+              <p className="ayuda" role="status">Completa la verificación para poder aprobar o rechazar.</p>
+            )}
+            <fieldset disabled={enviandoDecision || !listoEntrega}>
               <label>
                 Decisión
                 <select value={estadoDecision} onChange={(e) => setEstadoDecision(e.target.value)}>
-                  <option value="aprobado">Aprobar</option>
+                  <option value="aprobado">Aprobar y entregar</option>
                   <option value="rechazado">Rechazar</option>
                 </select>
               </label>
@@ -229,8 +307,12 @@ export default function GestionReclamoEntregaPage({ idInicial = '' }) {
               </label>
             </fieldset>
             <div className="acciones">
-              <button type="submit" disabled={enviandoDecision || !idReclamo}>
-                {enviandoDecision ? 'Procesando…' : 'Aplicar decisión'}
+              <button
+                type="submit"
+                className={listoEntrega && estadoDecision === 'aprobado' ? 'boton-confirmar-listo' : ''}
+                disabled={enviandoDecision || !listoEntrega}
+              >
+                {enviandoDecision ? 'Procesando…' : (estadoDecision === 'aprobado' ? 'Aprobar y entregar' : 'Rechazar reclamo')}
               </button>
             </div>
           </form>
@@ -313,8 +395,8 @@ export default function GestionReclamoEntregaPage({ idInicial = '' }) {
         <section className="tarjeta">
           <h2>Cómo funciona</h2>
           <ul className="lista-simple">
-            <li>Selecciona un reclamo <strong>en revisión</strong> para aprobarlo o rechazarlo.</li>
-            <li>Si lo apruebas, podrás verificar identidad/propiedad y confirmar la entrega en esta misma pantalla.</li>
+            <li>Selecciona un reclamo <strong>en revisión</strong>: primero completa la verificación y luego aprueba (y entrega) o rechaza.</li>
+            <li>Si el reclamo ya está <strong>aprobado</strong>, completa la verificación y confirma la entrega.</li>
             <li>Solo se muestran reclamos de tu punto de acopio.</li>
           </ul>
           <div className="acciones">
