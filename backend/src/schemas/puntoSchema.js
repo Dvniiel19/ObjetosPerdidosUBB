@@ -5,6 +5,11 @@ export const crearPuntoSchema = z.object({
     .trim()
     .min(3, 'El nombre debe tener al menos 3 caracteres')
     .max(25, 'El nombre no puede superar los 25 caracteres'),
+    // Codigo corto del punto: va antes del numero de cada objeto (BIB-12)
+    codigo: z.string('El codigo es obligatorio')
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2,6}$/, 'El codigo debe tener entre 2 y 6 letras, sin numeros ni simbolos'),
     ubicacion: z.string('La ubicacion es obligatoria')
     .trim()
     .min(5, 'La ubicacion debe tener al menos 5 caracteres')

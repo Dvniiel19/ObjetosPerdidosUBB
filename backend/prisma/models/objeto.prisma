@@ -3,6 +3,8 @@ model Objeto {
   id_categoria      Int              @db.SmallInt
   /// se toma del Encargado que lo registra, nunca del cliente
   id_punto          Int
+  /// numero correlativo dentro de su punto (1, 2, 3...). Se muestra como CODIGO-numero
+  numero_en_punto   Int
   registrado_por    Int
   /// null salvo que el estado sea dado_de_baja
   id_acta           Int?
@@ -25,6 +27,7 @@ model Objeto {
   historial         HistorialObjeto[]
   acta              ActaDestruccion? @relation(fields: [id_acta], references: [id_acta], onDelete: Restrict, onUpdate: Cascade)
 
+  @@unique([id_punto, numero_en_punto])
   @@index([id_punto])
   @@index([id_categoria])
   @@index([registrado_por])

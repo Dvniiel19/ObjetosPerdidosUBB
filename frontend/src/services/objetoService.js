@@ -14,3 +14,8 @@ export function guardarObjetoEditado(idObjeto, datos){
 export function listarCategoria(){
     return pedir(`/categoria`);
 }
+
+// Busca un objeto del punto del encargado por el numero de su etiqueta (12 en BIB-12)
+export function obtenerObjetoPorNumero(numero){
+    return pedir(`/objetos/numero/${numero}/editar`);
+}

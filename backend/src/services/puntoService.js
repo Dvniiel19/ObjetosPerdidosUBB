@@ -11,7 +11,7 @@ export async function listarPuntos(){
     });
 }
 
-export async function crearPunto({ nombre, ubicacion, encargados}){
+export async function crearPunto({ nombre, codigo, ubicacion, encargados}){
     const nombreRepetido = await prisma.puntoAcopio.findFirst({
         where: {nombre: {equals: nombre, mode: 'insensitive'}},
         select: {id_punto: true},
@@ -19,6 +19,16 @@ export async function crearPunto({ nombre, ubicacion, encargados}){
 
     if(nombreRepetido){
         throw errorConCodigo('Ya existe un punto con ese nombre', 409);
+    }
+
+    // El codigo tampoco se puede repetir, porque identifica los numeros de sus objetos
+    const codigoRepetido = await prisma.puntoAcopio.findUnique({
+        where: { codigo },
+        select: { id_punto: true },
+    });
+
+    if(codigoRepetido){
+        throw errorConCodigo('Ya existe un punto con ese codigo', 409);
     }
     // Buscar a todos los encargados en una sola consulta
     const usuarios = await prisma.usuario.findMany({
@@ -46,7 +56,7 @@ export async function crearPunto({ nombre, ubicacion, encargados}){
 
     return prisma.$transaction(async (tx) => {
         const punto = await tx.puntoAcopio.create({
-            data: {nombre, ubicacion, habilitado: true, publicado: true},
+            data: {nombre, codigo, ubicacion, habilitado: true, publicado: true},
         });
 
         await tx.usuario.updateMany({
@@ -59,6 +69,7 @@ export async function crearPunto({ nombre, ubicacion, encargados}){
             select: {
                 id_punto: true,
                 nombre: true,
+                codigo: true,
                 ubicacion: true,
                 habilitado: true,
                 publicado: true,
@@ -148,6 +159,7 @@ export async function obtenerTodosLosPuntos(){
         select: {
             id_punto: true,
             nombre: true,
+            codigo: true,
             ubicacion: true,
             habilitado: true,
             publicado: true,

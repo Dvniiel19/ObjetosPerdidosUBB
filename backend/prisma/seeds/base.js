@@ -43,6 +43,7 @@ export async function seedBase(prisma) {
     biblioteca: await prisma.puntoAcopio.create({
       data: {
         nombre: 'Biblioteca Central',
+        codigo: 'BIB',
         ubicacion: 'Primer piso, mesón de atención',
         publicado: true,
       },
@@ -50,6 +51,7 @@ export async function seedBase(prisma) {
     face: await prisma.puntoAcopio.create({
       data: {
         nombre: 'FACE',
+        codigo: 'FACE',
         ubicacion: 'Facultad de Ciencias Empresariales, secretaría',
         publicado: true,
       },
@@ -57,6 +59,7 @@ export async function seedBase(prisma) {
     salasAC: await prisma.puntoAcopio.create({
       data: {
         nombre: 'Salas AC',
+        codigo: 'SAC',
         ubicacion: 'Edificio de salas AC, primer piso',
         publicado: true,
       },

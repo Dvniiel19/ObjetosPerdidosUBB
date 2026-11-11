@@ -6,6 +6,7 @@ export default function GestionPuntosPage(){
     const [puntos, setPuntos] = useState([]);
     const [encargados, setEncargados] = useState([]);
     const [nombre, setNombre] = useState('');
+    const [codigo, setCodigo] = useState('');
     const [ubicacion, setUbicacion] = useState('');
     const [seleccionados, setSeleccionados] = useState([]);
     // id del punto que se esta por desactivar (pide confirmacion antes)
@@ -50,9 +51,10 @@ export default function GestionPuntosPage(){
         }
         setCargando(true);
         try{
-            await crearPunto({nombre, ubicacion, encargados: seleccionados});
+            await crearPunto({nombre, codigo, ubicacion, encargados: seleccionados});
             setMensaje('Punto creado exitosamente.');
             setNombre('');
+            setCodigo('');
             setUbicacion('');
             setSeleccionados([]);
             await cargar();
@@ -111,7 +113,7 @@ export default function GestionPuntosPage(){
                 return (
                   <tr key={punto.id_punto}>
                     <td>
-                      <div className="celda-principal">{punto.nombre}</div>
+                      <div className="celda-principal">{punto.nombre} <span className="pastilla">{punto.codigo}</span></div>
                       <small>{punto.ubicacion}</small>
                     </td>
                     <td>
@@ -186,6 +188,19 @@ export default function GestionPuntosPage(){
                 required
               />
               <span className="ayuda">No puede repetirse con otro punto.</span>
+            </label>
+            <label>
+              Código
+              <input
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                placeholder="Ej: ING"
+                minLength={2}
+                maxLength={6}
+                pattern="[A-Za-z]{2,6}"
+                required
+              />
+              <span className="ayuda">De 2 a 6 letras. Va antes del número de cada objeto (ING-1, ING-2…).</span>
             </label>
             <label>
               Ubicación
