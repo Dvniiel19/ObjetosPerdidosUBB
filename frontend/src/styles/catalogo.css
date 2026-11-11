@@ -166,6 +166,20 @@ main:has(.buscador) .objeto h2 {
 main:has(.buscador) .objeto button {
   align-self: stretch;
   margin-top: auto;
+  border-color: var(--azul-institucional);
+  background: var(--azul-institucional);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+main:has(.buscador) .objeto button:hover {
+  filter: brightness(1.15);
+}
+
+/* Borde visible al navegar con teclado (Tab) */
+main:has(.buscador) .objeto button:focus-visible {
+  outline: 2px solid var(--amarillo);
+  outline-offset: 2px;
 }
 
 /* Datos con ícono: lugar, fecha y punto de retiro */
