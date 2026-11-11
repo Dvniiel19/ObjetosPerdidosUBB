@@ -1,0 +1,132 @@
+/* Estilos de Corregir objeto (RF8) y Puntos de acopio (RF5 y RF9).
+   Las tarjetas, columnas, avisos y pastillas base estan en componentes.css. */
+
+/* Titulo a la izquierda y acciones a la derecha */
+.cabecera-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cabecera-pagina p {
+  max-width: 640px;
+}
+
+/* Tarjeta sin relleno, para que la tabla llegue a los bordes */
+.tarjeta.sin-relleno {
+  padding: 0;
+  overflow-x: auto;
+}
+
+/* ---------- Tabla ---------- */
+
+.tabla-min {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.tabla-min th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla-min td {
+  padding: 14px 16px;
+  vertical-align: top;
+  color: var(--text-h);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla-min tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabla-min small {
+  display: block;
+  color: var(--text);
+}
+
+.celda-principal {
+  font-weight: 600;
+}
+
+.celda-acciones {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.celda-acciones small {
+  margin-top: 6px;
+  white-space: normal;
+}
+
+.numero {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.vacio {
+  padding: 24px;
+  text-align: center;
+  color: var(--text);
+}
+
+/* ---------- Pastilla verde (habilitado) ---------- */
+
+.pastilla.verde {
+  color: #1b7f3b;
+  background: rgba(47, 133, 90, 0.14);
+}
+
+/* ---------- Botones ---------- */
+
+.boton-secundario {
+  background: var(--bg);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+}
+
+.boton-peligro {
+  background: var(--bg);
+  color: var(--rojo);
+  border: 1px solid var(--rojo);
+}
+
+.boton-peligro.relleno {
+  background: var(--rojo);
+  color: #ffffff;
+}
+
+/* ---------- Buscar por numero (Corregir objeto) ---------- */
+
+.buscar-numero {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+}
+
+.buscar-numero label {
+  width: 140px;
+}
+
+.buscar-numero button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Iconos dentro de botones */
+button .icono {
+  vertical-align: middle;
+}
