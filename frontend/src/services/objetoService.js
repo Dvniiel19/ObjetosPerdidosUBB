@@ -16,6 +16,7 @@ export function listarCategoria(){
 }
 
 // Busca un objeto del punto del encargado por el numero de su etiqueta (12 en BIB-12)
-export function obtenerObjetoPorNumero(numero){
-    return pedir(`/objetos/numero/${numero}/editar`);
+export function obtenerObjetoPorNumero(numero, codigo){
+    const filtro = codigo ? `?codigo=${encodeURIComponent(codigo)}` : '';
+    return pedir(`/objetos/numero/${numero}/editar${filtro}`);
 }

@@ -45,13 +45,13 @@ export default function CorregirObjetoPage({ parametros }) {
   const [mensaje, setMensaje] = useState('');
 
   // Abre un objeto por su id interno (desde la busqueda) o por el numero de su etiqueta
-  async function abrir({ idObjeto, numeroEtiqueta }) {
+  async function abrir({ idObjeto, numeroEtiqueta, codigo }) {
     setCargando(true);
     setError('');
     setMensaje('');
     try {
       const [encontrado, listaCategorias] = await Promise.all([
-        numeroEtiqueta ? obtenerObjetoPorNumero(numeroEtiqueta) : obtenerObjetoParaEditar(idObjeto),
+        numeroEtiqueta ? obtenerObjetoPorNumero(numeroEtiqueta, codigo) : obtenerObjetoParaEditar(idObjeto),
         listarCategoria(),
       ]);
       if (encontrado.estado !== 'en_custodia') {
@@ -82,9 +82,14 @@ export default function CorregirObjetoPage({ parametros }) {
 
   function buscarPorNumero(evento) {
     evento.preventDefault();
-    // Acepta "12" o "BIB-12": se usa solo la parte numerica
-    const soloNumero = numero.replace(/\D/g, '');
-    abrir({ numeroEtiqueta: Number(soloNumero) });
+    // Acepta "12" o "BIB-12". Si viene la sigla, el backend revisa que sea la del punto
+    const partes = numero.trim().match(/^(?:([a-z]{2,6})\s*-\s*)?(\d+)$/i);
+    if (!partes) {
+      setObjeto(null);
+      setError('Escribe el número así: 12 o BIB-12.');
+      return;
+    }
+    abrir({ numeroEtiqueta: Number(partes[2]), codigo: partes[1]?.toUpperCase() });
   }
 
   async function buscarPorTexto(evento) {
