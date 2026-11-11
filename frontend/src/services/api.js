@@ -3,16 +3,21 @@
 const API_URL = import.meta.env.VITE_API_URL ?? '/api';
 const LLAVE_TOKEN = 'token';
 
-export function guardarToken(token) {
-  localStorage.setItem(LLAVE_TOKEN, token);
+// Con "recordar" el token queda guardado aunque se cierre el navegador (localStorage).
+// Sin "recordar" se borra al cerrar la pestana (sessionStorage).
+export function guardarToken(token, recordar = true) {
+  borrarToken();
+  const almacen = recordar ? localStorage : sessionStorage;
+  almacen.setItem(LLAVE_TOKEN, token);
 }
 
 export function obtenerToken() {
-  return localStorage.getItem(LLAVE_TOKEN);
+  return localStorage.getItem(LLAVE_TOKEN) ?? sessionStorage.getItem(LLAVE_TOKEN);
 }
 
 export function borrarToken() {
   localStorage.removeItem(LLAVE_TOKEN);
+  sessionStorage.removeItem(LLAVE_TOKEN);
 }
 
 // Convierte la ruta de un archivo guardado ("/uploads/objetos/abc.jpg") en una

@@ -1,0 +1,266 @@
+/* Estilos del inicio de sesion y de la pantalla para personas externas.
+   Fondo azul oscuro con un brillo amarillo y una tarjeta de vidrio al centro. */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap');
+
+/* ---------- Fondo ---------- */
+
+main.login {
+  position: relative;
+  max-width: none;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  overflow: hidden;
+  isolation: isolate;
+  color: #e8eefc;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(249, 178, 20, 0.85), rgba(249, 178, 20, 0) 45%),
+    radial-gradient(circle at 10% 90%, rgba(1, 72, 152, 0.6), rgba(1, 72, 152, 0) 50%),
+    linear-gradient(135deg, #061a3d 0%, #0a2a5c 55%, #12386f 100%);
+}
+
+/* Escudo de la universidad muy tenue de fondo (usa la misma imagen del logo) */
+main.login::before {
+  content: '';
+  position: absolute;
+  right: -18%;
+  top: 55%;
+  transform: translateY(-50%);
+  height: 75%;
+  aspect-ratio: 1248 / 822;
+  background: url('/logo-ubb-escudo.png') no-repeat center / contain;
+  opacity: 0.10;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* En pantallas angostas el escudo de fondo queda detras de la tarjeta: se hace mas tenue */
+@media (max-width: 900px) {
+  main.login::before {
+    right: -25%;
+    opacity: 0.04;
+  }
+}
+
+/* ---------- Tarjeta de vidrio ---------- */
+
+.login-tarjeta {
+  width: 100%;
+  max-width: 430px;
+  box-sizing: border-box;
+  padding: 36px 32px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 16px;
+  background: rgba(16, 38, 82, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  text-align: left;
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+}
+
+.login-tarjeta .logo-ubb {
+  height: 84px;
+}
+
+.login-tarjeta h1 {
+  margin: 26px 0 6px;
+  text-align: center;
+  font-family: 'Montserrat', var(--heading);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+}
+
+.login-subtitulo {
+  text-align: center;
+  font-size: 14px;
+  color: #c9d6f2;
+}
+
+.login-tarjeta form {
+  margin: 20px 0 12px;
+}
+
+.login-tarjeta label {
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.login-tarjeta [role='alert'] {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(228, 27, 26, 0.18);
+  color: #ffd1d1;
+}
+
+/* ---------- Campos con icono ---------- */
+
+.campo-con-icono {
+  position: relative;
+  display: block;
+}
+
+.campo-con-icono input {
+  padding-left: 40px;
+  padding-right: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.campo-con-icono input::placeholder {
+  color: rgba(232, 238, 252, 0.55);
+}
+
+.campo-con-icono input:focus {
+  outline: none;
+  border-color: rgba(249, 178, 20, 0.8);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.campo-icono,
+.boton-ojo svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.campo-icono {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(232, 238, 252, 0.6);
+  pointer-events: none;
+}
+
+.boton-ojo {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: rgba(232, 238, 252, 0.7);
+}
+
+/* ---------- Opciones bajo la contrasena ---------- */
+
+.login-opciones {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.login-opciones .casilla {
+  width: auto;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  font-size: 14px;
+}
+
+.login-opciones .casilla input {
+  width: auto;
+  margin: 0;
+}
+
+.boton-texto {
+  white-space: nowrap;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #9cc1ff;
+  font-size: 14px;
+}
+
+.boton-texto:hover {
+  text-decoration: underline;
+}
+
+.login-ayuda {
+  font-size: 14px;
+  color: #c9d6f2;
+}
+
+/* ---------- Boton principal ---------- */
+
+.boton-ingresar {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, #2f6fd1, #1f56ad);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.boton-ingresar:hover {
+  filter: brightness(1.08);
+}
+
+/* ---------- Pie de la tarjeta ---------- */
+
+.login-soporte {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #c9d6f2;
+}
+
+.login-soporte a {
+  color: #9cc1ff;
+}
+
+.login-tarjeta .boton-enlace {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #c9d6f2;
+}
+
+.login-tarjeta .boton-enlace:hover {
+  color: #ffffff;
+}
+
+/* ---------- Pantalla de acceso externo ---------- */
+
+.acceso-externo h1 {
+  font-size: 24px;
+}
+
+.acceso-externo p {
+  color: #c9d6f2;
+}
+
+.acceso-externo ul {
+  margin: 16px 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: #e8eefc;
+}
+
+.acceso-externo strong {
+  color: #ffffff;
+}

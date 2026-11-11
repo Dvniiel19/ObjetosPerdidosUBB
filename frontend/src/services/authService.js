@@ -7,12 +7,13 @@ export function esUBB(correo){
     return DOMINIOS.some((dominio)=> limpio.endsWith(dominio));
 }
 
-export async function login(correo, contrasena){
+// "recordar" viene de la casilla "Mantener sesion iniciada"
+export async function login(correo, contrasena, recordar = true){
     const {token, usuario} = await pedir('/auth/login',{
         metodo: 'POST',
         body: {correo, contrasena},
     });
-    guardarToken(token);
+    guardarToken(token, recordar);
     return usuario;
 }
 
