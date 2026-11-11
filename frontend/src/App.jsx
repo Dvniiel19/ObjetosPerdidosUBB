@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import CatalogoPage from './pages/CatalogoPage.jsx';
 import CorregirObjetoPage from './pages/CorregirObjetoPage.jsx';
 import RegistrarObjetoPage from './pages/RegistrarObjetoPage.jsx';
+<<<<<<< HEAD
 import DestruccionPage from './pages/DestruccionPage.jsx'; 
 import { EntregaReclamoPage } from './pages/EntregaReclamoPage.jsx';
 import CrearReclamoPage from './pages/CrearReclamoPage.jsx';
@@ -11,8 +12,29 @@ import AccesoExternoPage from './pages/AccesoExternoPage.jsx'; // LOGIN
 import { obtenerUsuarioActual, logout } from './services/authService.js'; // LOGIN
 import GestionPuntosPage from './pages/GestionPuntosPage.jsx'; // RF5 y RF9
 import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
+=======
+import DestruccionPage from './pages/DestruccionPage.jsx';
+import ReclamosPage from './pages/ReclamosPage.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import AccesoExternoPage from './pages/AccesoExternoPage.jsx';
+import { obtenerUsuarioActual, logout } from './services/authService.js';
+import GestionPuntosPage from './pages/GestionPuntosPage.jsx';
+import Encabezado from './components/Encabezado.jsx';
+import HistorialObjetoPage from './pages/HistorialObjetoPage.jsx'; // Req 05
+>>>>>>> aeb801e8ab7af30463f38ab576ff1431951eb5b7
 import './App.css';
 import './styles/cicloVida.css'; // Req 05: pantallas del ciclo de vida
+
+// Opciones del menú y qué rol puede ver cada una.
+// Para agregar una pantalla: suma una línea aquí y su <Pagina /> más abajo.
+const VISTAS = [
+  { id: 'catalogo', etiqueta: 'Catálogo', roles: ['usuario', 'encargado', 'administrador'], ayuda: 'Busca objetos perdidos en custodia.' },
+  { id: 'registrar', etiqueta: 'Registrar objeto', roles: ['encargado'], ayuda: 'Ingresa al sistema un objeto encontrado en el punto de acopio.' },
+  { id: 'corregir', etiqueta: 'Corregir', roles: ['encargado'], ayuda: 'Corrige datos de un objeto en custodia de tu punto.' },
+  { id: 'reclamos', etiqueta: 'Reclamos', roles: ['encargado'], ayuda: 'Gestiona reclamos en tu punto: registrar solicitud, aprobar/rechazar y entregar.' },
+  { id: 'puntos', etiqueta: 'Puntos de acopio', roles: ['administrador'], ayuda: 'Administra puntos de acopio y encargados.' },
+  { id: 'destruir', etiqueta: 'Destrucción', roles: ['administrador'], ayuda: 'Gestiona la baja/destrucción de objetos no reclamados.' },
+];
 
 export default function App() {
   const [vista, setVista] = useState('catalogo');
@@ -65,109 +87,25 @@ export default function App() {
       : <LoginPage onIngresar={setUsuario} onExterno={() => setExterno(true)} />;
   }
 
-  // RF8: solo el encargado corrige objetos
   const esEncargado = usuario.rol === 'encargado';
-  // RF5 y RF9: solo el administrador gestiona puntos
   const esAdmin = usuario.rol === 'administrador';
+  const vistasPermitidas = VISTAS.filter((v) => v.roles.includes(usuario.rol));
 
   return (
     <>
-      {/* LOGIN: barra con el usuario y cerrar sesion */}
-      <header className="barra-sesion">
-        <span>{usuario.nombres} {usuario.apellidos} · {usuario.rol}</span>
-        <button type="button" onClick={salir}>Cerrar sesión</button>
-      </header>
-
-      <nav className="navegacion-objetos" aria-label="Gestión de objetos">
-        <button
-          type="button"
-          aria-pressed={vista === 'catalogo'}
-          onClick={() => setVista('catalogo')}
-        >
-          Buscar objetos
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'registrar'}
-          onClick={() => setVista('registrar')}
-        >
-          Registrar objeto
-        </button>
-
-        {/* RF8: solo encargado */}
-        {esEncargado && (
-          <button
-            type="button"
-            aria-pressed={vista === 'corregir'}
-            onClick={() => setVista('corregir')}
-          >
-            Corregir objeto
-          </button>
-        )}
-
-        <button
-          type="button"
-          aria-pressed={vista === 'destruir'}
-          onClick={() => setVista('destruir')}
-        >
-          Destrucción Segura
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'entrega'}
-          onClick={() => setVista('entrega')}
-        >
-          Entrega de reclamo
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'crearReclamo'}
-          onClick={() => setVista('crearReclamo')}
-        >
-          Solicitar reclamo
-        </button>
-
-        <button
-          type="button"
-          aria-pressed={vista === 'revisarReclamo'}
-          onClick={() => setVista('revisarReclamo')}
-        >
-          Revisar reclamo
-        </button>
-
-        {/* Req 05: historial de objetos, solo administrador */}
-        {esAdmin && (
-          <button
-            type="button"
-            aria-pressed={vista === 'historial'}
-            onClick={() => irA('historial')}
-          >
-            Historial
-          </button>
-        )}
-
-        {/* RF5 y RF9: solo administrador */}
-        {esAdmin && (
-          <button
-            type="button"
-            aria-pressed={vista === 'puntos'}
-            onClick={() => setVista('puntos')}
-          >
-            Puntos
-          </button>
-        )}
-      </nav>
+      <Encabezado
+        usuario={usuario}
+        vistas={vistasPermitidas}
+        vistaActual={vista}
+        onCambiarVista={setVista}
+        onSalir={salir}
+      />
 
       {vista === 'catalogo' && <CatalogoPage />}
-      {vista === 'registrar' && <RegistrarObjetoPage />}
+      {vista === 'registrar' && esEncargado && <RegistrarObjetoPage />}
       {vista === 'corregir' && esEncargado && <CorregirObjetoPage />}
-      {vista === 'destruir' && <DestruccionPage />}
-      {vista === 'entrega' && <EntregaReclamoPage />}
-      {vista === 'crearReclamo' && <CrearReclamoPage />}
-      {vista === 'revisarReclamo' && <RevisarReclamoPage />}
+      {vista === 'reclamos' && esEncargado && <ReclamosPage />}
+      {vista === 'destruir' && esAdmin && <DestruccionPage />}
       {vista === 'puntos' && esAdmin && <GestionPuntosPage />}
       {vista === 'historial' && esAdmin && <HistorialObjetoPage parametros={parametros} />}
     </>

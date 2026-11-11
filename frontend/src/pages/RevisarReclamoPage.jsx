@@ -1,73 +1,128 @@
 import { useState } from 'react';
 import { cambiarEstadoReclamoService } from '../services/reclamosService.js';
 
-// TEMPORAL: encargados del seed, hasta que exista el login
-const ENCARGADOS = [
-  { id: 2, nombre: 'Bruno Encargado (Biblioteca Central)' },
-  { id: 3, nombre: 'Carla Encargada (FACE)' },
-];
-
-export default function RevisarReclamoPage() {
-  const [idUsuario, setIdUsuario] = useState('');
-  const [idReclamo, setIdReclamo] = useState('');
+// RF10, paso 2: el Encargado del punto aprueba o rechaza una solicitud en revisión.
+export default function RevisarReclamoPage({ idInicial = '', onContinuar }) {
+  const [idReclamo, setIdReclamo] = useState(idInicial);
   const [estado, setEstado] = useState('aprobado');
   const [motivo, setMotivo] = useState('');
-  const [mensaje, setMensaje] = useState(null);
+  const [resultado, setResultado] = useState(null);
+  const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
   async function enviar(e) {
     e.preventDefault();
-    setMensaje(null);
+    setResultado(null);
+    setError(null);
     setEnviando(true);
     try {
-      const resultado = await cambiarEstadoReclamoService(Number(idReclamo), Number(idUsuario), {
+      const respuesta = await cambiarEstadoReclamoService(Number(idReclamo), {
         estado,
         motivo: motivo.trim() || undefined,
       });
-      setMensaje({ tipo: 'exito', texto: `${resultado.mensaje} ${resultado.reclamo.motivo_decision ? `Motivo: ${resultado.reclamo.motivo_decision}` : ''}` });
-    } catch (error) {
-      setMensaje({ tipo: 'error', texto: error.message });
+      setResultado(respuesta);
+    } catch (err) {
+      setError(err);
     } finally {
       setEnviando(false);
     }
   }
 
+  const aprobado = resultado?.reclamo.estado === 'aprobado';
+
   return (
-    <main>
-      <h1>Revisar reclamo (Encargado)</h1>
-      <p>Aprueba o rechaza una solicitud de devolución. Solo un Encargado del punto de custodia puede hacerlo.</p>
-
-      {mensaje && (
-        <p role={mensaje.tipo === 'error' ? 'alert' : 'status'} style={{ color: mensaje.tipo === 'error' ? '#d32f2f' : '#2e7d32' }}>
-          {mensaje.texto}
-        </p>
-      )}
-
-      <form onSubmit={enviar}>
+    <div className="dos-columnas">
+      <form className="tarjeta principal" onSubmit={enviar}>
+        <h2>Aprobar o rechazar una solicitud</h2>
         <fieldset disabled={enviando}>
-          <label>Encargado
-            <select value={idUsuario} onChange={e => setIdUsuario(e.target.value)} required>
-              <option value="">Selecciona un encargado</option>
-              {ENCARGADOS.map(enc => (
-                <option key={enc.id} value={enc.id}>{enc.nombre}</option>
-              ))}
-            </select>
+          <div className="fila-campos">
+            <label>
+              N° del reclamo
+              <input
+                type="number"
+                min="1"
+                required
+                value={idReclamo}
+                onChange={(e) => setIdReclamo(e.target.value)}
+              />
+            </label>
+            <label>
+              Decisión
+              <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+                <option value="aprobado">Aprobar</option>
+                <option value="rechazado">Rechazar</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            <span>
+              Motivo{' '}
+              {estado === 'rechazado'
+                ? <span className="obligatorio">(obligatorio)</span>
+                : <span className="ayuda">(opcional)</span>}
+            </span>
+            <textarea
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              required={estado === 'rechazado'}
+              maxLength={500}
+            />
           </label>
-          <label>ID del reclamo
-            <input type="number" min="1" required value={idReclamo} onChange={e => setIdReclamo(e.target.value)} />
-          </label>
-          <label>Decisión
-            <select value={estado} onChange={e => setEstado(e.target.value)}>
-              <option value="aprobado">Aprobar</option>
-              <option value="rechazado">Rechazar</option>
-            </select>
-          </label>
-          <label>Motivo {estado === 'rechazado' && '(obligatorio)'}
-            <textarea value={motivo} onChange={e => setMotivo(e.target.value)} required={estado === 'rechazado'} maxLength={500} />
-          </label>
-          <button type="submit">{enviando ? 'Procesando…' : 'Aplicar decisión'}</button>
         </fieldset>
+        <div className="acciones">
+          <button type="submit" disabled={enviando}>{enviando ? 'Procesando…' : 'Aplicar decisión'}</button>
+        </div>
       </form>
-    </main>
+
+      <aside className="lateral">
+        <section className="tarjeta">
+          <h2>Ten en cuenta</h2>
+          <ul className="lista-simple">
+            <li>Solo puedes decidir sobre reclamos de objetos de tu punto de acopio.</li>
+            <li>La solicitud debe estar <strong>en revisión</strong>.</li>
+            <li>Al rechazar, el motivo queda registrado en la bitácora.</li>
+          </ul>
+        </section>
+
+        {resultado && (
+          <section className={`aviso ${aprobado ? 'exito' : 'alerta'}`} role="status">
+            <div>
+              <strong>{resultado.mensaje}</strong>
+              {resultado.reclamo.motivo_decision && (
+                <>
+                  <br />
+                  Motivo: {resultado.reclamo.motivo_decision}
+                </>
+              )}
+              {aprobado && (
+                <>
+                  <br />
+                  <button
+                    type="button"
+                    className="boton-enlace"
+                    onClick={() => onContinuar?.(resultado.reclamo.id_reclamo)}
+                  >
+                    Continuar con la entrega
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+        )}
+
+        {error && (
+          <section className="aviso error" role="alert">
+            <div>
+              <strong>{error.message}</strong>
+              {error.detalles?.length > 0 && (
+                <ul>
+                  {error.detalles.map((detalle, i) => <li key={i}>{detalle.mensaje}</li>)}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
+      </aside>
+    </div>
   );
 }

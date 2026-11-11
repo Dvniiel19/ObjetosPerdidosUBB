@@ -5,11 +5,15 @@ import { crearReclamoService } from '../services/crearReclamoService.js';
  */
 export const crearReclamo = async (req, res, next) => {
   try {
-    const resultado = await crearReclamoService(req.datosReclamo);
+    const resultado = await crearReclamoService(req.datosReclamo, req.usuario);
 
     return res.status(201).json(resultado);
   } catch (error) {
     console.error("Error al crear el reclamo:", error);
+
+    if (error.message.includes("punto de custodia") || error.message.includes("denegad")) {
+      return res.status(403).json({ error: error.message });
+    }
 
     if (error.message.includes("no existe") || error.message.includes("no está disponible") || error.message.includes("No hay un encargado")) {
       return res.status(400).json({ error: error.message });
