@@ -139,7 +139,7 @@ async function registrarRechazoEnBitacora(idObjeto, idAdministrador, motivo) {
  * Todo ocurre en una transaccion: si algo falla, no queda ni el acta ni el cambio de estado.
  * @param {number} idObjeto
  * @param {number} idAdministrador - el usuario de la sesion
- * @param {string} archivoUrl - URL del acta de respaldo
+ * @param {string|null} [archivoUrl] - enlace opcional a la copia firmada del acta
  */
 export async function registrarDestruccionObjeto(idObjeto, idAdministrador, archivoUrl) {
   try {
@@ -162,7 +162,7 @@ export async function registrarDestruccionObjeto(idObjeto, idAdministrador, arch
           numero_acta: numeroActa,
           responsable: idAdministrador,
           ejecutada_en: new Date(),
-          archivo_url: archivoUrl,
+          archivo_url: archivoUrl ?? null,
         },
       });
 
@@ -216,8 +216,19 @@ export async function listarActasDestruccion() {
           correo_institucional: true,
         },
       },
+      // Datos que necesita el acta imprimible (la genera el frontend con esto)
       objetos: {
-        select: { id_objeto: true, descripcion: true, registrado_en: true },
+        select: {
+          id_objeto: true,
+          numero_en_punto: true,
+          descripcion: true,
+          lugar_hallazgo: true,
+          hallado_en: true,
+          registrado_en: true,
+          alerta_enviada_en: true,
+          categoria: { select: { nombre: true } },
+          punto: { select: { nombre: true, codigo: true } },
+        },
       },
     },
     orderBy: { ejecutada_en: 'desc' },
