@@ -70,6 +70,7 @@ export async function seedBase(prisma) {
     admin: await prisma.usuario.create({
       data: {
         correo_institucional: 'admin@ubiobio.cl',
+        rut: '11111111-1',
         clave_hash,
         nombres: 'Ana',
         apellidos: 'Administradora',
@@ -79,6 +80,7 @@ export async function seedBase(prisma) {
     encargadoBiblioteca: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.biblioteca@ubiobio.cl',
+        rut: '22222222-2',
         clave_hash,
         nombres: 'Bruno',
         apellidos: 'Encargado',
@@ -89,6 +91,7 @@ export async function seedBase(prisma) {
     encargadoFace: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.face@ubiobio.cl',
+        rut: '33333333-3',
         clave_hash,
         nombres: 'Carla',
         apellidos: 'Encargada',
@@ -99,6 +102,7 @@ export async function seedBase(prisma) {
     estudiante: await prisma.usuario.create({
       data: {
         correo_institucional: 'estudiante@alumnos.ubiobio.cl',
+        rut: '44444444-4',
         clave_hash,
         nombres: 'Diego',
         apellidos: 'Estudiante',
