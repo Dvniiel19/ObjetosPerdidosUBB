@@ -1,28 +1,30 @@
-import {pedir, guardarToken, obtenerToken, borrarToken} from './api.js';
+import { pedir, guardarToken, obtenerToken, borrarToken } from './api.js';
 
-const DOMINIOS = ['@alumnos.ubiobio.cl', '@ubiobio.cl', '@ubb.cl'];
-
-export function esUBB(correo){
-    const limpio = correo.trim().toLowerCase();
-    return DOMINIOS.some((dominio)=> limpio.endsWith(dominio));
+// Muestra el rut con puntos y guion: 123456789 = 12.345.678-9
+export function formatearRut(valor) {
+    const limpio = valor.replace(/[^0-9kK]/g, '').toUpperCase().slice(0, 9);
+    if (limpio.length <= 1) return limpio;
+    const cuerpo = limpio.slice(0, -1).replace(/\D/g, '');
+    const dv = limpio.slice(-1);
+    return `${cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${dv}`;
 }
 
-// "recordar" viene de la casilla "Mantener sesion iniciada"
-export async function login(correo, contrasena, recordar = true){
-    const {token, usuario} = await pedir('/auth/login',{
+
+export async function login(rut, contrasena, recordar = true) {
+    const { token, usuario } = await pedir('/auth/login', {
         metodo: 'POST',
-        body: {correo, contrasena},
+        body: { rut, contrasena },
     });
     guardarToken(token, recordar);
     return usuario;
 }
 
-export async function obtenerUsuarioActual(){
-    if( !obtenerToken()){
+export async function obtenerUsuarioActual() {
+    if (!obtenerToken()) {
         return null;
     }
 
-    try{
+    try {
         return await pedir('/auth/yo');
     } catch {
         borrarToken();
@@ -30,6 +32,6 @@ export async function obtenerUsuarioActual(){
     }
 }
 
-export function logout(){
+export function logout() {
     borrarToken();
 }

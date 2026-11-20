@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { login, esUBB } from '../services/authService.js';
+import { login, formatearRut } from '../services/authService.js';
 import '../styles/acceso.css';
 
 // Iconos chicos que van dentro de los campos
-function IconoCorreo() {
+function IconoRut() {
   return (
     <svg className="campo-icono" viewBox="0 0 24 24" aria-hidden="true">
       <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M3 7l9 6 9-6" />
+      <circle cx="9" cy="12" r="2.5" />
+      <path d="M14 10h4M14 14h4" />
     </svg>
   );
 }
@@ -32,7 +33,7 @@ function IconoOjo({ tachado }) {
 }
 
 export default function LoginPage({ onIngresar, onExterno }) {
-  const [correo, setCorreo] = useState('');
+  const [rut, setRut] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [mostrarClave, setMostrarClave] = useState(false);
   const [recordar, setRecordar] = useState(true);
@@ -44,18 +45,13 @@ export default function LoginPage({ onIngresar, onExterno }) {
     evento.preventDefault();
     setError('');
 
-    // Si no es de la comunidad lo lleva automaticamente a la pagina de acceso externo
-    if (!esUBB(correo)) {
-      onExterno();
-      return;
-    }
-
     setCargando(true);
     try {
-      const usuario = await login(correo, contrasena, recordar);
+      const usuario = await login(rut, contrasena, recordar);
       onIngresar(usuario);
     } catch (err) {
-      setError(err.message);
+      // Si el backend rechaza el RUT, muestra su mensaje ("El RUT no es valido")
+      setError(err.detalles?.length ? err.detalles.map((d) => d.mensaje).join('. ') : err.message);
     } finally {
       setCargando(false);
     }
@@ -68,22 +64,23 @@ export default function LoginPage({ onIngresar, onExterno }) {
           <img className="logo-ubb" src="/logo-ubb-blanco.svg" alt="Universidad del Bío-Bío" />
         </div>
         <h1>Objetos Perdidos</h1>
-        <p className="login-subtitulo">Iniciar sesión con tus credenciales institucionales</p>
+        <p className="login-subtitulo">Iniciar sesión con tus credenciales de intranet</p>
 
         {error && <p role="alert">{error}</p>}
 
         <form onSubmit={enviar}>
           <fieldset disabled={cargando}>
             <label>
-              Correo institucional
+              RUT
               <span className="campo-con-icono">
-                <IconoCorreo />
+                <IconoRut />
                 <input
-                  type="email"
-                  value={correo}
-                  onChange={(e) => setCorreo(e.target.value)}
-                  placeholder="nombre@alumnos.ubiobio.cl"
+                  type="text"
+                  value={rut}
+                  onChange={(e) => setRut(formatearRut(e.target.value))}
+                  placeholder="12.345.678-9"
                   autoComplete="username"
+                  maxLength={12}
                   required
                 />
               </span>
@@ -125,7 +122,7 @@ export default function LoginPage({ onIngresar, onExterno }) {
 
             {ayudaClave && (
               <p className="login-ayuda" role="status">
-                Escribe a soporte o acércate a un punto de objetos perdidos para recuperar tu acceso.
+                Es la misma clave de tu Intranet. Si no la recuerdas, recupérala desde la Intranet.
               </p>
             )}
 

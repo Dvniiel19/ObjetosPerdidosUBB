@@ -1,18 +1,33 @@
-import { z} from 'zod';
+import { z } from 'zod';
 
-export const dominiosPermitidos= ['@alumnos.ubiobio.cl', '@ubiobio.cl', '@ubb.cl'];
+export function normalizarRut(rut) {
+    const limpio = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    return `${limpio.slice(0, -1)}-${limpio.slice(-1)}`;
+}
 
-export function validarCorreo(correo){
-    return dominiosPermitidos.some(dominio => correo.endsWith(dominio));
+// Revisa el digito verificador con el algoritmo modulo 11
+export function rutValido(rut) {
+    if (!/^\d{7,8}-[\dK]$/.test(rut)) {
+        return false;
+    }
+    const [cuerpo, dv] = rut.split('-');
+    let suma = 0;
+    let multiplicador = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += Number(cuerpo[i]) * multiplicador;
+        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+    }
+    const resto = 11 - (suma % 11);
+    const esperado = resto === 11 ? '0' : resto === 10 ? 'K' : String(resto);
+    return dv === esperado;
 }
 
 export const loginSchema = z.object({
-    correo: z.string()
-    .trim()
-    .toLowerCase()
-    .email('El correo no tiene formato valido')
-    .refine(validarCorreo, 'Solo correos de la UBB son permitidos'),
+    rut: z.string('El RUT es obligatorio')
+        .trim()
+        .transform(normalizarRut)
+        .refine(rutValido, 'El RUT no es valido'),
     contrasena: z.string()
-    .min(1, 'La contrasena es obligatoria')
-    .max(20, 'La contrasena no puede superar los 20 caracteres'),
+        .min(1, 'La contrasena es obligatoria')
+        .max(20, 'La contrasena no puede superar los 20 caracteres'),
 }).strict();
