@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { buscarObjetos, listarPuntos, verDetalleObjeto } from '../services/catalogoService.js';
 import { listarCategoria } from '../services/objetoService.js';
 import DetalleObjeto from '../components/detalleObjeto.jsx';
@@ -22,6 +22,9 @@ export default function CatalogoPage() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [detalle, setDetalle] = useState(null);
+  // Búsqueda en curso: si llega otra, la anterior se cancela para que su respuesta
+  // (que puede tardar más) no reemplace los resultados de la búsqueda más nueva.
+  const busquedaActual = useRef(null);
 
   // Al abrir: listas de los filtros y todos los objetos disponibles
   useEffect(() => {
@@ -31,10 +34,10 @@ export default function CatalogoPage() {
     listarPuntos()
       .then(setPuntos)
       .catch(() => setError('No se pudieron cargar los puntos de acopio.'));
-    buscarObjetos(FILTROS_VACIOS)
-      .then((resultado) => setObjetos(resultado.objetos))
-      .catch((err) => setError(err.message))
-      .finally(() => setCargando(false));
+    buscar(FILTROS_VACIOS);
+
+    // Al salir de la página se cancela la búsqueda pendiente
+    return () => busquedaActual.current?.abort();
   }, []);
 
   function cambiarFiltro(nombre, valor) {
@@ -42,16 +45,23 @@ export default function CatalogoPage() {
   }
 
   async function buscar(nuevosFiltros) {
+    busquedaActual.current?.abort();
+    const controlador = new AbortController();
+    busquedaActual.current = controlador;
+
     setCargando(true);
     setError('');
     try {
-      const resultado = await buscarObjetos(nuevosFiltros);
+      const resultado = await buscarObjetos(nuevosFiltros, { signal: controlador.signal });
       setObjetos(resultado.objetos);
     } catch (err) {
+      // Cancelada porque empezó otra búsqueda: esa otra se encarga de mostrar el resultado
+      if (err.name === 'AbortError') return;
       // Si es un error de validación se muestran los mensajes de cada filtro
       setError(err.detalles?.length ? err.detalles.map((d) => d.mensaje).join('. ') : err.message);
     } finally {
-      setCargando(false);
+      // Solo la búsqueda más reciente apaga el "Buscando…"
+      if (busquedaActual.current === controlador) setCargando(false);
     }
   }
 

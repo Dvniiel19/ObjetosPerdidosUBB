@@ -32,8 +32,9 @@ export function urlArchivo(ruta) {
 
 // Hace una petición a la API y devuelve la respuesta ya convertida desde JSON.
 // - body puede ser un objeto (se envía como JSON) o un FormData (para subir archivos).
+// - signal (opcional) permite cancelar la petición con un AbortController.
 // - Si la API responde con error, lanza un Error con: message, status y detalles.
-export async function pedir(ruta, { metodo = 'GET', body } = {}) {
+export async function pedir(ruta, { metodo = 'GET', body, signal } = {}) {
   const headers = {};
   const esFormulario = body instanceof FormData;
 
@@ -55,9 +56,12 @@ export async function pedir(ruta, { metodo = 'GET', body } = {}) {
       method: metodo,
       headers,
       body: esFormulario ? body : body ? JSON.stringify(body) : undefined,
+      signal,
     });
-  } catch {
-    throw new Error('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.');
+  } catch (err) {
+    // Una petición cancelada no es un problema de conexión: se deja pasar tal cual
+    if (err.name === 'AbortError') throw err;
+    throw new Error('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', { cause: err });
   }
 
   const datos = await respuesta.json().catch(() => ({}));
