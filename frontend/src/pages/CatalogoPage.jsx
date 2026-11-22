@@ -12,21 +12,66 @@ const FILTROS_VACIOS = { texto: '', categoria: '', punto: '', lugar: '', fecha_d
 // Fecha de hoy en formato AAAA-MM-DD, para no permitir fechas futuras.
 const HOY = new Date().toLocaleDateString('sv-SE');
 
+// --- Estado del catálogo en la URL ---
+// Los filtros aplicados y el objeto abierto quedan en la dirección
+// (ej: ?categoria=1&lugar=casino&objeto=10). Así se puede compartir el link,
+// recargar sin perder la búsqueda y usar el botón "atrás" del navegador.
+
+function leerUrl() {
+  const parametros = new URLSearchParams(window.location.search);
+  const filtros = { ...FILTROS_VACIOS };
+  for (const nombre of Object.keys(FILTROS_VACIOS)) {
+    filtros[nombre] = parametros.get(nombre) ?? '';
+  }
+  return { filtros, idObjeto: parametros.get('objeto') };
+}
+
+// Cambia solo lo que se indique: "filtros" y/o "objeto" (null lo quita).
+// Con modo "push" se crea una entrada nueva en el historial del navegador;
+// con "replace" se reemplaza la actual (para no llenar el historial con cada búsqueda).
+function actualizarUrl({ filtros, objeto }, modo = 'replace') {
+  const parametros = new URLSearchParams(window.location.search);
+
+  if (filtros) {
+    for (const nombre of Object.keys(FILTROS_VACIOS)) {
+      const valor = String(filtros[nombre] ?? '').trim();
+      if (valor) parametros.set(nombre, valor);
+      else parametros.delete(nombre);
+    }
+  }
+  if (objeto !== undefined) {
+    if (objeto) parametros.set('objeto', objeto);
+    else parametros.delete('objeto');
+  }
+
+  const consulta = parametros.toString();
+  const url = `${window.location.pathname}${consulta ? `?${consulta}` : ''}${window.location.hash}`;
+  if (modo === 'push') window.history.pushState(null, '', url);
+  else window.history.replaceState(null, '', url);
+}
+
 export default function CatalogoPage() {
-  const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+  // Lo que venía en la URL al abrir la página (se lee una sola vez)
+  const [urlInicial] = useState(leerUrl);
+  const [filtros, setFiltros] = useState(urlInicial.filtros);
   const [categorias, setCategorias] = useState([]);
   const [puntos, setPuntos] = useState([]);
   const [objetos, setObjetos] = useState(null);
   const [orden, setOrden] = useState('recientes');
-  const [avanzados, setAvanzados] = useState(false);
+  // Si el link trae filtros avanzados, el panel parte abierto para que se vean
+  const [avanzados, setAvanzados] = useState(Boolean(urlInicial.filtros.lugar || urlInicial.filtros.fecha_hasta));
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [detalle, setDetalle] = useState(null);
   // Búsqueda en curso: si llega otra, la anterior se cancela para que su respuesta
   // (que puede tardar más) no reemplace los resultados de la búsqueda más nueva.
   const busquedaActual = useRef(null);
+  // Dónde estaba el usuario en el listado antes de abrir un detalle, para volver ahí
+  const posicionListado = useRef(0);
+  // true si el detalle se abrió desde el listado (hay una entrada del historial a la que volver)
+  const abrioDetalleDesdeListado = useRef(false);
 
-  // Al abrir: listas de los filtros y todos los objetos disponibles
+  // Al abrir: listas de los filtros y los objetos según la URL (sin filtros = todos)
   useEffect(() => {
     listarCategoria()
       .then(setCategorias)
@@ -34,11 +79,35 @@ export default function CatalogoPage() {
     listarPuntos()
       .then(setPuntos)
       .catch(() => setError('No se pudieron cargar los puntos de acopio.'));
-    buscar(FILTROS_VACIOS);
+    buscar(urlInicial.filtros);
+    // Link directo a un objeto (ej: ?objeto=10): se abre su detalle
+    if (urlInicial.idObjeto) abrirDetalleDesdeUrl(urlInicial.idObjeto);
 
-    // Al salir de la página se cancela la búsqueda pendiente
-    return () => busquedaActual.current?.abort();
+    return () => {
+      // Al salir de la página se cancela la búsqueda pendiente
+      // y se limpia la URL para que no quede en otras pantallas
+      busquedaActual.current?.abort();
+      actualizarUrl({ filtros: FILTROS_VACIOS, objeto: null });
+    };
+    // urlInicial no cambia, así que el efecto corre una sola vez
+  }, [urlInicial.filtros, urlInicial.idObjeto]);
+
+  // Botones "atrás" y "adelante" del navegador: se muestra lo que diga la URL
+  useEffect(() => {
+    function alNavegar() {
+      abrioDetalleDesdeListado.current = false;
+      const { idObjeto } = leerUrl();
+      if (idObjeto) abrirDetalleDesdeUrl(idObjeto);
+      else setDetalle(null);
+    }
+    window.addEventListener('popstate', alNavegar);
+    return () => window.removeEventListener('popstate', alNavegar);
   }, []);
+
+  // Al abrir un detalle se parte desde arriba; al volver, se recupera la posición del listado
+  useEffect(() => {
+    window.scrollTo(0, detalle ? 0 : posicionListado.current);
+  }, [detalle]);
 
   function cambiarFiltro(nombre, valor) {
     setFiltros(anteriores => ({ ...anteriores, [nombre]: valor }));
@@ -51,6 +120,8 @@ export default function CatalogoPage() {
 
     setCargando(true);
     setError('');
+    // Los filtros aplicados quedan en la URL (sin crear entradas nuevas en el historial)
+    actualizarUrl({ filtros: nuevosFiltros });
     try {
       const resultado = await buscarObjetos(nuevosFiltros, { signal: controlador.signal });
       setObjetos(resultado.objetos);
@@ -82,17 +153,49 @@ export default function CatalogoPage() {
     buscar(FILTROS_VACIOS);
   }
 
+  // Clic en "Ver detalle": se guarda la posición del listado y se agrega
+  // el objeto a la URL como una entrada nueva (para que "atrás" vuelva al listado)
   async function verDetalle(id) {
     setError('');
     try {
       const resultado = await verDetalleObjeto(id);
+      posicionListado.current = window.scrollY;
+      actualizarUrl({ objeto: id }, 'push');
+      abrioDetalleDesdeListado.current = true;
       setDetalle(resultado.objeto);
     } catch (err) { setError(err.message); }
   }
 
+  // Detalle pedido por la URL (link compartido, recarga o botón "adelante")
+  async function abrirDetalleDesdeUrl(id) {
+    setError('');
+    try {
+      const resultado = await verDetalleObjeto(id);
+      // Se asegura que la URL muestre el objeto abierto
+      actualizarUrl({ objeto: id });
+      setDetalle(resultado.objeto);
+    } catch (err) {
+      // Si el objeto ya no está en el catálogo (entregado, dado de baja...) se muestra el listado
+      setError(err.status === 404 ? 'Ese objeto ya no está disponible en el catálogo.' : err.message);
+      actualizarUrl({ objeto: null });
+      setDetalle(null);
+    }
+  }
+
+  function volverAlListado() {
+    // Si el detalle se abrió desde el listado, "Volver" hace lo mismo que el botón "atrás"
+    if (abrioDetalleDesdeListado.current) {
+      window.history.back();
+      return;
+    }
+    // Si se llegó por un link directo no hay a dónde volver: se quita el objeto de la URL
+    actualizarUrl({ objeto: null });
+    setDetalle(null);
+  }
+
   // Si hay un detalle abierto se muestra en vez del listado (los resultados se mantienen al volver)
   if (detalle) {
-    return <main className="catalogo"><DetalleObjeto objeto={detalle} onVolver={() => setDetalle(null)} /></main>;
+    return <main className="catalogo"><DetalleObjeto objeto={detalle} onVolver={volverAlListado} /></main>;
   }
 
   // Los resultados se ordenan por fecha del hallazgo; el usuario elige si de más nuevos a más viejos
