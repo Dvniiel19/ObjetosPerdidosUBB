@@ -327,7 +327,7 @@ export default function CatalogoPage() {
               <div className="objeto-foto">
                 {portada
                   ? <img src={urlArchivo(portada.archivo_url)} alt={`Fotografía de ${objeto.descripcion}`} loading="lazy" />
-                  : <span>Sin fotografía</span>}
+                  : <span>{objeto.fotos_privadas ? 'Foto oculta por privacidad' : 'Sin fotografía'}</span>}
               </div>
               <span className="pastilla azul">{objeto.categoria?.nombre}</span>
               <h2>{objeto.descripcion}</h2>

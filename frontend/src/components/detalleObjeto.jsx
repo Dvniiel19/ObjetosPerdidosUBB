@@ -42,7 +42,11 @@ export default function DetalleObjeto({ objeto, onVolver }) {
               ))}
             </div>
           ) : (
-            <div className="objeto-foto" style={{ aspectRatio: '16 / 5' }}>Este objeto no tiene fotografías</div>
+            <div className="objeto-foto" style={{ aspectRatio: '16 / 5' }}>
+              {objeto.fotos_privadas
+                ? 'Por privacidad, las fotos de documentos no se publican. Podrás verlo en el punto de acopio.'
+                : 'Este objeto no tiene fotografías'}
+            </div>
           )}
 
           <div>
