@@ -1,7 +1,8 @@
 import { pedir } from './api.js';
 
 // Solo se envían los filtros que el usuario completó.
-export function buscarObjetos(filtros) {
+// signal permite cancelar la búsqueda si el usuario lanza otra antes de que termine.
+export function buscarObjetos(filtros, { signal } = {}) {
   const parametros = new URLSearchParams();
 
   for (const [nombre, valor] of Object.entries(filtros)) {
@@ -9,7 +10,7 @@ export function buscarObjetos(filtros) {
     if (limpio) parametros.set(nombre, limpio);
   }
 
-  return pedir(`/objetos?${parametros}`);
+  return pedir(`/objetos?${parametros}`, { signal });
 }
 
 export function listarPuntos() {
