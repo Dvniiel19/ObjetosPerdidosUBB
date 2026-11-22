@@ -1,0 +1,20 @@
+/* Tailwind solo para las pantallas de Daniel: sin preflight para no cambiar las demas,
+   y con important para ganarle al CSS global de App.css */
+@layer theme, base, components, utilities;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap');
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) important source(none);
+
+@source "./clases.js";
+@source "../components/MarcoAcceso.jsx";
+@source "../components/MapaPuntos.jsx";
+@source "../components/GestionEncargados.jsx";
+@source "../pages/LoginPage.jsx";
+@source "../pages/AccesoExternoPage.jsx";
+@source "../pages/GestionPuntosPage.jsx";
+@source "../pages/CorregirObjetoPage.jsx";
+@source "../pages/InventarioPage.jsx";
+
+@theme {
+  --spacing: 4px;
+}

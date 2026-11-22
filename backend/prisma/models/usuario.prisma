@@ -1,6 +1,8 @@
 model Usuario {
   id_usuario           Int               @id @default(autoincrement())
   correo_institucional String            @unique @db.VarChar
+  /// rut sin puntos y con guion 
+  rut                   String            @unique @db.VarChar(10)
   /// hash de bcrypt, nunca la clave real
   clave_hash           String            @db.VarChar
   nombres              String            @db.VarChar

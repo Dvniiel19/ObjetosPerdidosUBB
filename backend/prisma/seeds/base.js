@@ -45,6 +45,8 @@ export async function seedBase(prisma) {
         nombre: 'Biblioteca Central',
         codigo: 'BIB',
         ubicacion: 'Primer piso, mesón de atención',
+        latitud: -36.821582,
+        longitud: -73.011741,
         publicado: true,
       },
     }),
@@ -53,6 +55,8 @@ export async function seedBase(prisma) {
         nombre: 'FACE',
         codigo: 'FACE',
         ubicacion: 'Facultad de Ciencias Empresariales, secretaría',
+        latitud: -36.821797,
+        longitud: -73.01121,
         publicado: true,
       },
     }),
@@ -61,6 +65,48 @@ export async function seedBase(prisma) {
         nombre: 'Salas AC',
         codigo: 'SAC',
         ubicacion: 'Edificio de salas AC, primer piso',
+        latitud: -36.822548,
+        longitud: -73.01114,
+        publicado: true,
+      },
+    }),
+    arquitectura: await prisma.puntoAcopio.create({
+      data: {
+        nombre: 'Arquitectura',
+        codigo: 'ARQ',
+        ubicacion: 'Facultad de Arquitectura, hall de entrada',
+        latitud: -36.821262,
+        longitud: -73.01331,
+        publicado: true,
+      },
+    }),
+    gantes: await prisma.puntoAcopio.create({
+      data: {
+        nombre: 'Gantes',
+        codigo: 'GAN',
+        ubicacion: 'Edificio Gantes, primer piso',
+        latitud: -36.821722,
+        longitud: -73.014268,
+        publicado: true,
+      },
+    }),
+    casino: await prisma.puntoAcopio.create({
+      data: {
+        nombre: 'Casino',
+        codigo: 'CAS',
+        ubicacion: 'Casino, junto a la caja',
+        latitud: -36.823004,
+        longitud: -73.010456,
+        publicado: true,
+      },
+    }),
+    gimnasio: await prisma.puntoAcopio.create({
+      data: {
+        nombre: 'Gimnasio',
+        codigo: 'GIM',
+        ubicacion: 'Gimnasio, acceso principal',
+        latitud: -36.822048,
+        longitud: -73.015292,
         publicado: true,
       },
     }),
@@ -70,6 +116,7 @@ export async function seedBase(prisma) {
     admin: await prisma.usuario.create({
       data: {
         correo_institucional: 'admin@ubiobio.cl',
+        rut: '11111111-1',
         clave_hash,
         nombres: 'Ana',
         apellidos: 'Administradora',
@@ -79,6 +126,7 @@ export async function seedBase(prisma) {
     encargadoBiblioteca: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.biblioteca@ubiobio.cl',
+        rut: '22222222-2',
         clave_hash,
         nombres: 'Bruno',
         apellidos: 'Encargado',
@@ -89,6 +137,7 @@ export async function seedBase(prisma) {
     encargadoFace: await prisma.usuario.create({
       data: {
         correo_institucional: 'encargado.face@ubiobio.cl',
+        rut: '33333333-3',
         clave_hash,
         nombres: 'Carla',
         apellidos: 'Encargada',
@@ -99,6 +148,7 @@ export async function seedBase(prisma) {
     estudiante: await prisma.usuario.create({
       data: {
         correo_institucional: 'estudiante@alumnos.ubiobio.cl',
+        rut: '44444444-4',
         clave_hash,
         nombres: 'Diego',
         apellidos: 'Estudiante',

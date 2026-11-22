@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { mostrarPuntos, registrarPunto, asignarEncargadoPunto, desactivarPuntoAcopio, mostrarEncargados, mostrarTodosLosPuntos } from '../controllers/puntoController.js';
+import { mostrarPuntos, registrarPunto, asignarEncargadoPunto, desactivarPuntoAcopio, mostrarEncargados, mostrarTodosLosPuntos, registrarEncargado, desactivarCuentaEncargado } from '../controllers/puntoController.js';
 import { autenticar, permitirRoles } from '../middlewares/authMiddleware.js';
 import { validar } from '../middlewares/validar.js';
-import { crearPuntoSchema, asignarEncargadoSchema, idPuntoSchema } from '../schemas/puntoSchema.js';
+import { crearPuntoSchema, asignarEncargadoSchema, idPuntoSchema, crearEncargadoSchema, idEncargadoSchema } from '../schemas/puntoSchema.js';
 
 const router = Router();
 
@@ -10,22 +10,19 @@ const router = Router();
 router.get('/', mostrarPuntos);
 
 // POST /api/puntos (solo administrador)
-router.post(
-  '/',
-  autenticar,
-  permitirRoles('administrador'),
-  validar(crearPuntoSchema),
-  registrarPunto,
+router.post( '/',autenticar, permitirRoles('administrador'),validar(crearPuntoSchema),registrarPunto,
+);
+
+// POST /api/puntos/encargados (solo administrador)
+router.post( '/encargados', autenticar, permitirRoles('administrador'),validar(crearEncargadoSchema),registrarEncargado,
+);
+
+// PATCH /api/puntos/encargados/:id/desactivar (solo administrador)
+router.patch('/encargados/:id/desactivar', autenticar, permitirRoles('administrador'), validar(idEncargadoSchema, 'params'),desactivarCuentaEncargado,
 );
 
 // PATCH /api/puntos/:id/encargados (solo administrador)
-router.patch(
-  '/:id/encargados',
-  autenticar,
-  permitirRoles('administrador'),
-  validar(idPuntoSchema, 'params'),
-  validar(asignarEncargadoSchema),
-  asignarEncargadoPunto,
+router.patch('/:id/encargados',autenticar, permitirRoles('administrador'),validar(idPuntoSchema, 'params'),validar(asignarEncargadoSchema),asignarEncargadoPunto,
 );
 
 // PATCH /api/puntos/:id/desactivar, solo admin

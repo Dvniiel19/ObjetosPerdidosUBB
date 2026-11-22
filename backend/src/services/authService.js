@@ -4,15 +4,16 @@ import { generarToken } from './jwtService.js';
 import { errorConCodigo } from '../utils/errorConCodigo.js';
 import { minutosDeBloqueo, registrarFallo, resetearIntentos } from '../utils/intentosLogin.js';
 
-const MENSAJE_CREDENCIALES = 'Correo o contrasena incorrectos';
+const MENSAJE_CREDENCIALES = 'Rut o contrasena incorrectos';
 
-/* Hash de una clave cualquiera si el correo no existe se compara igual contra este hash
-asi la respuesta tarda lo mismo y no se puede saber por el tiempo que correos tienen cuenta */
+/* Hash de una clave cualquiera si el RUT no existe se compara igual contra este hash
+asi la respuesta tarda lo mismo y no se puede saber por el tiempo que RUTs tienen cuenta */
 const HASH_FALSO = bcrypt.hashSync('clave-que-no-existe', 10);
 
 // Datos para el front
 const DATOS_PUBLICOS = {
   id_usuario: true,
+  rut: true,
   nombres: true,
   apellidos: true,
   correo_institucional: true,
@@ -20,25 +21,29 @@ const DATOS_PUBLICOS = {
   id_punto: true,
 };
 
-export async function iniciarSesion({ correo, contrasena }) {
-  // Si el correo esta bloqueado por muchos intentos ni siquiera se revisa
-  const minutos = minutosDeBloqueo(correo);
+// La intranet esta simulada: la clave de intranet es la clave guardada en el usuario.
+// Si algun dia existe la intranet real, solo se cambia esta funcion.
+async function verificarCredenciales(rut, contrasena) {
+  const usuario = await prisma.usuario.findUnique({
+    where: { rut },
+    select: { ...DATOS_PUBLICOS, activo: true, clave_hash: true },
+  });
+  const coincide = await bcrypt.compare(contrasena, usuario?.clave_hash ?? HASH_FALSO);
+  return usuario && coincide ? usuario : null;
+}
+
+export async function iniciarSesion({ rut, contrasena }) {
+  // Si el RUT esta bloqueado por muchos intentos ni siquiera se revisa
+  const minutos = minutosDeBloqueo(rut);
   if (minutos > 0) {
     throw errorConCodigo(`Demasiados intentos fallidos. Intenta de nuevo en ${minutos} minuto(s)`, 429);
   }
 
-  // Buscar al usuario por su correo
-  const usuario = await prisma.usuario.findUnique({
-    where: { correo_institucional: correo },
-    select: { ...DATOS_PUBLICOS, activo: true, clave_hash: true },
-  });
+  // Rut y clave de intranet
+  const usuario = await verificarCredenciales(rut, contrasena);
 
-  // Comparar la contrasena con el hash guardado (o con HASH_FALSO si el usuario no existe)
-  const coincide = await bcrypt.compare(contrasena, usuario?.clave_hash ?? HASH_FALSO);
-  const contrasenaCorrecta = Boolean(usuario) && coincide;
-
-  if (!contrasenaCorrecta) {
-    registrarFallo(correo);
+  if (!usuario) {
+    registrarFallo(rut);
     throw errorConCodigo(MENSAJE_CREDENCIALES, 401);
   }
 
@@ -48,7 +53,7 @@ export async function iniciarSesion({ correo, contrasena }) {
   }
 
   // Si todo esta bien se olvidan los fallos y se crea el token
-  resetearIntentos(correo);
+  resetearIntentos(rut);
 
   const { activo, clave_hash, ...datosUsuario } = usuario;
   const token = generarToken(datosUsuario);

@@ -3,7 +3,11 @@ import Icono from '../components/Icono.jsx';
 import { obtenerObjetoParaEditar, obtenerObjetoPorNumero, guardarObjetoEditado, listarCategoria } from '../services/objetoService.js';
 import { buscarObjetos } from '../services/catalogoService.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
-import '../styles/gestion.css';
+import { cabecera, textoCabecera, columnas, tarjeta, tarjetaPrincipal, tarjetaLateral, ayuda, avisoExito, botonSecundario } from '../styles/clases.js';
+import '../styles/tailwind.css';
+import '../styles/gestion.css'; // no la usa esta pantalla, pero si otras de la app
+
+const filaCampos = 'grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4';
 
 const dosDigitos = (numero) => String(numero).padStart(2, '0');
 
@@ -169,14 +173,14 @@ export default function CorregirObjetoPage({ parametros }) {
   }
 
   return (
-    <main>
-      <div className="cabecera-pagina">
+    <main className={objeto ? 'max-w-[1160px]' : undefined}>
+      <div className={cabecera}>
         <div>
-          <h1>Corregir objeto</h1>
-          <p>Solo puedes corregir objetos en custodia de tu punto de acopio.</p>
+          <h1 className="mb-2">Corregir objeto</h1>
+          <p className={textoCabecera}>Solo puedes corregir objetos en custodia de tu punto de acopio.</p>
         </div>
-        <form className="buscar-numero" onSubmit={buscarPorNumero}>
-          <label>
+        <form className="flex items-end gap-2 m-0" onSubmit={buscarPorNumero}>
+          <label className="w-[140px]">
             N° de etiqueta
             <input
               placeholder="Ej: 12"
@@ -185,7 +189,7 @@ export default function CorregirObjetoPage({ parametros }) {
               required
             />
           </label>
-          <button type="submit" disabled={cargando}>
+          <button type="submit" className="inline-flex items-center gap-1.5" disabled={cargando}>
             <Icono nombre="buscar" />
             Buscar
           </button>
@@ -193,19 +197,19 @@ export default function CorregirObjetoPage({ parametros }) {
       </div>
 
       {error && <p role="alert">{error}</p>}
-      {mensaje && <p className="aviso exito" role="status">{mensaje}</p>}
+      {mensaje && <p className={avisoExito} role="status">{mensaje}</p>}
 
       {!objeto && (
-        <section className="tarjeta">
-          <h2>¿No sabes el número?</h2>
+        <section className={tarjeta}>
+          <h2 className="m-0">¿No sabes el número?</h2>
           <form onSubmit={buscarPorTexto}>
-            <div className="fila-campos">
-              <label>
+            <div className={filaCampos}>
+              <label className="content-start">
                 Buscar por descripción o lugar
                 <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ej: mochila azul" />
               </label>
-              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <button type="submit" className="boton-secundario" disabled={cargando}>
+              <div className="flex items-end">
+                <button type="submit" className="inline-flex items-center gap-2 mb-4 py-2 px-3.5 hover:border-(--azul-institucional) hover:text-(--azul-institucional)" disabled={cargando}>
                   {cargando ? 'Buscando…' : 'Buscar objetos'}
                 </button>
               </div>
@@ -213,16 +217,16 @@ export default function CorregirObjetoPage({ parametros }) {
           </form>
           {resultados?.length === 0 && <p role="status">No se encontraron objetos con esa búsqueda.</p>}
           {resultados?.length > 0 && (
-            <div className="objetos">
+            <div className="grid gap-4 mt-6">
               {resultados.map((resultado) => (
-                <article className="objeto" key={resultado.id_objeto}>
+                <article className="p-5 border border-(--border) rounded-[10px]" key={resultado.id_objeto}>
                   <small>Objeto #{resultado.id_objeto} · {resultado.categoria?.nombre}</small>
-                  <h2>{resultado.descripcion}</h2>
+                  <h2 className="m-0 wrap-anywhere">{resultado.descripcion}</h2>
                   <p>Lugar: {resultado.lugar_hallazgo}</p>
                   <p>Punto: {resultado.punto?.nombre ?? 'Sin información'}</p>
                   <button
                     type="button"
-                    className="boton-secundario"
+                    className={`${botonSecundario} mt-4`}
                     disabled={cargando}
                     onClick={() => abrir({ idObjeto: resultado.id_objeto })}
                   >
@@ -236,16 +240,16 @@ export default function CorregirObjetoPage({ parametros }) {
       )}
 
       {objeto && (
-        <div className="dos-columnas">
-          <form className="tarjeta principal" onSubmit={guardar}>
+        <div className={columnas}>
+          <form className={tarjetaPrincipal} onSubmit={guardar}>
             <fieldset disabled={cargando}>
-              <div className="fila-campos">
-                <label>
+              <div className={filaCampos}>
+                <label className="content-start">
                   Identificador
                   <input value={`${objeto.punto?.codigo ?? ''}-${objeto.numero_en_punto}`} disabled />
-                  <span className="ayuda">No se puede modificar</span>
+                  <span className={ayuda}>No se puede modificar</span>
                 </label>
-                <label>
+                <label className="content-start">
                   Categoría
                   <select value={datos.id_categoria} onChange={(e) => cambiar('id_categoria', e.target.value)} required>
                     {categorias.map((categoria) => (
@@ -265,8 +269,8 @@ export default function CorregirObjetoPage({ parametros }) {
                 />
               </label>
 
-              <div className="fila-campos">
-                <label>
+              <div className={filaCampos}>
+                <label className="content-start">
                   Lugar del hallazgo
                   <input
                     value={datos.lugar_hallazgo}
@@ -275,24 +279,24 @@ export default function CorregirObjetoPage({ parametros }) {
                     required
                   />
                 </label>
-                <label>
+                <label className="content-start">
                   Fecha
                   <input type="date" value={datos.fecha} onChange={(e) => cambiar('fecha', e.target.value)} required />
                 </label>
-                <label>
+                <label className="content-start">
                   Hora
                   <input type="time" value={datos.hora} onChange={(e) => cambiar('hora', e.target.value)} required />
                 </label>
               </div>
 
               {modificados.length > 0 && (
-                <p className="ayuda" role="status">
+                <p className={`${ayuda} m-0 p-0 border-none`} role="status">
                   Campos modificados: {modificados.map((campo) => NOMBRES_CAMPOS[campo]).join(', ')}
                 </p>
               )}
 
               <label>
-                <span>Motivo del cambio <span className="obligatorio">(obligatorio)</span></span>
+                <span>Motivo del cambio <span className="text-(--rojo) font-normal">(obligatorio)</span></span>
                 <textarea
                   value={motivo}
                   onChange={(e) => setMotivo(e.target.value)}
@@ -301,15 +305,15 @@ export default function CorregirObjetoPage({ parametros }) {
                   maxLength={200}
                   required
                 />
-                <span className="ayuda">Entre 10 y 200 caracteres. Llevas {motivo.trim().length}.</span>
+                <span className={ayuda}>Entre 10 y 200 caracteres. Llevas {motivo.trim().length}.</span>
               </label>
             </fieldset>
 
-            <div className="acciones">
-              <button type="button" className="boton-secundario" disabled={cargando} onClick={cerrar}>
+            <div className="flex flex-wrap justify-end gap-3 pt-4 border-t border-(--border)">
+              <button type="button" className={botonSecundario} disabled={cargando} onClick={cerrar}>
                 Elegir otro objeto
               </button>
-              <button type="button" className="boton-secundario" disabled={cargando} onClick={descartar}>
+              <button type="button" className={botonSecundario} disabled={cargando} onClick={descartar}>
                 Descartar
               </button>
               <button type="submit" disabled={cargando}>
@@ -318,19 +322,19 @@ export default function CorregirObjetoPage({ parametros }) {
             </div>
           </form>
 
-          <aside className="tarjeta lateral">
-            <h2>Correcciones recientes</h2>
+          <aside className={tarjetaLateral}>
+            <h2 className="m-0">Correcciones recientes</h2>
             {correcciones.length === 0 && (
-              <p className="ayuda">Todavía no has hecho correcciones a este objeto en esta visita.</p>
+              <p className={ayuda}>Todavía no has hecho correcciones a este objeto en esta visita.</p>
             )}
             {correcciones.map((correccion, i) => (
               <div key={i}>
                 <strong>{fechaParaMostrar(correccion.fecha)}</strong>
                 <p>Campos: {correccion.campos.join(', ')}</p>
-                <p className="ayuda">Motivo: {correccion.motivo}</p>
+                <p className={ayuda}>Motivo: {correccion.motivo}</p>
               </div>
             ))}
-            <p className="ayuda">
+            <p className={ayuda}>
               Cada corrección guarda los valores anteriores en el historial del objeto,
               que puede consultar el Administrador.
             </p>

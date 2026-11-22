@@ -1,6 +1,20 @@
 import { useEffect, useState } from 'react';
 import { obtenerTodosLosPuntos, listarEncargados, crearPunto, desactivarPunto } from '../services/puntoService.js';
-import '../styles/gestion.css';
+import GestionEncargados from '../components/GestionEncargados.jsx';
+import {
+    cabecera, textoCabecera, columnas, tarjetaTablaPrincipal, tarjetaLateral, tabla, th, fila, td, tdDerecha,
+    nota, notaAcciones, vacio, ayuda, avisoExito, pastillaGris, pastillaVerde, botonSecundario, botonPeligro, botonPeligroRelleno,
+} from '../styles/clases.js';
+import '../styles/tailwind.css';
+import '../styles/gestion.css'; // no la usa esta pantalla, pero si otras de la app
+
+// Lee "-36.8216, -73.0117" (como las copia Google Maps); vacio = sin mapa, null = mal escrito
+function leerCoordenadas(texto) {
+    if (!texto.trim()) return {};
+    const partes = texto.split(',').map((parte) => Number(parte.trim()));
+    if (partes.length !== 2 || partes.some(Number.isNaN)) return null;
+    return { latitud: partes[0], longitud: partes[1] };
+}
 
 export default function GestionPuntosPage(){
     const [puntos, setPuntos] = useState([]);
@@ -8,6 +22,7 @@ export default function GestionPuntosPage(){
     const [nombre, setNombre] = useState('');
     const [codigo, setCodigo] = useState('');
     const [ubicacion, setUbicacion] = useState('');
+    const [coordenadas, setCoordenadas] = useState('');
     const [seleccionados, setSeleccionados] = useState([]);
     // id del punto que se esta por desactivar (pide confirmacion antes)
     const [porConfirmar, setPorConfirmar] = useState(null);
@@ -52,13 +67,19 @@ export default function GestionPuntosPage(){
             setAvisoFormulario({ tipo: 'error', texto: 'Debes seleccionar al menos un encargado para crear el punto.' });
             return;
         }
+        const ubicacionMapa = leerCoordenadas(coordenadas);
+        if(!ubicacionMapa){
+            setAvisoFormulario({ tipo: 'error', texto: 'Escribe las coordenadas así: -36.8216, -73.0117' });
+            return;
+        }
         setCargando(true);
         try{
-            await crearPunto({nombre, codigo, ubicacion, encargados: seleccionados});
+            await crearPunto({nombre, codigo, ubicacion, ...ubicacionMapa, encargados: seleccionados});
             setAvisoFormulario({ tipo: 'exito', texto: 'Punto creado exitosamente.' });
             setNombre('');
             setCodigo('');
             setUbicacion('');
+            setCoordenadas('');
             setSeleccionados([]);
             await cargar();
         } catch (err){
@@ -91,60 +112,70 @@ export default function GestionPuntosPage(){
     }
 
   return (
-    <main className="pagina-completa">
-      <div className="cabecera-pagina">
+    <main className="max-w-[1160px]">
+      <div className={cabecera}>
         <div>
-          <h1>Puntos de acopio</h1>
-          <p>Crea puntos nuevos y desactiva los que ya no funcionan.</p>
+          <h1 className="mb-2">Puntos de acopio</h1>
+          <p className={textoCabecera}>Crea puntos nuevos y desactiva los que ya no funcionan.</p>
         </div>
       </div>
 
       {error && <p role="alert">{error}</p>}
-      {mensaje && <p className="aviso exito" role="status">{mensaje}</p>}
+      {mensaje && <p className={avisoExito} role="status">{mensaje}</p>}
 
-      <div className="dos-columnas">
-        <section className="tarjeta sin-relleno principal" aria-label="Puntos registrados">
-          <table className="tabla-min">
+      <div className={columnas}>
+        <section className={tarjetaTablaPrincipal} aria-label="Puntos registrados">
+          <table className={tabla}>
             <thead>
               <tr>
-                <th>Punto</th>
-                <th>Encargados</th>
-                <th>En custodia</th>
-                <th>Estado</th>
-                <th className="celda-acciones">Acciones</th>
+                <th className={th}>Punto</th>
+                <th className={th}>Encargados</th>
+                <th className={th}>En custodia</th>
+                <th className={th}>Estado</th>
+                <th className={th}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {puntos.map((punto) => {
                 const enCustodia = punto._count.objetos;
                 return (
-                  <tr key={punto.id_punto}>
-                    <td>
-                      <div className="celda-principal">{punto.nombre} <span className="pastilla">{punto.codigo}</span></div>
-                      <small>{punto.ubicacion}</small>
+                  <tr key={punto.id_punto} className={fila}>
+                    <td className={td}>
+                      <div className="font-semibold">{punto.nombre} <span className={pastillaGris}>{punto.codigo}</span></div>
+                      <small className={nota}>{punto.ubicacion}</small>
+                      {punto.latitud != null && (
+                        <a
+                          className="text-[14px] text-(--azul-institucional) underline"
+                          href={`https://www.google.com/maps?q=${punto.latitud},${punto.longitud}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Ver en el mapa
+                        </a>
+                      )}
                     </td>
-                    <td>
+                    <td className={td}>
                       {punto.encargados.length > 0
                         ? punto.encargados.map((e) => <div key={e.id_usuario}>{e.nombres} {e.apellidos}</div>)
-                        : <span className="numero">Sin encargado</span>}
+                        : <span className="text-[14px] text-(--text)">Sin encargado</span>}
                     </td>
-                    <td>{enCustodia}</td>
-                    <td>
+                    <td className={td}>{enCustodia}</td>
+                    <td className={td}>
                       {punto.habilitado
-                        ? <span className="pastilla verde">Habilitado</span>
-                        : <span className="pastilla">Desactivado</span>}
+                        ? <span className={pastillaVerde}>Habilitado</span>
+                        : <span className={pastillaGris}>Desactivado</span>}
                     </td>
-                    <td className="celda-acciones">
+                    <td className={tdDerecha}>
                       {punto.habilitado && enCustodia > 0 && (
                         <>
-                          <button type="button" className="boton-peligro" disabled>Desactivar</button>
-                          <small>Tiene objetos en custodia</small>
+                          <button type="button" className={botonPeligro} disabled>Desactivar</button>
+                          <small className={notaAcciones}>Tiene objetos en custodia</small>
                         </>
                       )}
                       {punto.habilitado && enCustodia === 0 && porConfirmar !== punto.id_punto && (
                         <button
                           type="button"
-                          className="boton-peligro"
+                          className={botonPeligro}
                           disabled={cargando}
                           onClick={() => setPorConfirmar(punto.id_punto)}
                         >
@@ -155,7 +186,7 @@ export default function GestionPuntosPage(){
                         <>
                           <button
                             type="button"
-                            className="boton-peligro relleno"
+                            className={botonPeligroRelleno}
                             disabled={cargando}
                             onClick={() => desactivar(punto)}
                           >
@@ -163,13 +194,13 @@ export default function GestionPuntosPage(){
                           </button>{' '}
                           <button
                             type="button"
-                            className="boton-secundario"
+                            className={botonSecundario}
                             disabled={cargando}
                             onClick={() => setPorConfirmar(null)}
                           >
                             Cancelar
                           </button>
-                          <small>Sus encargados quedarán sin oficina.</small>
+                          <small className={notaAcciones}>Sus encargados quedarán sin oficina.</small>
                         </>
                       )}
                     </td>
@@ -178,11 +209,11 @@ export default function GestionPuntosPage(){
               })}
             </tbody>
           </table>
-          {puntos.length === 0 && <p className="vacio">Todavía no hay puntos de acopio.</p>}
+          {puntos.length === 0 && <p className={vacio}>Todavía no hay puntos de acopio.</p>}
         </section>
 
-        <form className="tarjeta lateral" onSubmit={crear}>
-          <h2>Crear punto de acopio</h2>
+        <form className={tarjetaLateral} onSubmit={crear}>
+          <h2 className="m-0">Crear punto de acopio</h2>
           <fieldset disabled={cargando}>
             <label>
               Nombre
@@ -194,7 +225,7 @@ export default function GestionPuntosPage(){
                 maxLength={25}
                 required
               />
-              <span className="ayuda">No puede repetirse con otro punto.</span>
+              <span className={ayuda}>No puede repetirse con otro punto.</span>
             </label>
             <label>
               Código
@@ -207,7 +238,7 @@ export default function GestionPuntosPage(){
                 pattern="[A-Za-z]{2,6}"
                 required
               />
-              <span className="ayuda">De 2 a 6 letras. Va antes del número de cada objeto (ING-1, ING-2…).</span>
+              <span className={ayuda}>De 2 a 6 letras. Va antes del número de cada objeto (ING-1, ING-2…).</span>
             </label>
             <label>
               Ubicación
@@ -220,10 +251,19 @@ export default function GestionPuntosPage(){
                 required
               />
             </label>
-            <fieldset className="grupo-casillas">
+            <label>
+              Coordenadas (opcional)
+              <input
+                value={coordenadas}
+                onChange={(e) => setCoordenadas(e.target.value)}
+                placeholder="-36.8216, -73.0117"
+              />
+              <span className={ayuda}>En Google Maps haz clic derecho sobre el lugar y copia las coordenadas. Con ellas el punto aparece en el mapa para externos.</span>
+            </label>
+            <fieldset className="py-2.5 px-3.5 border border-(--border) rounded-[8px]">
               <legend>Encargados (al menos uno)</legend>
               {encargados.map((enc) => (
-                <label className="casilla" key={enc.id_usuario}>
+                <label className="min-h-9" key={enc.id_usuario}>
                   <input
                     type="checkbox"
                     checked={seleccionados.includes(enc.id_usuario)}
@@ -231,21 +271,23 @@ export default function GestionPuntosPage(){
                   />
                   <span>
                     {enc.nombres} {enc.apellidos}{' '}
-                    <span className="ayuda">({enc.punto ? `hoy en ${enc.punto.nombre}` : 'sin punto'})</span>
+                    <span className={ayuda}>({enc.punto ? `hoy en ${enc.punto.nombre}` : 'sin punto'})</span>
                   </span>
                 </label>
               ))}
-              {encargados.length === 0 && <span className="ayuda">No hay encargados activos.</span>}
+              {encargados.length === 0 && <span className={ayuda}>No hay encargados activos.</span>}
             </fieldset>
             {avisoFormulario?.tipo === 'error' && <p role="alert">{avisoFormulario.texto}</p>}
-            {avisoFormulario?.tipo === 'exito' && <p className="aviso exito" role="status">{avisoFormulario.texto}</p>}
-            <button type="submit" className="boton-ancho">{cargando ? 'Guardando…' : 'Crear punto'}</button>
+            {avisoFormulario?.tipo === 'exito' && <p className={avisoExito} role="status">{avisoFormulario.texto}</p>}
+            <button type="submit" className="w-full">{cargando ? 'Guardando…' : 'Crear punto'}</button>
           </fieldset>
-          <p className="ayuda">
+          <p className={ayuda}>
             Al desactivar un punto, deja de verse para los usuarios y sus encargados quedan sin oficina.
           </p>
         </form>
       </div>
+
+      <GestionEncargados encargados={encargados} puntos={puntos} onCambio={cargar} />
     </main>
   );
 }
