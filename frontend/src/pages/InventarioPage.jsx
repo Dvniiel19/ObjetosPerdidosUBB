@@ -3,14 +3,19 @@ import { createPortal } from 'react-dom';
 import { listarInventario } from '../services/inventarioService.js';
 import { urlArchivo } from '../services/api.js';
 import { fechaParaMostrar } from '../utils/fechaUtils.js';
-import '../styles/gestion.css';
-import '../styles/inventario.css';
+import {
+  cabecera, textoCabecera, tarjetaTabla, tabla, th, fila, td, tdDerecha, nota, vacio, botonSecundario,
+  pastillaVerde, pastillaAmbar, pastillaAzul, pastillaRoja,
+} from '../styles/clases.js';
+import '../styles/tailwind.css';
+import '../styles/gestion.css'; // no la usa esta pantalla, pero si otras de la app
+import '../styles/inventario.css'; // etiqueta para imprimir
 
 const ESTADOS = {
-  en_custodia: { texto: 'En custodia', clase: 'verde' },
-  no_reclamado: { texto: 'No reclamado', clase: 'ambar' },
-  entregado: { texto: 'Entregado', clase: 'azul' },
-  dado_de_baja: { texto: 'Dado de baja', clase: 'rojo' },
+  en_custodia: { texto: 'En custodia', clase: pastillaVerde },
+  no_reclamado: { texto: 'No reclamado', clase: pastillaAmbar },
+  entregado: { texto: 'Entregado', clase: pastillaAzul },
+  dado_de_baja: { texto: 'Dado de baja', clase: pastillaRoja },
 };
 
 // Codigo que se pega en el objeto, por ejemplo BIB-12
@@ -82,16 +87,19 @@ export default function InventarioPage({ onIrA }) {
   const nombrePunto = objetos[0]?.punto.nombre;
 
   return (
-    <main className="inventario">
-      <div className="cabecera-pagina">
+    <main className="max-w-[1160px]">
+      <div className={cabecera}>
         <div>
-          <h1>Inventario{nombrePunto ? ` · ${nombrePunto}` : ''}</h1>
-          <p>Todos los objetos de tu punto. Busca por descripción, lugar o número de etiqueta.</p>
+          <h1 className="mb-2">Inventario{nombrePunto ? ` · ${nombrePunto}` : ''}</h1>
+          <p className={textoCabecera}>Todos los objetos de tu punto. Busca por descripción, lugar o número de etiqueta.</p>
         </div>
       </div>
 
-      <form className="tarjeta filtros-inventario" onSubmit={enviar}>
-        <label>
+      <form
+        className="flex flex-row flex-wrap items-end gap-4 min-w-0 mt-0 mx-0 mb-5 p-5.5 border border-(--border) rounded-[12px] bg-(--bg) shadow-(--shadow)"
+        onSubmit={enviar}
+      >
+        <label className="flex-[1_1_220px]">
           Buscar
           <input
             value={texto}
@@ -99,7 +107,7 @@ export default function InventarioPage({ onIrA }) {
             placeholder="Ej: paraguas, biblioteca o BIB-12"
           />
         </label>
-        <label>
+        <label className="flex-[0_1_200px]">
           Estado
           <select value={estado} onChange={(e) => cambiarEstado(e.target.value)}>
             <option value="en_custodia">En custodia</option>
@@ -114,16 +122,16 @@ export default function InventarioPage({ onIrA }) {
 
       {error && <p role="alert">{error}</p>}
 
-      <section className="tarjeta sin-relleno" aria-label="Objetos del punto">
-        <table className="tabla-min">
+      <section className={tarjetaTabla} aria-label="Objetos del punto">
+        <table className={tabla}>
           <thead>
             <tr>
-              <th>N°</th>
-              <th>Objeto</th>
-              <th>Categoría</th>
-              <th>Ingreso</th>
-              <th>Estado</th>
-              <th className="celda-acciones">Acciones</th>
+              <th className={th}>N°</th>
+              <th className={th}>Objeto</th>
+              <th className={th}>Categoría</th>
+              <th className={th}>Ingreso</th>
+              <th className={th}>Estado</th>
+              <th className={th}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -131,33 +139,33 @@ export default function InventarioPage({ onIrA }) {
               const foto = objeto.fotografias[0];
               const datosEstado = ESTADOS[objeto.estado];
               return (
-                <tr key={objeto.id_objeto}>
-                  <td className="celda-codigo">{codigoDe(objeto)}</td>
-                  <td>
-                    <div className="celda-objeto">
+                <tr key={objeto.id_objeto} className={fila}>
+                  <td className={`${td} font-(family-name:--mono) font-bold whitespace-nowrap`}>{codigoDe(objeto)}</td>
+                  <td className={td}>
+                    <div className="flex items-center gap-3">
                       {foto
-                        ? <img className="foto-mini" src={urlArchivo(foto.archivo_url)} alt="" loading="lazy" />
-                        : <div className="foto-mini" aria-hidden="true" />}
+                        ? <img className="size-13 flex-none rounded-[8px] object-cover bg-(--code-bg)" src={urlArchivo(foto.archivo_url)} alt="" loading="lazy" />
+                        : <div className="size-13 flex-none rounded-[8px] bg-(--code-bg)" aria-hidden="true" />}
                       <div>
-                        <div className="celda-principal">{objeto.descripcion}</div>
-                        <small>{objeto.lugar_hallazgo}</small>
+                        <div className="font-semibold">{objeto.descripcion}</div>
+                        <small className={nota}>{objeto.lugar_hallazgo}</small>
                       </div>
                     </div>
                   </td>
-                  <td>{objeto.categoria.nombre}</td>
-                  <td>{fechaParaMostrar(objeto.registrado_en)}</td>
-                  <td>
-                    <span className={`pastilla ${datosEstado.clase}`}>{datosEstado.texto}</span>
-                    {!objeto.publicado && <small>No publicado</small>}
+                  <td className={td}>{objeto.categoria.nombre}</td>
+                  <td className={td}>{fechaParaMostrar(objeto.registrado_en)}</td>
+                  <td className={td}>
+                    <span className={datosEstado.clase}>{datosEstado.texto}</span>
+                    {!objeto.publicado && <small className={nota}>No publicado</small>}
                   </td>
-                  <td className="celda-acciones">
-                    <button type="button" className="boton-secundario" onClick={() => imprimirEtiqueta(objeto)}>
+                  <td className={tdDerecha}>
+                    <button type="button" className={botonSecundario} onClick={() => imprimirEtiqueta(objeto)}>
                       Etiqueta
                     </button>{' '}
                     {objeto.estado === 'en_custodia' && (
                       <button
                         type="button"
-                        className="boton-secundario"
+                        className={botonSecundario}
                         onClick={() => onIrA('corregir', { numero: objeto.numero_en_punto })}
                       >
                         Corregir
@@ -170,7 +178,7 @@ export default function InventarioPage({ onIrA }) {
           </tbody>
         </table>
         {!cargando && objetos.length === 0 && (
-          <p className="vacio">No hay objetos con esos filtros en tu punto.</p>
+          <p className={vacio}>No hay objetos con esos filtros en tu punto.</p>
         )}
       </section>
 
