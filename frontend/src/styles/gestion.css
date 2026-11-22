@@ -1,5 +1,5 @@
-/* Estilos de Corregir objeto (RF8) y Puntos de acopio (RF5 y RF9).
-   Las tarjetas, columnas, avisos y pastillas base estan en componentes.css. */
+/* Clases que usan otras pantallas de la app (cabecera, tabla, botones y pastillas).
+   Las pantallas de Daniel ya usan Tailwind. */
 
 /* Titulo a la izquierda y acciones a la derecha */
 .cabecera-pagina {

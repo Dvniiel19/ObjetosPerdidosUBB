@@ -6,6 +6,8 @@ model PuntoAcopio {
   /// ultimo numero entregado a un objeto de este punto (contador por punto)
   ultimo_numero Int     @default(0)
   ubicacion  String    @db.Text
+  latitud    Float?
+  longitud   Float?
   /// visible para los usuarios en la app
   publicado  Boolean   @default(false)
   /// el punto está funcionando (recibe y entrega objetos)

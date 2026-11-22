@@ -22,12 +22,16 @@ export function rutValido(rut) {
     return dv === esperado;
 }
 
+export const rutSchema = z.string('El RUT es obligatorio')
+    .trim()
+    .transform(normalizarRut)
+    .refine(rutValido, 'El RUT no es valido');
+
 export const loginSchema = z.object({
-    rut: z.string('El RUT es obligatorio')
-        .trim()
-        .transform(normalizarRut)
-        .refine(rutValido, 'El RUT no es valido'),
+    rut: rutSchema,
     contrasena: z.string()
         .min(1, 'La contrasena es obligatoria')
         .max(20, 'La contrasena no puede superar los 20 caracteres'),
 }).strict();
+
+
