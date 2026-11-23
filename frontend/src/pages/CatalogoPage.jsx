@@ -9,6 +9,19 @@ import '../styles/catalogo.css';
 
 const FILTROS_VACIOS = { texto: '', categoria: '', punto: '', lugar: '', fecha_desde: '', fecha_hasta: '' };
 
+// Lugares del campus para "¿Dónde lo perdiste?". "busqueda" es el texto que se busca
+// dentro del lugar del hallazgo (ej: "biblioteca" encuentra "Entrada de la biblioteca").
+// Lista provisoria mientras no exista la tabla LugarCampus (idea P1 completa).
+const LUGARES_CAMPUS = [
+  { nombre: 'Biblioteca', busqueda: 'biblioteca' },
+  { nombre: 'FACE', busqueda: 'face' },
+  { nombre: 'Salas AC', busqueda: 'salas ac' },
+  { nombre: 'Arquitectura', busqueda: 'arquitectura' },
+  { nombre: 'Gantes', busqueda: 'gantes' },
+  { nombre: 'Casino', busqueda: 'casino' },
+  { nombre: 'Gimnasio', busqueda: 'gimnasio' },
+];
+
 // Fecha de hoy en formato AAAA-MM-DD, para no permitir fechas futuras.
 const HOY = new Date().toLocaleDateString('sv-SE');
 
@@ -148,6 +161,13 @@ export default function CatalogoPage() {
     buscar(nuevos);
   }
 
+  // Igual que los chips: al elegir un lugar se busca de inmediato
+  function elegirLugar(lugar) {
+    const nuevos = { ...filtros, lugar };
+    setFiltros(nuevos);
+    buscar(nuevos);
+  }
+
   function limpiar() {
     setFiltros(FILTROS_VACIOS);
     buscar(FILTROS_VACIOS);
@@ -226,11 +246,16 @@ export default function CatalogoPage() {
               el estudiante recuerda dónde perdió el objeto, no dónde quedó guardado (P1). */}
           <label>
             ¿Dónde lo perdiste?
-            <input
-              value={filtros.lugar}
-              onChange={(e) => cambiarFiltro('lugar', e.target.value)}
-              placeholder="Ej: casino, biblioteca, sala AC"
-            />
+            <select value={filtros.lugar} onChange={(e) => elegirLugar(e.target.value)}>
+              <option value="">Todo el campus</option>
+              {LUGARES_CAMPUS.map((lugar) => (
+                <option key={lugar.busqueda} value={lugar.busqueda}>{lugar.nombre}</option>
+              ))}
+              {/* Si un link trae un lugar que no está en la lista, igual se muestra */}
+              {filtros.lugar && !LUGARES_CAMPUS.some((l) => l.busqueda === filtros.lugar) && (
+                <option value={filtros.lugar}>{filtros.lugar}</option>
+              )}
+            </select>
           </label>
           <label>
             ¿Desde cuándo?
