@@ -66,7 +66,7 @@ main.catalogo {
 /* Campos en una fila: el texto ocupa más y el botón va al final */
 .buscador {
   display: grid;
-  grid-template-columns: 2fr repeat(3, 1fr) auto;
+  grid-template-columns: 2fr repeat(2, 1fr) auto;
   align-items: end;
   gap: 12px;
   margin: 20px 0 12px;
@@ -128,7 +128,7 @@ main.catalogo {
 
 /* Panel desplegable dentro del buscador */
 .avanzados {
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--border);

@@ -59,7 +59,7 @@ export default function CatalogoPage() {
   const [objetos, setObjetos] = useState(null);
   const [orden, setOrden] = useState('recientes');
   // Si el link trae filtros avanzados, el panel parte abierto para que se vean
-  const [avanzados, setAvanzados] = useState(Boolean(urlInicial.filtros.lugar || urlInicial.filtros.fecha_hasta));
+  const [avanzados, setAvanzados] = useState(Boolean(urlInicial.filtros.punto || urlInicial.filtros.fecha_hasta));
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [detalle, setDetalle] = useState(null);
@@ -222,23 +222,15 @@ export default function CatalogoPage() {
               placeholder="Ej: mochila, llaves, audífonos"
             />
           </label>
+          {/* La categoría se elige con los botones de abajo. El filtro principal es el lugar:
+              el estudiante recuerda dónde perdió el objeto, no dónde quedó guardado (P1). */}
           <label>
-            Categoría
-            <select value={filtros.categoria} onChange={(e) => cambiarFiltro('categoria', e.target.value)}>
-              <option value="">Todas</option>
-              {categorias.map((categoria) => (
-                <option key={categoria.id_categoria} value={categoria.id_categoria}>{categoria.nombre}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            ¿Dónde se retira?
-            <select value={filtros.punto} onChange={(e) => cambiarFiltro('punto', e.target.value)}>
-              <option value="">Todos</option>
-              {puntos.map((punto) => (
-                <option key={punto.id_punto} value={punto.id_punto}>{punto.nombre}</option>
-              ))}
-            </select>
+            ¿Dónde lo perdiste?
+            <input
+              value={filtros.lugar}
+              onChange={(e) => cambiarFiltro('lugar', e.target.value)}
+              placeholder="Ej: casino, biblioteca, sala AC"
+            />
           </label>
           <label>
             ¿Desde cuándo?
@@ -257,12 +249,13 @@ export default function CatalogoPage() {
           {avanzados && (
             <fieldset className="avanzados" style={{ gridColumn: '1 / -1' }}>
               <label>
-                Lugar del hallazgo
-                <input
-                  value={filtros.lugar}
-                  onChange={(e) => cambiarFiltro('lugar', e.target.value)}
-                  placeholder="Ej: casino, gimnasio, sala"
-                />
+                ¿Dónde se retira?
+                <select value={filtros.punto} onChange={(e) => cambiarFiltro('punto', e.target.value)}>
+                  <option value="">Todos los puntos</option>
+                  {puntos.map((punto) => (
+                    <option key={punto.id_punto} value={punto.id_punto}>{punto.nombre}</option>
+                  ))}
+                </select>
               </label>
               <label>
                 Hasta la fecha
@@ -334,7 +327,7 @@ export default function CatalogoPage() {
               <div className="objeto-foto">
                 {portada
                   ? <img src={urlArchivo(portada.archivo_url)} alt={`Fotografía de ${objeto.descripcion}`} loading="lazy" />
-                  : <span>Sin fotografía</span>}
+                  : <span>{objeto.fotos_privadas ? 'Foto oculta por privacidad' : 'Sin fotografía'}</span>}
               </div>
               <span className="pastilla azul">{objeto.categoria?.nombre}</span>
               <h2>{objeto.descripcion}</h2>

@@ -27,6 +27,19 @@ const SELECT_FOTOGRAFIAS = {
   orderBy: { posicion: 'asc' },
 };
 
+// Categorías cuyas fotos no se publican porque muestran datos personales
+// (RUT, nombre, foto del titular). El encargado igual las registra para uso interno.
+const CATEGORIAS_SIN_FOTOS_PUBLICAS = ['Documentos y tarjetas'];
+
+// Para el catálogo público: si la categoría es privada se quitan las fotos
+// y se marca con fotos_privadas para que el frontend muestre el aviso.
+function ocultarFotosPrivadas(objeto) {
+  if (!CATEGORIAS_SIN_FOTOS_PUBLICAS.includes(objeto.categoria?.nombre)) {
+    return { ...objeto, fotos_privadas: false };
+  }
+  return { ...objeto, fotografias: [], fotos_privadas: true };
+}
+
 // Catalogo publico: solo objetos publicados y que siguen en custodia.
 // Los no publicados, entregados, no reclamados o dados de baja no se muestran.
 // Si viene "texto", filtra por descripcion o lugar de hallazgo (sin importar mayusculas).
@@ -62,7 +75,7 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
     }),
   };
 
-  return prisma.objeto.findMany({
+  const objetos = await prisma.objeto.findMany({
     where,
     select: {
       id_objeto: true,
@@ -75,6 +88,8 @@ export async function listarCatalogo({ texto, categoria, fechaDesde, fechaHasta,
     },
     orderBy: { hallado_en: 'desc' },
   });
+
+  return objetos.map(ocultarFotosPrivadas);
 }
 
 // Detalle publico: mismas reglas que el catalogo (publicado, en custodia y de un punto disponible).
@@ -102,7 +117,7 @@ export async function obtenerDetalleObjeto(idObjeto) {
   const disponibleHasta = new Date(objeto.registrado_en);
   disponibleHasta.setDate(disponibleHasta.getDate() + DIAS_TOTAL_CUSTODIA);
 
-  return { ...objeto, disponible_hasta: disponibleHasta };
+  return ocultarFotosPrivadas({ ...objeto, disponible_hasta: disponibleHasta });
 }
 
 function validarContextoEncargado(encargado) {
